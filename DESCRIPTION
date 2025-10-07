@@ -1,10 +1,11 @@
 Package: fireproof
-Title: What the Package Does (One Line, Title Case)
+Title: Authentication and Authorization for 'fiery' servers
 Version: 0.0.0.9000
-Authors@R: 
+Authors@R:
     person("Thomas Lin", "Pedersen", , "thomasp85@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-5147-4711"))
-Description: What the package does (one paragraph).
+Description: Provides a set of plugins for 'fiery' that supports various forms
+    of authorization and authentication. 
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
