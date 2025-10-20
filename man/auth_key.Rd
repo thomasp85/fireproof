@@ -4,46 +4,23 @@
 \alias{auth_key}
 \title{Authentication based on shared secret}
 \usage{
-auth_key(
-  key,
-  secret,
-  get = NULL,
-  head = NULL,
-  post = NULL,
-  put = NULL,
-  delete = NULL,
-  connect = NULL,
-  options = NULL,
-  trace = NULL,
-  patch = NULL,
-  all = NULL,
-  cookie = TRUE,
-  name = "KeyAuth",
-  ignore_trailing_slash = FALSE
-)
+auth_key(key, secret, cookie = TRUE, name = "KeyAuth")
 }
 \arguments{
 \item{key}{The name of the header or cookie to store the secret under}
 
-\item{secret}{The secret to check for. Make sure never to store this in plain
-text and check avoid checking it into version control.}
-
-\item{get, head, post, put, delete, connect, options, trace, patch, all}{Character
-vectors with paths to add authentication to up front. Additional paths can be
-added afterwards using the \code{add_handler()} method.}
+\item{secret}{The secret to check for. Either a single string with the secret
+or a function that takes a value and returns \code{TRUE} if its a valid secret
+(useful if you have multiple or rotating secrets). Make sure never to store
+secrets in plain text and avoid checking them into version control.}
 
 \item{cookie}{Boolean. Should the secret be transmitted as a cookie. If
 \code{FALSE} it is expected to be transmitted as a header.}
 
-\item{name}{The name of the plugin}
-
-\item{ignore_trailing_slash}{Logical. Should the trailing slash of a path
-be ignored when determining if a request should be authenticated. Setting
-this will not change the request or the path associated with it but just ensure that
-both \code{path/to/resource} and \verb{path/to/resource/} ends up being authenticated}
+\item{name}{The name of the authentication}
 }
 \value{
-A \code{AuthBasicRoute} object
+A \code{AuthBasic} object
 }
 \description{
 This authentication scheme is based on a mutually shared secret between the
@@ -52,4 +29,10 @@ in a cookie, and the server verifies the authenticity of the secret. Like
 with \link[=auth_basic]{basic authentication}, this scheme relies on additional
 technology like HTTPS/SSL to make it secure since the secret can otherwise
 easily be extracted from the request by man-in-the-middle attack.
+}
+\details{
+This authentication is not a classic HTTP authentication scheme and thus
+doesn't return a \code{401} response with a \code{WWW-Authenticate} header. Instead it
+returns a \code{400} response unless another authenticator has already set the
+response status to something else.
 }

@@ -4,44 +4,20 @@
 \alias{auth_basic}
 \title{Basic authentication plugin}
 \usage{
-auth_basic(
-  authenticator,
-  get = NULL,
-  head = NULL,
-  post = NULL,
-  put = NULL,
-  delete = NULL,
-  connect = NULL,
-  options = NULL,
-  trace = NULL,
-  patch = NULL,
-  all = NULL,
-  name = "BasicAuth",
-  realm = "private",
-  ignore_trailing_slash = FALSE
-)
+auth_basic(authenticator, name = "BasicAuth", realm = "private")
 }
 \arguments{
 \item{authenticator}{A function that takes a username and password and
 returns \code{TRUE} if the pair is valid, and \code{FALSE} otherwise}
 
-\item{get, head, post, put, delete, connect, options, trace, patch, all}{Character
-vectors with paths to add authentication to up front. Additional paths can be
-added afterwards using the \code{add_handler()} method.}
-
-\item{name}{The name of the plugin}
+\item{name}{The name of the authentication}
 
 \item{realm}{The realm this authentication corresponds to. Will be returned
 to the client on a failed authentication attempt to inform them of the
-credentials required though most often these days it is kept from the user.}
-
-\item{ignore_trailing_slash}{Logical. Should the trailing slash of a path
-be ignored when determining if a request should be authenticated. Setting
-this will not change the request or the path associated with it but just ensure that
-both \code{path/to/resource} and \verb{path/to/resource/} ends up being authenticated}
+credentials required, though most often these days it is kept from the user.}
 }
 \value{
-A \code{AuthBasicRoute} object
+An \code{AuthBasic} R6 object
 }
 \description{
 Basic authentication is a HTTP scheme that sends username and password as a
@@ -49,4 +25,13 @@ Basic authentication is a HTTP scheme that sends username and password as a
 is effectively send in plain text (base64 encoding can easily be decoded)
 this should only ever be used along with other security measures such as
 https/ssl to avoid username and passwords being snooped from the request.
+}
+\details{
+This authenticator will use a user provided function to test a
+username/password pair. It is up to the user to handle the storage and
+testing of the passwords in a sensible and responsible way. See
+\code{\link[sodium:password]{sodium::password_store()}} for a good first step towards responsible design.
+
+If the authentication passes, the username from the authorization header is
+written to the \code{username} data slot in the request
 }
