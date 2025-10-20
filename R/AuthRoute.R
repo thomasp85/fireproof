@@ -69,9 +69,24 @@ AuthRoute <- R6::R6Class(
       check_string(name)
       private$AUTHS[[name]] <- auth
       private$REJECTIONS[[name]] <- reject
+    },
+    on_attach = function(app, ...) {
+      if (is.null(app$plugins$header_routr)) {
+        rs <- routr::RouteStack$new()
+        rs$attach_to <- "header"
+        app$attach(rs)
+      }
+      app$plugins$header_routr$add_route(
+        self,
+        "fireproof_auth",
+        after = 0
+      )
     }
   ),
   active = list(
+    name = function() {
+      "fireproof"
+    },
     auths = function() {
       names(private$AUTHS)
     }
