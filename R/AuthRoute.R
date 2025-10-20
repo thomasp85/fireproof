@@ -1,4 +1,5 @@
 #' @importFrom routr Route
+#' @importFrom reqres abort_status
 AuthRoute <- R6::R6Class(
   "AuthRoute",
   inherit = Route,
@@ -9,7 +10,7 @@ AuthRoute <- R6::R6Class(
       flow,
       reject_missing_methods = FALSE
     ) {
-      flow <- parse_auth_flow({{flow}})
+      flow <- parse_auth_flow({{ flow }})
       authenticators <- unique(unlist(flow))
 
       super$add_handler(
@@ -25,10 +26,11 @@ AuthRoute <- R6::R6Class(
           )
           success <- eval_op(flow, pass)
           if (!success) {
-            FALSE
-          } else {
-            TRUE
+            failed <- names(pass)[!vapply(pass, isTRUE, logical(1))]
+            lapply(private$REJECTIONS[failed], function(fun) fun(response))
+            abort_status(response$status)
           }
+          TRUE
         },
         reject_missing_methods = reject_missing_methods
       )
@@ -49,15 +51,24 @@ AuthRoute <- R6::R6Class(
         if (!"..." %in% fn_fmls_names(auth)) {
           fn_fmls(auth) <- c(fn_fmls(auth), "..." = missing_arg())
         }
+        reject <- function(response) {
+          if (response$status == 404L) {
+            response$status <- 400L
+          }
+        }
       } else {
         if (!is_auth(auth)) {
-          cli::cli_abort("{.arg auth} must be a function or an {.cls Auth} object")
+          cli::cli_abort(
+            "{.arg auth} must be a function or an {.cls Auth} object"
+          )
         }
+        reject <- auth$reject_response
         auth <- auth$check_request
         name <- name %||% auth$name
       }
       check_string(name)
       private$AUTHS[[name]] <- auth
+      private$REJECTIONS[[name]] <- reject
     }
   ),
   active = list(
@@ -67,6 +78,7 @@ AuthRoute <- R6::R6Class(
   ),
   private = list(
     AUTHS = list(),
+    REJECTIONS = list(),
 
     eval_auths = function(.authenticators, request, response, keys, ...) {
       auths <- private$AUTHS[.authenticators]
