@@ -21,3 +21,5 @@ Auth <- R6::R6Class(
     NAME = NULL
   )
 )
+
+is_auth <- function(x) inherits(x, "Auth")

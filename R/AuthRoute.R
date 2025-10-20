@@ -9,7 +9,7 @@ AuthRoute <- R6::R6Class(
       flow,
       reject_missing_methods = FALSE
     ) {
-      flow <- parse_auth_flow(!!flow)
+      flow <- parse_auth_flow({{flow}})
       authenticators <- unique(unlist(flow))
 
       super$add_handler(
@@ -86,7 +86,7 @@ AuthRoute <- R6::R6Class(
 
 true_fun <- function(...) TRUE
 parse_auth_flow <- function(expr) {
-  flow <- enexpr(expr)
+  flow <- quo_squash(enexpr(expr))
   collapse <- TRUE
   if (is_call(flow) && is_symbol(flow[[1]], "(")) {
     flow <- flow[[2]]
