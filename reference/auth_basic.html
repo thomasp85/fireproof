@@ -58,22 +58,7 @@ https/ssl to avoid username and passwords being snooped from the request.</p>
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">auth_basic</span><span class="op">(</span></span>
-<span>  <span class="va">authenticator</span>,</span>
-<span>  get <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  head <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  post <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  put <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  delete <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  connect <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  options <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  trace <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  patch <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  all <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  name <span class="op">=</span> <span class="st">"BasicAuth"</span>,</span>
-<span>  realm <span class="op">=</span> <span class="st">"private"</span>,</span>
-<span>  ignore_trailing_slash <span class="op">=</span> <span class="cn">FALSE</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">auth_basic</span><span class="op">(</span><span class="va">authenticator</span>, name <span class="op">=</span> <span class="st">"BasicAuth"</span>, realm <span class="op">=</span> <span class="st">"private"</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -85,32 +70,28 @@ https/ssl to avoid username and passwords being snooped from the request.</p>
 returns <code>TRUE</code> if the pair is valid, and <code>FALSE</code> otherwise</p></dd>
 
 
-<dt id="arg-get-head-post-put-delete-connect-options-trace-patch-all">get, head, post, put, delete, connect, options, trace, patch, all<a class="anchor" aria-label="anchor" href="#arg-get-head-post-put-delete-connect-options-trace-patch-all"></a></dt>
-<dd><p>Character
-vectors with paths to add authentication to up front. Additional paths can be
-added afterwards using the <code>add_handler()</code> method.</p></dd>
-
-
 <dt id="arg-name">name<a class="anchor" aria-label="anchor" href="#arg-name"></a></dt>
-<dd><p>The name of the plugin</p></dd>
+<dd><p>The name of the authentication</p></dd>
 
 
 <dt id="arg-realm">realm<a class="anchor" aria-label="anchor" href="#arg-realm"></a></dt>
 <dd><p>The realm this authentication corresponds to. Will be returned
 to the client on a failed authentication attempt to inform them of the
-credentials required though most often these days it is kept from the user.</p></dd>
-
-
-<dt id="arg-ignore-trailing-slash">ignore_trailing_slash<a class="anchor" aria-label="anchor" href="#arg-ignore-trailing-slash"></a></dt>
-<dd><p>Logical. Should the trailing slash of a path
-be ignored when determining if a request should be authenticated. Setting
-this will not change the request or the path associated with it but just ensure that
-both <code>path/to/resource</code> and <code>path/to/resource/</code> ends up being authenticated</p></dd>
+credentials required, though most often these days it is kept from the user.</p></dd>
 
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>A <code>AuthBasicRoute</code> object</p>
+    <p>An <code>AuthBasic</code> R6 object</p>
+    </div>
+    <div id="details">
+    <h2>Details</h2>
+    <p>This authenticator will use a user provided function to test a
+username/password pair. It is up to the user to handle the storage and
+testing of the passwords in a sensible and responsible way. See
+<code><a href="https://docs.ropensci.org/sodium/reference/password.html" class="external-link">sodium::password_store()</a></code> for a good first step towards responsible design.</p>
+<p>If the authentication passes, the username from the authorization header is
+written to the <code>username</code> data slot in the request</p>
     </div>
 
   </div>
