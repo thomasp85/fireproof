@@ -100,7 +100,7 @@ AuthBasic <- R6::R6Class(
         name = name
       )
       check_function(authenticator)
-      if (length(fn_fmls(authenticator)) != 5) {
+      if (length(fn_fmls(authenticator)) != 5 && !"..." %in% fn_fmls_names(authenticator)) {
         cli::cli_abort(
           "{.arg authenticator} must be a function with five arguments: `username`, `password`, `realm`, `request`, and `response`"
         )

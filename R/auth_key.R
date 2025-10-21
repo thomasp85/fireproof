@@ -85,7 +85,7 @@ AuthKey <- R6::R6Class(
         secret <- function(key, request, response) identical(key, secret_string)
       }
       check_function(secret)
-      if (length(fn_fmls(secret)) != 3) {
+      if (length(fn_fmls(secret)) != 3 && !"..." %in% fn_fmls_names(authenticator)) {
         cli::cli_abort(
           "{.arg secret} must be a string or a function with three arguments: `key`, `request`, and `response`"
         )
