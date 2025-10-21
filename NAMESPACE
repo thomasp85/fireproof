@@ -2,7 +2,13 @@
 
 S3method(format,fireproof_op)
 S3method(print,fireproof_op)
+export(Auth)
+export(AuthBasic)
+export(AuthBearer)
+export(AuthKey)
+export(Fireproof)
 export(auth_basic)
+export(auth_bearer)
 export(auth_key)
 import(rlang)
 importFrom(R6,R6Class)

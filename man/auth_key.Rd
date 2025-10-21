@@ -10,9 +10,13 @@ auth_key(key, secret, cookie = TRUE, name = "KeyAuth")
 \item{key}{The name of the header or cookie to store the secret under}
 
 \item{secret}{The secret to check for. Either a single string with the secret
-or a function that takes a value and returns \code{TRUE} if its a valid secret
-(useful if you have multiple or rotating secrets). Make sure never to store
-secrets in plain text and avoid checking them into version control.}
+or a function that takes the key, the request and the response and returns
+\code{TRUE} if its a valid secret (useful if you have multiple or rotating
+secrets). If a function, the function can also set the scope of the key in
+the \code{auth_scope} field of the response data
+(\code{response$set_data("auth_scope", ...)}) then it will be tested against the
+scopes needed for the specific endpoint. Make sure never to store secrets in
+plain text and avoid checking them into version control.}
 
 \item{cookie}{Boolean. Should the secret be transmitted as a cookie. If
 \code{FALSE} it is expected to be transmitted as a header.}
@@ -20,7 +24,7 @@ secrets in plain text and avoid checking them into version control.}
 \item{name}{The name of the authentication}
 }
 \value{
-A \code{AuthBasic} object
+A \link{AuthKey} object
 }
 \description{
 This authentication scheme is based on a mutually shared secret between the

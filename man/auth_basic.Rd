@@ -7,8 +7,12 @@
 auth_basic(authenticator, name = "BasicAuth", realm = "private")
 }
 \arguments{
-\item{authenticator}{A function that takes a username and password and
-returns \code{TRUE} if the pair is valid, and \code{FALSE} otherwise}
+\item{authenticator}{A function that takes a username, password, realm,
+request, and response and returns \code{TRUE} if the pair is valid, and \code{FALSE}
+otherwise. If the function sets a character vector of scopes for the user in
+the \code{auth_scope} field of the response data
+(\code{response$set_data("auth_scope", ...)}) then it will be tested against the
+scopes needed for the specific endpoint}
 
 \item{name}{The name of the authentication}
 
@@ -17,7 +21,7 @@ to the client on a failed authentication attempt to inform them of the
 credentials required, though most often these days it is kept from the user.}
 }
 \value{
-An \code{AuthBasic} R6 object
+An \link{AuthBasic} R6 object
 }
 \description{
 Basic authentication is a HTTP scheme that sends username and password as a
