@@ -5,7 +5,13 @@
 <url><loc>/LICENSE.html</loc></url>
 <url><loc>/authors.html</loc></url>
 <url><loc>/index.html</loc></url>
+<url><loc>/reference/Auth.html</loc></url>
+<url><loc>/reference/AuthBasic.html</loc></url>
+<url><loc>/reference/AuthBearer.html</loc></url>
+<url><loc>/reference/AuthKey.html</loc></url>
+<url><loc>/reference/Fireproof.html</loc></url>
 <url><loc>/reference/auth_basic.html</loc></url>
+<url><loc>/reference/auth_bearer.html</loc></url>
 <url><loc>/reference/auth_key.html</loc></url>
 <url><loc>/reference/fireproof-package.html</loc></url>
 <url><loc>/reference/index.html</loc></url>

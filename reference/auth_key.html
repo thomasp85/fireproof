@@ -73,9 +73,13 @@ easily be extracted from the request by man-in-the-middle attack.</p>
 
 <dt id="arg-secret">secret<a class="anchor" aria-label="anchor" href="#arg-secret"></a></dt>
 <dd><p>The secret to check for. Either a single string with the secret
-or a function that takes a value and returns <code>TRUE</code> if its a valid secret
-(useful if you have multiple or rotating secrets). Make sure never to store
-secrets in plain text and avoid checking them into version control.</p></dd>
+or a function that takes the key, the request and the response and returns
+<code>TRUE</code> if its a valid secret (useful if you have multiple or rotating
+secrets). If a function, the function can also set the scope of the key in
+the <code>auth_scope</code> field of the response data
+(<code>response$set_data("auth_scope", ...)</code>) then it will be tested against the
+scopes needed for the specific endpoint. Make sure never to store secrets in
+plain text and avoid checking them into version control.</p></dd>
 
 
 <dt id="arg-cookie">cookie<a class="anchor" aria-label="anchor" href="#arg-cookie"></a></dt>
@@ -89,7 +93,7 @@ secrets in plain text and avoid checking them into version control.</p></dd>
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>A <code>AuthBasic</code> object</p>
+    <p>A <a href="AuthKey.html">AuthKey</a> object</p>
     </div>
     <div id="details">
     <h2>Details</h2>
