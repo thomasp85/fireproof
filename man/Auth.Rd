@@ -19,6 +19,8 @@ this and will work transparently with fireproof.
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
 \item{\code{name}}{The name of the instance}
+
+\item{\code{open_id}}{An OpenID compliant security scheme description}
 }
 \if{html}{\out{</div>}}
 }

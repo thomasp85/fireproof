@@ -52,6 +52,10 @@ Auth <- R6::R6Class(
     #' @field name The name of the instance
     name = function() {
       private$NAME
+    },
+    #' @field open_id An OpenID compliant security scheme description
+    open_id = function() {
+      list()
     }
   ),
   private = list(

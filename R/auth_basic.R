@@ -154,6 +154,15 @@ AuthBasic <- R6::R6Class(
       response$status <- 401L
     }
   ),
+  active = list(
+    #' @field open_id An OpenID compliant security scheme description
+    open_id = function() {
+      list(
+        type = "http",
+        scheme = "basic"
+      )
+    }
+  ),
   private = list(
     AUTHENTICATOR = NULL,
     REALM = ""

@@ -218,6 +218,15 @@ AuthBearer <- R6::R6Class(
       response$status <- 403L
     }
   ),
+  active = list(
+    #' @field open_id An OpenID compliant security scheme description
+    open_id = function() {
+      list(
+        type = "http",
+        scheme = "bearer"
+      )
+    }
+  ),
   private = list(
     AUTHENTICATOR = NULL,
     REALM = ""

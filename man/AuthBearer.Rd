@@ -11,6 +11,13 @@ See \code{\link[=auth_bearer]{auth_bearer()}} for more information.
 \section{Super class}{
 \code{\link[fireproof:Auth]{fireproof::Auth}} -> \code{AuthBearer}
 }
+\section{Active bindings}{
+\if{html}{\out{<div class="r6-active-bindings">}}
+\describe{
+\item{\code{open_id}}{An OpenID compliant security scheme description}
+}
+\if{html}{\out{</div>}}
+}
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{

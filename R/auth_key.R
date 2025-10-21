@@ -131,6 +131,14 @@ AuthKey <- R6::R6Class(
     #' `"cookie"` or `"header"`
     location = function() {
       if (private$COOKIE) "cookie" else "header"
+    },
+    #' @field open_id An OpenID compliant security scheme description
+    open_id = function() {
+      list(
+        type = "apiKey",
+        "in" = self$location,
+        name = private$KEY
+      )
     }
   ),
   private = list(
