@@ -10,7 +10,17 @@
 coverage](https://codecov.io/gh/thomasp85/fireproof/graph/badge.svg)](https://app.codecov.io/gh/thomasp85/fireproof)
 <!-- badges: end -->
 
-The goal of fireproof is to …
+fireproof is a plugin for [fiery](https://fiery.data-imaginist.com/)
+based servers. It provides a unified framework for adding authentication
+to your server backend.
+
+There is currently support for Basic and Bearer authentication as well
+as Key based authentication.
+
+fireproof supports multiple authentication routes for each endpoint so
+that you can specify that access to a certain endpoint requires either
+passing this and/or this challenges. The logic can be arbitrarily
+complex though for your own sanity it probably shouldn’t.
 
 ## Installation
 
@@ -28,29 +38,35 @@ This is a basic example which shows you how to solve a common problem:
 
 ``` r
 library(fireproof)
-## basic example code
+
+# Create the plugin
+proof <- Fireproof$new()
+
+# Create two different authenticators
+key_auth <- auth_key(
+  key = "FireproofKey",
+  secret = "VerySecretString",
+  cookie = FALSE
+)
+basic_auth <- auth_basic(
+  authenticator = function(user, password, ...) {
+    user == "thomas" && password == "1234"
+  }
+)
+
+# Add them to the plugin
+proof$add_auth(key_auth, "key")
+proof$add_auth(basic_auth, "basic")
+
+# Add authentication to some endpoints with varying combinations of requirements
+proof$add_auth_handler("get", "/user/settings", basic) # must pass basic auth
+proof$add_auth_handler("get", "/api/predict", key || basic) # must pass either
+proof$add_auth_handler("get", "/strong/auth", key && basic) # must pass both
+
+# If you have even more authenticators you can group conditions with () as well
+
+
+# Create a fiery app and attach the plugin
+app <- fiery::Fire$new()
+app$attach(proof)
 ```
-
-What is special about using `README.Rmd` instead of just `README.md`?
-You can include R chunks like so:
-
-``` r
-summary(cars)
-#>      speed           dist       
-#>  Min.   : 4.0   Min.   :  2.00  
-#>  1st Qu.:12.0   1st Qu.: 26.00  
-#>  Median :15.0   Median : 36.00  
-#>  Mean   :15.4   Mean   : 42.98  
-#>  3rd Qu.:19.0   3rd Qu.: 56.00  
-#>  Max.   :25.0   Max.   :120.00
-```
-
-You’ll still need to render `README.Rmd` regularly, to keep `README.md`
-up-to-date. `devtools::build_readme()` is handy for this.
-
-You can also embed plots, for example:
-
-<img src="man/figures/README-pressure-1.png" width="100%" />
-
-In that case, don’t forget to commit and push the resulting figure
-files, so they display on GitHub and CRAN.
