@@ -16,7 +16,7 @@ This class encapsulates the logic of the key based authentication scheme. See
 \item{\code{location}}{The location of the secret in the request, either
 \code{"cookie"} or \code{"header"}}
 
-\item{\code{open_id}}{An OpenID compliant security scheme description}
+\item{\code{open_api}}{An OpenID compliant security scheme description}
 }
 \if{html}{\out{</div>}}
 }

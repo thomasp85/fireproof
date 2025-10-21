@@ -14,7 +14,7 @@ See \code{\link[=auth_bearer]{auth_bearer()}} for more information.
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
-\item{\code{open_id}}{An OpenID compliant security scheme description}
+\item{\code{open_api}}{An OpenID compliant security scheme description}
 }
 \if{html}{\out{</div>}}
 }
