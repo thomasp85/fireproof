@@ -101,6 +101,7 @@ to the plugin</p></dd>
 <ul><li><p><a href="#method-Fireproof-add_auth_handler"><code>Fireproof$add_auth_handler()</code></a></p></li>
 <li><p><a href="#method-Fireproof-add_auth"><code>Fireproof$add_auth()</code></a></p></li>
 <li><p><a href="#method-Fireproof-add_handler"><code>Fireproof$add_handler()</code></a></p></li>
+<li><p><a href="#method-Fireproof-flow_to_openapi"><code>Fireproof$flow_to_openapi()</code></a></p></li>
 <li><p><a href="#method-Fireproof-on_attach"><code>Fireproof$on_attach()</code></a></p></li>
 <li><p><a href="#method-Fireproof-clone"><code>Fireproof$clone()</code></a></p></li>
 </ul></div><p><details><summary>Inherited methods</summary><ul><li><span class="pkg-link" data-pkg="routr" data-topic="Route" data-id="dispatch"><a href="https://routr.data-imaginist.com/reference/Route-class.html#method-dispatch"><code>routr::Route$dispatch()</code></a></span></li>
@@ -112,7 +113,8 @@ to the plugin</p></dd>
 <li><span class="pkg-link" data-pkg="routr" data-topic="Route" data-id="remove_handler"><a href="https://routr.data-imaginist.com/reference/Route-class.html#method-remove_handler"><code>routr::Route$remove_handler()</code></a></span></li>
 </ul></details></p><hr><a id="method-Fireproof-add_auth_handler"></a><div class="section">
 <h3 id="method-add-auth-handler-">Method <code>add_auth_handler()</code><a class="anchor" aria-label="anchor" href="#method-add-auth-handler-"></a></h3>
-<p>Add a new authentication handler</p><div class="section">
+<p>Add a new authentication handler. It invisibly returns the
+parsed flow so it can be used for generating OpenAPI specs with.</p><div class="section">
 <h4 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Fireproof</span><span class="op">$</span><span class="fu">add_auth_handler</span><span class="op">(</span><span class="va">method</span>, <span class="va">path</span>, <span class="va">flow</span>, scope <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
@@ -194,18 +196,44 @@ an error if called.</p><div class="section">
 </dl><p></p></div>
 </div>
 
+</div><p></p><hr><a id="method-Fireproof-flow_to_openapi"></a><div class="section">
+<h3 id="method-flow-to-openapi-">Method <code>flow_to_openapi()</code><a class="anchor" aria-label="anchor" href="#method-flow-to-openapi-"></a></h3>
+<p>Turns a parsed flow (as returned by <code>add_auth_handler()</code>)
+into an OpenAPI Security Requirement compliant list. Not all flows can be
+represented by the OpenAPI spec and the method will return <code>NULL</code> with a
+warning if so. Scope is added to all schemes, even if not applicable, so
+the final OpenAPI doc should be run through <code><a href="prune_openapi.html">prune_openapi()</a></code> before
+serving it.</p><div class="section">
+<h4 id="usage-3">Usage<a class="anchor" aria-label="anchor" href="#usage-3"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Fireproof</span><span class="op">$</span><span class="fu">flow_to_openapi</span><span class="op">(</span><span class="va">flow</span>, <span class="va">scope</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-3">Arguments<a class="anchor" aria-label="anchor" href="#arguments-3"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>flow</code></dt>
+<dd><p>A parsed flow as returned by <code>add_auth_handler()</code></p></dd>
+
+
+<dt><code>scope</code></dt>
+<dd><p>A character vector of scopes required for this particular
+flow</p></dd>
+
+
+</dl><p></p></div>
+</div>
+
 </div><p></p><hr><a id="method-Fireproof-on_attach"></a><div class="section">
 <h3 id="method-on-attach-">Method <code>on_attach()</code><a class="anchor" aria-label="anchor" href="#method-on-attach-"></a></h3>
 <p>Method for use by fiery when attached as a plugin. Should
 not be called directly. This method looks for a header route stack in the
 app and if it doesn't exist it creates one. It then attaches the plugin
 as the first route to it.</p><div class="section">
-<h4 id="usage-3">Usage<a class="anchor" aria-label="anchor" href="#usage-3"></a></h4>
+<h4 id="usage-4">Usage<a class="anchor" aria-label="anchor" href="#usage-4"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Fireproof</span><span class="op">$</span><span class="fu">on_attach</span><span class="op">(</span><span class="va">app</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-3">Arguments<a class="anchor" aria-label="anchor" href="#arguments-3"></a></h4>
+<h4 id="arguments-4">Arguments<a class="anchor" aria-label="anchor" href="#arguments-4"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>app</code></dt>
 <dd><p>The Fire object to attach the router to</p></dd>
 
@@ -220,12 +248,12 @@ as the first route to it.</p><div class="section">
 </div><p></p><hr><a id="method-Fireproof-clone"></a><div class="section">
 <h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
 <p>The objects of this class are cloneable with this method.</p><div class="section">
-<h4 id="usage-4">Usage<a class="anchor" aria-label="anchor" href="#usage-4"></a></h4>
+<h4 id="usage-5">Usage<a class="anchor" aria-label="anchor" href="#usage-5"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Fireproof</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-4">Arguments<a class="anchor" aria-label="anchor" href="#arguments-4"></a></h4>
+<h4 id="arguments-5">Arguments<a class="anchor" aria-label="anchor" href="#arguments-5"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>deep</code></dt>
 <dd><p>Whether to make a deep clone.</p></dd>
 
