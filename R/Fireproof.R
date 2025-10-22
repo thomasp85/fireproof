@@ -152,6 +152,9 @@ Fireproof <- R6::R6Class(
     #' flow
     #'
     flow_to_openapi = function(flow, scope) {
+      if (identical(attr(flow, "op"), "&&")) {
+        flow <- or(flow)
+      }
       if (!is_flow_valid_openapi(flow)) {
         cli::cli_warn(
           "Authentication flow `{format(flow)}` cannot be represented by the OpenAPI syntax"
