@@ -33,7 +33,8 @@ Fireproof <- R6::R6Class(
   "Fireproof",
   inherit = Route,
   public = list(
-    #' @description Add a new authentication handler
+    #' @description Add a new authentication handler. It invisibly returns the
+    #' parsed flow so it can be used for generating OpenAPI specs with.
     #' @param method The http method to match the handler to
     #' @param path The URL path to match to
     #' @param flow The authentication flow the request must pass to be valid.
@@ -65,18 +66,25 @@ Fireproof <- R6::R6Class(
           success <- eval_op(flow, pass)
           if (!success) {
             failed <- names(pass)[!vapply(pass, isTRUE, logical(1))]
-            lapply(private$REJECTION[failed], function(fun) fun(response, scope))
+            lapply(private$REJECTION[failed], function(fun) {
+              fun(response, scope)
+            })
             abort_status(response$status)
           }
-          if (!is.null(scope) && !all(scope %in% response$get_data("auth_scope"))) {
+          if (
+            !is.null(scope) && !all(scope %in% response$get_data("auth_scope"))
+          ) {
             succeeded <- names(pass)[vapply(pass, isTRUE, logical(1))]
-            lapply(private$FORBID[succeeded], function(fun) fun(response, scope))
+            lapply(private$FORBID[succeeded], function(fun) {
+              fun(response, scope)
+            })
             abort_status(response$status)
           }
           TRUE
         },
         reject_missing_methods = FALSE
       )
+      invisible(flow)
     },
     #' @description Add an authentication scheme instance to the plugin
     #' @param auth Either an [Auth] object defining the scheme instance
@@ -133,6 +141,31 @@ Fireproof <- R6::R6Class(
         i = "Use the {.fun add_auth_handler} method to add an authentication/authorization handler"
       ))
     },
+    #' @description Turns a parsed flow (as returned by `add_auth_handler()`)
+    #' into an OpenAPI Security Requirement compliant list. Not all flows can be
+    #' represented by the OpenAPI spec and the method will return `NULL` with a
+    #' warning if so. Scope is added to all schemes, even if not applicable, so
+    #' the final OpenAPI doc should be run through `prune_openapi()` before
+    #' serving it.
+    #' @param flow A parsed flow as returned by `add_auth_handler()`
+    #' @param scope A character vector of scopes required for this particular
+    #' flow
+    #'
+    flow_to_openapi = function(flow, scope) {
+      if (!is_flow_valid_openapi(flow)) {
+        cli::cli_warn(
+          "Authentication flow `{format(flow)}` cannot be represented by the OpenAPI syntax"
+        )
+        return(NULL)
+      }
+      lapply(flow, function(sf) {
+        res <- set_names(
+          rep(list(scope), length(sf)),
+          unlist(sf)
+        )
+        res
+      })
+    },
     #' @description Method for use by fiery when attached as a plugin. Should
     #' not be called directly. This method looks for a header route stack in the
     #' app and if it doesn't exist it creates one. It then attaches the plugin
@@ -188,10 +221,8 @@ Fireproof <- R6::R6Class(
 true_fun <- function(...) TRUE
 parse_auth_flow <- function(expr) {
   flow <- quo_squash(enexpr(expr))
-  collapse <- TRUE
   if (is_call(flow) && is_symbol(flow[[1]], "(")) {
     flow <- flow[[2]]
-    collapse <- FALSE
   }
   if (length(flow) == 1) {
     scalar(gsub('"|\'', "", expr_text(flow)))
@@ -209,34 +240,32 @@ parse_auth_flow <- function(expr) {
       !!!if (may_collapse(rhs, op)) rhs else list(rhs)
     )
     if (op == "||") {
-      or(!!!elems, .collapsible = collapse)
+      or(!!!elems)
     } else {
-      and(!!!elems, .collapsible = collapse)
+      and(!!!elems)
     }
   }
 }
 
-and <- function(..., .collapsible = TRUE) {
+and <- function(...) {
   structure(
     list2(...),
     class = "fireproof_op",
-    can_collapse = .collapsible,
     op = "&&"
   )
 }
-or <- function(..., .collapsible = TRUE) {
+or <- function(...) {
   structure(
     list2(...),
     class = "fireproof_op",
-    can_collapse = .collapsible,
     op = "||"
   )
 }
 scalar <- function(x) {
-  structure(list(x), class = "fireproof_op", can_collapse = TRUE, op = NULL)
+  structure(list(x), class = "fireproof_op", op = NULL)
 }
 may_collapse <- function(x, op) {
-  attr(x, "can_collapse") && (attr(x, "op") %||% op) == op
+  (attr(x, "op") %||% op) == op
 }
 #' @export
 format.fireproof_op <- function(x, ...) {
@@ -256,4 +285,14 @@ eval_op <- function(op, table) {
   }
   res <- vapply(op, eval_op, logical(1), table = table)
   if (attr(op, "op") == "||") any(res) else all(res)
+}
+
+is_flow_valid_openapi <- function(flow) {
+  attr(flow, "op") == "||" && flow_depth(flow) <= 3
+}
+flow_depth <- function(flow) {
+  if (length(flow) == 1) {
+    return(1L)
+  }
+  max(vapply(flow, flow_depth, integer(1))) + 1L
 }

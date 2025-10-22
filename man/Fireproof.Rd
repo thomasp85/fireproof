@@ -47,6 +47,7 @@ to the plugin}
 \item \href{#method-Fireproof-add_auth_handler}{\code{Fireproof$add_auth_handler()}}
 \item \href{#method-Fireproof-add_auth}{\code{Fireproof$add_auth()}}
 \item \href{#method-Fireproof-add_handler}{\code{Fireproof$add_handler()}}
+\item \href{#method-Fireproof-flow_to_openapi}{\code{Fireproof$flow_to_openapi()}}
 \item \href{#method-Fireproof-on_attach}{\code{Fireproof$on_attach()}}
 \item \href{#method-Fireproof-clone}{\code{Fireproof$clone()}}
 }
@@ -68,7 +69,8 @@ to the plugin}
 \if{html}{\out{<a id="method-Fireproof-add_auth_handler"></a>}}
 \if{latex}{\out{\hypertarget{method-Fireproof-add_auth_handler}{}}}
 \subsection{Method \code{add_auth_handler()}}{
-Add a new authentication handler
+Add a new authentication handler. It invisibly returns the
+parsed flow so it can be used for generating OpenAPI specs with.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Fireproof$add_auth_handler(method, path, flow, scope = NULL)}\if{html}{\out{</div>}}
 }
@@ -133,6 +135,31 @@ an error if called.
 \item{\code{handler}}{ignored}
 
 \item{\code{reject_missing_methods}}{ignored}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Fireproof-flow_to_openapi"></a>}}
+\if{latex}{\out{\hypertarget{method-Fireproof-flow_to_openapi}{}}}
+\subsection{Method \code{flow_to_openapi()}}{
+Turns a parsed flow (as returned by \code{add_auth_handler()})
+into an OpenAPI Security Requirement compliant list. Not all flows can be
+represented by the OpenAPI spec and the method will return \code{NULL} with a
+warning if so. Scope is added to all schemes, even if not applicable, so
+the final OpenAPI doc should be run through \code{prune_openapi()} before
+serving it.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Fireproof$flow_to_openapi(flow, scope)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{flow}}{A parsed flow as returned by \code{add_auth_handler()}}
+
+\item{\code{scope}}{A character vector of scopes required for this particular
+flow}
 }
 \if{html}{\out{</div>}}
 }
