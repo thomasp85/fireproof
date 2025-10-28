@@ -17,6 +17,7 @@ Imports:
     cli,
     curl,
     fiery,
+    firesale,
     jose,
     jsonlite,
     R6,
@@ -26,4 +27,5 @@ Imports:
     sodium,
     urltools
 Suggests:
-    dplyr
+    dplyr,
+    storr
