@@ -8,6 +8,22 @@ This class encapsulates the logic of the
 \href{https://datatracker.ietf.org/doc/html/rfc7617}{Basic authentication scheme}.
 See \code{\link[=auth_basic]{auth_basic()}} for more information.
 }
+\examples{
+# Create an authenticator of dubious quality
+basic <- AuthBasic$new(
+  authenticator = function(user, password) {
+    user == "thomas" && password == "pedersen"
+  },
+  user_info = function(user, setter) {
+    setter(
+      name_given = "Thomas",
+      name_middle = "Lin",
+      name_family = "Pedersen"
+    )
+  }
+)
+
+}
 \section{Super class}{
 \code{\link[fireproof:Auth]{fireproof::Auth}} -> \code{AuthBasic}
 }

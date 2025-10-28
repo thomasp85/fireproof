@@ -59,6 +59,9 @@
 #' fp <- Fireproof$new()
 #' fp$add_auth(basic, "basic_auth")
 #'
+#' # Use it in an endpoint
+#' fp$add_auth_handler("get", "/*", basic_auth)
+#'
 auth_basic <- function(
   authenticator,
   user_info = NULL,
@@ -105,6 +108,21 @@ dplyr_authenticator <- function(
 #' See [auth_basic()] for more information.
 #'
 #' @export
+#'
+#' @examples
+#' # Create an authenticator of dubious quality
+#' basic <- AuthBasic$new(
+#'   authenticator = function(user, password) {
+#'     user == "thomas" && password == "pedersen"
+#'   },
+#'   user_info = function(user, setter) {
+#'     setter(
+#'       name_given = "Thomas",
+#'       name_middle = "Lin",
+#'       name_family = "Pedersen"
+#'     )
+#'   }
+#' )
 #'
 AuthBasic <- R6::R6Class(
   "AuthBasic",

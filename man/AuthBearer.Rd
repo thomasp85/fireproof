@@ -8,6 +8,22 @@ This class encapsulates the logic of the
 \href{https://datatracker.ietf.org/doc/html/rfc6750}{Bearer authentication scheme}.
 See \code{\link[=auth_bearer]{auth_bearer()}} for more information.
 }
+\examples{
+# Create an authenticator of dubious quality
+bearer <- AuthBearer$new(
+  authenticator = function(token) {
+    token == "abcd1234"
+  },
+  user_info = function(user, setter) {
+    setter(
+      name_given = "Thomas",
+      name_middle = "Lin",
+      name_family = "Pedersen"
+    )
+  }
+)
+
+}
 \section{Super class}{
 \code{\link[fireproof:Auth]{fireproof::Auth}} -> \code{AuthBearer}
 }

@@ -73,4 +73,7 @@ basic <- auth_basic(
 fp <- Fireproof$new()
 fp$add_auth(basic, "basic_auth")
 
+# Use it in an endpoint
+fp$add_auth_handler("get", "/*", basic_auth)
+
 }

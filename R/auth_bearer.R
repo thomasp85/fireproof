@@ -53,12 +53,34 @@
 #' string of the url with the `access_token` name. Default to `FALSE` due to
 #' severe security implications but can be turned on if you have very
 #' well-thought-out reasons to do so.
-#' @param token_parser Optional function to parse the token before passing it on
 #' to the `authenticator` function.
 #'
 #' @return An [AuthBearer] R6 object
 #'
 #' @export
+#'
+#' @examples
+#' # Create an authenticator of dubious quality
+#' bearer <- auth_bearer(
+#'   authenticator = function(token) {
+#'     token == "abcd1234"
+#'   },
+#'   user_info = function(user, setter) {
+#'     setter(
+#'       name_given = "Thomas",
+#'       name_middle = "Lin",
+#'       name_family = "Pedersen"
+#'     )
+#'   },
+#'   allow_body_token = FALSE
+#' )
+#'
+#' # Add it to a fireproof plugin
+#' fp <- Fireproof$new()
+#' fp$add_auth(bearer, "bearer_auth")
+#'
+#' # Use it in an endpoint
+#' fp$add_auth_handler("get", "/*", bearer_auth)
 #'
 auth_bearer <- function(
   authenticator,
@@ -66,7 +88,6 @@ auth_bearer <- function(
   realm = "private",
   allow_body_token = TRUE,
   allow_query_token = FALSE,
-  token_parser = identity,
   name = "BearerAuth"
 ) {
   AuthBasic$new(
@@ -87,6 +108,21 @@ auth_bearer <- function(
 #' See [auth_bearer()] for more information.
 #'
 #' @export
+#'
+#' @examples
+#' # Create an authenticator of dubious quality
+#' bearer <- AuthBearer$new(
+#'   authenticator = function(token) {
+#'     token == "abcd1234"
+#'   },
+#'   user_info = function(user, setter) {
+#'     setter(
+#'       name_given = "Thomas",
+#'       name_middle = "Lin",
+#'       name_family = "Pedersen"
+#'     )
+#'   }
+#' )
 #'
 AuthBearer <- R6::R6Class(
   "AuthBearer",

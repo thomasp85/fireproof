@@ -10,7 +10,6 @@ auth_bearer(
   realm = "private",
   allow_body_token = TRUE,
   allow_query_token = FALSE,
-  token_parser = identity,
   name = "BearerAuth"
 )
 }
@@ -45,9 +44,7 @@ header.}
 \item{allow_query_token}{Should it be allowed to pass the token in the query
 string of the url with the \code{access_token} name. Default to \code{FALSE} due to
 severe security implications but can be turned on if you have very
-well-thought-out reasons to do so.}
-
-\item{token_parser}{Optional function to parse the token before passing it on
+well-thought-out reasons to do so.
 to the \code{authenticator} function.}
 
 \item{name}{The name of the authentication}
@@ -80,4 +77,28 @@ data store (\code{response$set_data("auth_scope", ...)}). The scope requirement 
 the exact endpoint will then be tested automatically. Further, the
 authenticator should write any additional user information that gets fetched
 during the validation to relevant fields in the response data
+}
+\examples{
+# Create an authenticator of dubious quality
+bearer <- auth_bearer(
+  authenticator = function(token) {
+    token == "abcd1234"
+  },
+  user_info = function(user, setter) {
+    setter(
+      name_given = "Thomas",
+      name_middle = "Lin",
+      name_family = "Pedersen"
+    )
+  },
+  allow_body_token = FALSE
+)
+
+# Add it to a fireproof plugin
+fp <- Fireproof$new()
+fp$add_auth(bearer, "bearer_auth")
+
+# Use it in an endpoint
+fp$add_auth_handler("get", "/*", bearer_auth)
+
 }
