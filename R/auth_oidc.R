@@ -1,4 +1,3 @@
-
 #' Authentication based on OpenID Connect
 #'
 #' OpenID Connect is an authentication standard build on top of
@@ -181,6 +180,20 @@ AuthOIDC <- R6::R6Class(
       private$SERVICE_NAME = service_name
     }
   ),
+  active = list(
+    #' @field open_api An OpenID compliant security scheme description
+    open_api = function() {
+      list(
+        type = "openIdConnect",
+        openIdConnectUrl = gsub(
+          "(?<!:)/+",
+          "/",
+          paste0(private$SERVICE_URL, "/.well-known/openid-configuration"),
+          perl = TRUE
+        )
+      )
+    }
+  ),
   private = list(
     GRANT_TYPE = "authorization_code",
     SERVICE = list(),
@@ -195,9 +208,10 @@ AuthOIDC <- R6::R6Class(
       if (Sys.time() > private$SERVICE_EXPIRES) {
         service <- curl::curl_fetch_memory(
           gsub(
-            "/+",
+            "(?<!:)/+",
             "/",
-            paste0(private$SERVICE_URL, "/.well-known/openid-configuration")
+            paste0(private$SERVICE_URL, "/.well-known/openid-configuration"),
+            perl = TRUE
           )
         )
         headers <- curl::parse_headers(service$headers)
