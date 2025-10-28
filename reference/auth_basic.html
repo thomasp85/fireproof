@@ -74,25 +74,24 @@ https/ssl to avoid username and passwords being snooped from the request.</p>
 
 
 <dl><dt id="arg-authenticator">authenticator<a class="anchor" aria-label="anchor" href="#arg-authenticator"></a></dt>
-<dd><p>A function that takes a username, password, realm,
-request, and response and returns <code>TRUE</code> if the pair is valid, and <code>FALSE</code>
-otherwise. If the function returns a character vector it is considered to be
-authenticated and the return value will be understood as scopes the user is
-granted.</p></dd>
+<dd><p>A function that will be called with the arguments
+<code>username</code>, <code>password</code>, <code>realm</code>, <code>request</code>, and <code>response</code> and returns <code>TRUE</code>
+if the user is valid, and <code>FALSE</code> otherwise. If the function returns a
+character vector it is considered to be authenticated and the return value
+will be understood as scopes the user is granted.</p></dd>
 
 
 <dt id="arg-user-info">user_info<a class="anchor" aria-label="anchor" href="#arg-user-info"></a></dt>
 <dd><p>A function to extract user information from the
-username. It takes two arguments: <code>user</code> and <code>setter</code>,
+username. It is called with two arguments: <code>user</code> and <code>setter</code>,
 the first being the username used for the successful authentication, the
 second being a function that must be called in the end with the relevant
 information. The <code>setter</code> function takes the following arguments:
-<code>id</code> (the identifier of the user), <code>display_name</code> (the name the user has
-chosen as public name), <code>name_given</code> (the users real given name),
-<code>name_middle</code> (the users middle name), <code>name_family</code> (the users family
-name), <code>emails</code> (a vector of emails, potentially named with type, e.g.
-"work", "home" etc), <code>photos</code> (a vector of urls for profile photos),
-and <code>...</code> with additional named fields to add.</p></dd>
+<code>display_name</code> (the name the user has chosen as public name), <code>name_given</code>
+(the users real given name), <code>name_middle</code> (the users middle name),
+<code>name_family</code> (the users family name), <code>emails</code> (a vector of emails,
+potentially named with type, e.g. "work", "home" etc), <code>photos</code> (a vector of
+urls for profile photos), and <code>...</code> with additional named fields to add.</p></dd>
 
 
 <dt id="arg-realm">realm<a class="anchor" aria-label="anchor" href="#arg-realm"></a></dt>
@@ -119,6 +118,10 @@ testing of the passwords in a sensible and responsible way. See
 written to the <code>username</code> data slot in the request</p>
     </div>
 
+    <div id="ref-examples">
+    <h2>Examples</h2>
+
+    </div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top"><h2 data-toc-skip>Contents</h2>

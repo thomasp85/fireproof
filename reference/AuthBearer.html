@@ -98,16 +98,16 @@ See <code><a href="auth_bearer.html">auth_bearer()</a></code> for more informati
 <div class="section">
 <h4 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>authenticator</code></dt>
-<dd><p>A function that takes a token, realm, request, and
-response and returns <code>TRUE</code> if the token is valid, and <code>FALSE</code>
-otherwise. If the function returns a character vector it is considered to be
-authenticated and the return value will be understood as scopes the user is
-granted.</p></dd>
+<dd><p>A function that will be called with the arguments
+<code>token</code>, <code>realm</code>, <code>request</code>, and <code>response</code> and returns <code>TRUE</code> if the token
+is valid, and <code>FALSE</code> otherwise. If the function returns a character vector
+it is considered to be authenticated and the return value will be understood
+as scopes the user is granted.</p></dd>
 
 
 <dt><code>user_info</code></dt>
 <dd><p>A function to extract user information from the
-username. It takes two arguments: <code>token</code> and <code>setter</code>,
+username. It will be called with two arguments: <code>token</code> and <code>setter</code>,
 the first being the token used for the successful authentication, the
 second being a function that must be called in the end with the relevant
 information. The <code>setter</code> function takes the following arguments:

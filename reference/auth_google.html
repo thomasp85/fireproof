@@ -113,9 +113,9 @@ add information about the user not present in the JWT token. Setting this to
 potentially provide richer information about the user.</p></dd>
 
     <dt><code>validate</code></dt>
-<dd><p>Function to validate the user once logged in. It must
-have a single argument <code>info</code>, which gets the information of the user as
-provided by the <code>user_info</code> function in the. By default it returns <code>TRUE</code>
+<dd><p>Function to validate the user once logged in. It will be
+called with a single argument <code>info</code>, which gets the information of the user
+as provided by the <code>user_info</code> function in the. By default it returns <code>TRUE</code>
 on everything meaning that anyone who can log in with the provider will
 be accepted, but you can provide a different function to e.g. restrict
 access to certain user names etc.</p></dd>
@@ -129,7 +129,7 @@ it here.</p></dd>
 
     <dt><code>on_auth</code></dt>
 <dd><p>A function which will handle the result of a successful
-authorization. It must have four arguments: <code>request</code>, <code>response</code>,
+authorization. It will be called with four arguments: <code>request</code>, <code>response</code>,
 <code>session_state</code>, and <code>server</code>. The first contains the current request
 being responded to, the second is the response being send back, the third
 is a list recording the state of the original request which initiated the

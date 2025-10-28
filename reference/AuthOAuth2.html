@@ -143,9 +143,9 @@ grant you during authorization</p></dd>
 
 
 <dt><code>validate</code></dt>
-<dd><p>Function to validate the user once logged in. It must
-have a single argument <code>info</code>, which gets the information of the user as
-provided by the <code>user_info</code> function in the. By default it returns <code>TRUE</code>
+<dd><p>Function to validate the user once logged in. It will be
+called with a single argument <code>info</code>, which gets the information of the user
+as provided by the <code>user_info</code> function in the. By default it returns <code>TRUE</code>
 on everything meaning that anyone who can log in with the provider will
 be accepted, but you can provide a different function to e.g. restrict
 access to certain user names etc.</p></dd>
@@ -161,7 +161,7 @@ it here.</p></dd>
 
 <dt><code>on_auth</code></dt>
 <dd><p>A function which will handle the result of a successful
-authorization. It must have four arguments: <code>request</code>, <code>response</code>,
+authorization. It will be called with four arguments: <code>request</code>, <code>response</code>,
 <code>session_state</code>, and <code>server</code>. The first contains the current request
 being responded to, the second is the response being send back, the third
 is a list recording the state of the original request which initiated the
@@ -173,10 +173,10 @@ the response.</p></dd>
 
 <dt><code>user_info</code></dt>
 <dd><p>A function to extract user information from the
-authorization provider. It takes two arguments: <code>token_info</code> and <code>setter</code>,
-the first being the token information returned from the provider as a
-list (notably with a <code>token</code> field for the actual token), the second
-being a function that must be called in the end with the relevant
+authorization provider. It will be called with two arguments: <code>token_info</code>
+and <code>setter</code>, the first being the token information returned from the
+provider as a list (notably with a <code>token</code> field for the actual token), the
+second being a function that must be called in the end with the relevant
 information. The <code>setter</code> function takes the following arguments:
 <code>provider</code> (the name of the oauth2 provider), <code>id</code> (the identifier of the
 user), <code>display_name</code> (the name the user has chosen as public name),
@@ -184,7 +184,7 @@ user), <code>display_name</code> (the name the user has chosen as public name),
 name), <code>name_family</code> (the users family name), <code>emails</code> (a vector of
 emails, potentially named with type, e.g. "work", "home" etc), <code>photos</code>
 (a vector of urls for profile photos), and <code>...</code> with additional named
-fields to add.</p></dd>
+fields to add</p></dd>
 
 
 <dt><code>service_params</code></dt>

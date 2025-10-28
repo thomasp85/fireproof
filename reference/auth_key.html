@@ -76,17 +76,17 @@ easily be extracted from the request by man-in-the-middle attack.</p>
 
 <dt id="arg-secret">secret<a class="anchor" aria-label="anchor" href="#arg-secret"></a></dt>
 <dd><p>The secret to check for. Either a single string with the secret
-or a function that takes the key, the request and the response and returns
-<code>TRUE</code> if its a valid secret (useful if you have multiple or rotating
-secrets). If the function returns a character vector it is considered to be
-authenticated and the return value will be understood as scopes the user is
-granted. Make sure never to store secrets in
-plain text and avoid checking them into version control.</p></dd>
+or a function that will be called with the arguments <code>key</code>, <code>request</code>, and
+<code>response</code> and returns <code>TRUE</code> if its a valid secret (useful if you have
+multiple or rotating secrets). If the function returns a character vector it
+is considered to be authenticated and the return value will be understood as
+scopes the user is granted. Make sure never to store secrets in plain text
+and avoid checking them into version control.</p></dd>
 
 
 <dt id="arg-user-info">user_info<a class="anchor" aria-label="anchor" href="#arg-user-info"></a></dt>
 <dd><p>A function to extract user information from the
-username. It takes two arguments: <code>key</code> and <code>setter</code>,
+username. It will be called with two arguments: <code>key</code> and <code>setter</code>,
 the first being the key used for the successful authentication, the
 second being a function that must be called in the end with the relevant
 information. The <code>setter</code> function takes the following arguments:
