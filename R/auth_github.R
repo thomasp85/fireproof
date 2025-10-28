@@ -45,7 +45,6 @@ auth_github <- function(
         .raw = info
       )
     },
-    service_params = service_params,
     ...,
     name = name
   )
