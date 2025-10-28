@@ -43,8 +43,21 @@
 #' @examples
 #' # Create an authenticator of dubious quality
 #' basic <- auth_basic(
-#'   authenticator = function(user)
+#'   authenticator = function(user, password) {
+#'     user == "thomas" && password == "pedersen"
+#'   },
+#'   user_info = function(user, setter) {
+#'     setter(
+#'       name_given = "Thomas",
+#'       name_middle = "Lin",
+#'       name_family = "Pedersen"
+#'     )
+#'   }
 #' )
+#'
+#' # Add it to a fireproof plugin
+#' fp <- Fireproof$new()
+#' fp$add_auth(basic, "basic_auth")
 #'
 auth_basic <- function(
   authenticator,
