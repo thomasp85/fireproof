@@ -27,6 +27,9 @@ this and will work transparently with fireproof."><!-- mathjax --><script src="h
       <ul class="nav navbar-nav"><li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li>
+  <a href="../news/index.html">Changelog</a>
+</li>
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://github.com/thomasp85/fireproof/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
@@ -87,6 +90,7 @@ this and will work transparently with fireproof.</p>
 <li><p><a href="#method-Auth-check_request"><code>Auth$check_request()</code></a></p></li>
 <li><p><a href="#method-Auth-reject_response"><code>Auth$reject_response()</code></a></p></li>
 <li><p><a href="#method-Auth-forbid_user"><code>Auth$forbid_user()</code></a></p></li>
+<li><p><a href="#method-Auth-register_handler"><code>Auth$register_handler()</code></a></p></li>
 <li><p><a href="#method-Auth-clone"><code>Auth$clone()</code></a></p></li>
 </ul></div><p></p><hr><a id="method-Auth-new"></a><div class="section">
 <h3 id="method-new-">Method <code>new()</code><a class="anchor" aria-label="anchor" href="#method-new-"></a></h3>
@@ -110,7 +114,7 @@ this and will work transparently with fireproof.</p>
 <code>TRUE</code> if it is valid and <code>FALSE</code> if not. The base class simply returns
 <code>TRUE</code> for all requests</p><div class="section">
 <h4 id="usage-1">Usage<a class="anchor" aria-label="anchor" href="#usage-1"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Auth</span><span class="op">$</span><span class="fu">check_request</span><span class="op">(</span><span class="va">request</span>, <span class="va">response</span>, <span class="va">keys</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Auth</span><span class="op">$</span><span class="fu">check_request</span><span class="op">(</span><span class="va">request</span>, <span class="va">response</span>, <span class="va">keys</span>, <span class="va">...</span>, <span class="va">.session</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
@@ -133,6 +137,10 @@ object</p></dd>
 <dd><p>Ignored</p></dd>
 
 
+<dt><code>.session</code></dt>
+<dd><p>The session storage for the current session</p></dd>
+
+
 </dl><p></p></div>
 </div>
 
@@ -143,7 +151,7 @@ to get validated by any instance in the flow. All failing instances will
 have this method called one by one so be mindful if you are overwriting
 information set by another instance</p><div class="section">
 <h4 id="usage-2">Usage<a class="anchor" aria-label="anchor" href="#usage-2"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Auth</span><span class="op">$</span><span class="fu">reject_response</span><span class="op">(</span><span class="va">response</span>, <span class="va">scope</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Auth</span><span class="op">$</span><span class="fu">reject_response</span><span class="op">(</span><span class="va">response</span>, <span class="va">scope</span>, <span class="va">...</span>, <span class="va">.session</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
@@ -154,6 +162,14 @@ information set by another instance</p><div class="section">
 
 <dt><code>scope</code></dt>
 <dd><p>The scope of the endpoint</p></dd>
+
+
+<dt><code>...</code></dt>
+<dd><p>Ignored</p></dd>
+
+
+<dt><code>.session</code></dt>
+<dd><p>The session storage for the current session</p></dd>
 
 
 </dl><p></p></div>
@@ -167,7 +183,7 @@ instances will have this method called one by one if permissions are
 insufficient so be mindful if you are overwriting information set by
 another instance</p><div class="section">
 <h4 id="usage-3">Usage<a class="anchor" aria-label="anchor" href="#usage-3"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Auth</span><span class="op">$</span><span class="fu">forbid_user</span><span class="op">(</span><span class="va">response</span>, <span class="va">scope</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Auth</span><span class="op">$</span><span class="fu">forbid_user</span><span class="op">(</span><span class="va">response</span>, <span class="va">scope</span>, <span class="va">...</span>, <span class="va">.session</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
@@ -180,18 +196,44 @@ another instance</p><div class="section">
 <dd><p>The scope of the endpoint</p></dd>
 
 
+<dt><code>...</code></dt>
+<dd><p>Ignored</p></dd>
+
+
+<dt><code>.session</code></dt>
+<dd><p>The session storage for the current session</p></dd>
+
+
+</dl><p></p></div>
+</div>
+
+</div><p></p><hr><a id="method-Auth-register_handler"></a><div class="section">
+<h3 id="method-register-handler-">Method <code>register_handler()</code><a class="anchor" aria-label="anchor" href="#method-register-handler-"></a></h3>
+<p>Hook for registering endpoint handlers needed for this
+authentication method</p><div class="section">
+<h4 id="usage-4">Usage<a class="anchor" aria-label="anchor" href="#usage-4"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Auth</span><span class="op">$</span><span class="fu">register_handler</span><span class="op">(</span><span class="va">add_handler</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-4">Arguments<a class="anchor" aria-label="anchor" href="#arguments-4"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>add_handler</code></dt>
+<dd><p>The <code>add_handler</code> method from <a href="Fireproof.html">Fireproof</a> to be called
+for adding additional handlers</p></dd>
+
+
 </dl><p></p></div>
 </div>
 
 </div><p></p><hr><a id="method-Auth-clone"></a><div class="section">
 <h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
 <p>The objects of this class are cloneable with this method.</p><div class="section">
-<h4 id="usage-4">Usage<a class="anchor" aria-label="anchor" href="#usage-4"></a></h4>
+<h4 id="usage-5">Usage<a class="anchor" aria-label="anchor" href="#usage-5"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Auth</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-4">Arguments<a class="anchor" aria-label="anchor" href="#arguments-4"></a></h4>
+<h4 id="arguments-5">Arguments<a class="anchor" aria-label="anchor" href="#arguments-5"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>deep</code></dt>
 <dd><p>Whether to make a deep clone.</p></dd>
 

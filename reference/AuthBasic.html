@@ -27,6 +27,9 @@ See auth_basic() for more information."><!-- mathjax --><script src="https://cdn
       <ul class="nav navbar-nav"><li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li>
+  <a href="../news/index.html">Changelog</a>
+</li>
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://github.com/thomasp85/fireproof/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
@@ -77,11 +80,12 @@ See <code><a href="auth_basic.html">auth_basic()</a></code> for more information
 <li><p><a href="#method-AuthBasic-reject_response"><code>AuthBasic$reject_response()</code></a></p></li>
 <li><p><a href="#method-AuthBasic-clone"><code>AuthBasic$clone()</code></a></p></li>
 </ul></div><p><details open><summary>Inherited methods</summary><ul><li><span class="pkg-link" data-pkg="fireproof" data-topic="Auth" data-id="forbid_user"><a href="Auth.html#method-forbid_user"><code>fireproof::Auth$forbid_user()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="fireproof" data-topic="Auth" data-id="register_handler"><a href="Auth.html#method-register_handler"><code>fireproof::Auth$register_handler()</code></a></span></li>
 </ul></details></p><hr><a id="method-AuthBasic-new"></a><div class="section">
 <h3 id="method-new-">Method <code>new()</code><a class="anchor" aria-label="anchor" href="#method-new-"></a></h3>
 <p>Constructor for the class</p><div class="section">
 <h4 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va"><a href="../reference/AuthBasic.html">AuthBasic</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="va">authenticator</span>, realm <span class="op">=</span> <span class="st">"private"</span>, name <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va"><a href="../reference/AuthBasic.html">AuthBasic</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="va">authenticator</span>, user_info <span class="op">=</span> <span class="cn">NULL</span>, realm <span class="op">=</span> <span class="st">"private"</span>, name <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
@@ -89,10 +93,23 @@ See <code><a href="auth_basic.html">auth_basic()</a></code> for more information
 <p></p><div class="arguments"><dl><dt><code>authenticator</code></dt>
 <dd><p>A function that takes a username, password, realm,
 request, and response and returns <code>TRUE</code> if the pair is valid, and <code>FALSE</code>
-otherwise. If the function sets a character vector of scopes for the user in
-the <code>auth_scope</code> field of the response data
-(<code>response$set_data("auth_scope", ...)</code>) then it will be tested against the
-scopes needed for the specific endpoint</p></dd>
+otherwise. If the function returns a character vector it is considered to be
+authenticated and the return value will be understood as scopes the user is
+granted.</p></dd>
+
+
+<dt><code>user_info</code></dt>
+<dd><p>A function to extract user information from the
+username. It takes two arguments: <code>user</code> and <code>setter</code>,
+the first being the username used for the successful authentication, the
+second being a function that must be called in the end with the relevant
+information. The <code>setter</code> function takes the following arguments:
+<code>id</code> (the identifier of the user), <code>display_name</code> (the name the user has
+chosen as public name), <code>name_given</code> (the users real given name),
+<code>name_middle</code> (the users middle name), <code>name_family</code> (the users family
+name), <code>emails</code> (a vector of emails, potentially named with type, e.g.
+"work", "home" etc), <code>photos</code> (a vector of urls for profile photos),
+and <code>...</code> with additional named fields to add.</p></dd>
 
 
 <dt><code>realm</code></dt>
@@ -115,7 +132,7 @@ credentials required, though most often these days it is kept from the user.</p>
 the <code>Authorization</code> header, splits it into username and password and then
 calls the authenticator function provided at construction.</p><div class="section">
 <h4 id="usage-1">Usage<a class="anchor" aria-label="anchor" href="#usage-1"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">AuthBasic</span><span class="op">$</span><span class="fu">check_request</span><span class="op">(</span><span class="va">request</span>, <span class="va">response</span>, <span class="va">keys</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">AuthBasic</span><span class="op">$</span><span class="fu">check_request</span><span class="op">(</span><span class="va">request</span>, <span class="va">response</span>, <span class="va">keys</span>, <span class="va">...</span>, <span class="va">.session</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
@@ -138,6 +155,19 @@ object</p></dd>
 <dd><p>Ignored</p></dd>
 
 
+<dt><code>.session</code></dt>
+<dd><p>The session storage for the current session</p></dd>
+
+
+<dt><code>server</code></dt>
+<dd><p>The fiery server handling the request</p></dd>
+
+
+<dt><code>arg_list</code></dt>
+<dd><p>A list of additional arguments extracted be the
+<code>before_request</code> handlers (will be used to access the session data store)</p></dd>
+
+
 </dl><p></p></div>
 </div>
 
@@ -147,7 +177,7 @@ object</p></dd>
 and sets the <code>WWW-Authenticate</code> header to
 <code>Basic realm="&lt;realm&gt;", charset=UTF-8</code></p><div class="section">
 <h4 id="usage-2">Usage<a class="anchor" aria-label="anchor" href="#usage-2"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">AuthBasic</span><span class="op">$</span><span class="fu">reject_response</span><span class="op">(</span><span class="va">response</span>, <span class="va">scope</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">AuthBasic</span><span class="op">$</span><span class="fu">reject_response</span><span class="op">(</span><span class="va">response</span>, <span class="va">scope</span>, <span class="va">...</span>, <span class="va">.session</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
@@ -158,6 +188,14 @@ and sets the <code>WWW-Authenticate</code> header to
 
 <dt><code>scope</code></dt>
 <dd><p>The scope of the endpoint</p></dd>
+
+
+<dt><code>...</code></dt>
+<dd><p>Ignored</p></dd>
+
+
+<dt><code>.session</code></dt>
+<dd><p>The session storage for the current session</p></dd>
 
 
 </dl><p></p></div>
