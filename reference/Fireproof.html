@@ -320,17 +320,15 @@ as the first route to it.</p><div class="section">
 <span class="r-in"><span>  <span class="va">google_auth</span> <span class="op">||</span> <span class="op">(</span><span class="va">basic_auth</span> <span class="op">&amp;&amp;</span> <span class="va">key_auth</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># requireNamespace("fiery", quietly = TRUE) &amp;&amp; requireNamespace("firesale", quietly = TRUE)</span></span></span>
 <span class="r-in"><span><span class="co"># Add plugin to fiery app</span></span></span>
 <span class="r-in"><span><span class="va">app</span> <span class="op">&lt;-</span> <span class="fu">fiery</span><span class="fu">::</span><span class="va"><a href="https://fiery.data-imaginist.com/reference/Fire.html" class="external-link">Fire</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># First add the firesale plugin as it is required</span></span></span>
-<span class="r-in"><span><span class="va">fs</span> <span class="op">&lt;-</span> <span class="fu">firesale</span><span class="fu">::</span><span class="va">FireSale</span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="fu">storr</span><span class="fu">::</span><span class="fu">driver_environment</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/environment.html" class="external-link">new.env</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">fs</span> <span class="op">&lt;-</span> <span class="fu">firesale</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/firesale/man/FireSale.html" class="external-link">FireSale</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="fu">storr</span><span class="fu">::</span><span class="fu"><a href="https://richfitz.github.io/storr/reference/storr_environment.html" class="external-link">driver_environment</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/environment.html" class="external-link">new.env</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">app</span><span class="op">$</span><span class="kw">attach</span><span class="op">(</span><span class="va">fs</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Then add the fireproof plugin</span></span></span>
 <span class="r-in"><span><span class="va">app</span><span class="op">$</span><span class="kw">attach</span><span class="op">(</span><span class="va">fp</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span></span></span>
 </code></pre></div>
     </div>
   </div>
