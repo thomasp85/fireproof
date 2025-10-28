@@ -120,7 +120,29 @@ written to the <code>username</code> data slot in the request</p>
 
     <div id="ref-examples">
     <h2>Examples</h2>
-
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Create an authenticator of dubious quality</span></span></span>
+<span class="r-in"><span><span class="va">basic</span> <span class="op">&lt;-</span> <span class="fu">auth_basic</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  authenticator <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">user</span>, <span class="va">password</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>    <span class="va">user</span> <span class="op">==</span> <span class="st">"thomas"</span> <span class="op">&amp;&amp;</span> <span class="va">password</span> <span class="op">==</span> <span class="st">"pedersen"</span></span></span>
+<span class="r-in"><span>  <span class="op">}</span>,</span></span>
+<span class="r-in"><span>  user_info <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">user</span>, <span class="va">setter</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>    <span class="fu">setter</span><span class="op">(</span></span></span>
+<span class="r-in"><span>      name_given <span class="op">=</span> <span class="st">"Thomas"</span>,</span></span>
+<span class="r-in"><span>      name_middle <span class="op">=</span> <span class="st">"Lin"</span>,</span></span>
+<span class="r-in"><span>      name_family <span class="op">=</span> <span class="st">"Pedersen"</span></span></span>
+<span class="r-in"><span>    <span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="op">}</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Add it to a fireproof plugin</span></span></span>
+<span class="r-in"><span><span class="va">fp</span> <span class="op">&lt;-</span> <span class="va"><a href="Fireproof.html">Fireproof</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">fp</span><span class="op">$</span><span class="fu">add_auth</span><span class="op">(</span><span class="va">basic</span>, <span class="st">"basic_auth"</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in auth$register_handler:</span> object of type 'closure' is not subsettable</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Use it in an endpoint</span></span></span>
+<span class="r-in"><span><span class="va">fp</span><span class="op">$</span><span class="fu">add_auth_handler</span><span class="op">(</span><span class="st">"get"</span>, <span class="st">"/*"</span>, <span class="va">basic_auth</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
     </div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
