@@ -40,6 +40,20 @@
 #'
 #' @export
 #'
+#' @examples
+#' # Create an authenticator of dubious quality
+#' key <- auth_key(
+#'   key = "my-key-location",
+#'   secret = "SHHH!!DONT_TELL_ANYONE"
+#' )
+#'
+#' # Add it to a fireproof plugin
+#' fp <- Fireproof$new()
+#' fp$add_auth(key, "key_auth")
+#'
+#' # Use it in an endpoint
+#' fp$add_auth_handler("get", "/*", key_auth)
+#'
 auth_key <- function(
   key,
   secret,
@@ -63,6 +77,13 @@ auth_key <- function(
 #' [auth_key()] for more information
 #'
 #' @export
+#'
+#' @examples
+#' # Create an authenticator of dubious quality
+#' key <- auth_key(
+#'   key = "my-key-location",
+#'   secret = "SHHH!!DONT_TELL_ANYONE"
+#' )
 #'
 AuthKey <- R6::R6Class(
   "AuthKey",

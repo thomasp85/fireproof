@@ -7,6 +7,14 @@
 This class encapsulates the logic of the key based authentication scheme. See
 \code{\link[=auth_key]{auth_key()}} for more information
 }
+\examples{
+# Create an authenticator of dubious quality
+key <- auth_key(
+  key = "my-key-location",
+  secret = "SHHH!!DONT_TELL_ANYONE"
+)
+
+}
 \section{Super class}{
 \code{\link[fireproof:Auth]{fireproof::Auth}} -> \code{AuthKey}
 }

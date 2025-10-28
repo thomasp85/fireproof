@@ -51,3 +51,18 @@ doesn't return a \code{401} response with a \code{WWW-Authenticate} header. Inst
 returns a \code{400} response unless another authenticator has already set the
 response status to something else.
 }
+\examples{
+# Create an authenticator of dubious quality
+key <- auth_key(
+  key = "my-key-location",
+  secret = "SHHH!!DONT_TELL_ANYONE"
+)
+
+# Add it to a fireproof plugin
+fp <- Fireproof$new()
+fp$add_auth(key, "key_auth")
+
+# Use it in an endpoint
+fp$add_auth_handler("get", "/*", key_auth)
+
+}
