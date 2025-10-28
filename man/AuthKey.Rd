@@ -33,6 +33,7 @@ This class encapsulates the logic of the key based authentication scheme. See
 <details open><summary>Inherited methods</summary>
 <ul>
 <li><span class="pkg-link" data-pkg="fireproof" data-topic="Auth" data-id="forbid_user"><a href='../../fireproof/html/Auth.html#method-Auth-forbid_user'><code>fireproof::Auth$forbid_user()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="fireproof" data-topic="Auth" data-id="register_handler"><a href='../../fireproof/html/Auth.html#method-Auth-register_handler'><code>fireproof::Auth$register_handler()</code></a></span></li>
 </ul>
 </details>
 }}
@@ -42,7 +43,7 @@ This class encapsulates the logic of the key based authentication scheme. See
 \subsection{Method \code{new()}}{
 Constructor for the class
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{AuthKey$new(key, secret, cookie = TRUE, name = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{AuthKey$new(key, secret, user_info = NULL, cookie = TRUE, name = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -53,11 +54,22 @@ Constructor for the class
 \item{\code{secret}}{The secret to check for. Either a single string with the secret
 or a function that takes the key, the request and the response and returns
 \code{TRUE} if its a valid secret (useful if you have multiple or rotating
-secrets). If a function, the function can also set the scope of the key in
-the \code{auth_scope} field of the response data
-(\code{response$set_data("auth_scope", ...)}) then it will be tested against the
-scopes needed for the specific endpoint. Make sure never to store secrets in
-plain text and avoid checking them into version control.}
+secrets). If the function returns a character vector it is considered to be
+authenticated and the return value will be understood as scopes the user is
+granted. Make sure never to store secrets in plain text and avoid
+checking them into version control.}
+
+\item{\code{user_info}}{A function to extract user information from the
+username. It takes two arguments: \code{key} and \code{setter},
+the first being the key used for the successful authentication, the
+second being a function that must be called in the end with the relevant
+information. The \code{setter} function takes the following arguments:
+\code{id} (the identifier of the user), \code{display_name} (the name the user has
+chosen as public name), \code{name_given} (the users real given name),
+\code{name_middle} (the users middle name), \code{name_family} (the users family
+name), \code{emails} (a vector of emails, potentially named with type, e.g.
+"work", "home" etc), \code{photos} (a vector of urls for profile photos),
+and \code{...} with additional named fields to add.}
 
 \item{\code{cookie}}{Boolean. Should the secret be transmitted as a cookie. If
 \code{FALSE} it is expected to be transmitted as a header.}
@@ -76,7 +88,7 @@ A function that validates an incoming request, returning
 either the cookie or header based on the provided \code{key} and test it
 against the provided \code{secret}.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{AuthKey$check_request(request, response, keys, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{AuthKey$check_request(request, response, keys, ..., .session)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -91,6 +103,13 @@ object}
 \item{\code{keys}}{A named list of path parameters from the path matching}
 
 \item{\code{...}}{Ignored}
+
+\item{\code{.session}}{The session storage for the current session}
+
+\item{\code{server}}{The fiery server handling the request}
+
+\item{\code{arg_list}}{A list of additional arguments extracted be the
+\code{before_request} handlers (will be used to access the session data store)}
 }
 \if{html}{\out{</div>}}
 }
@@ -104,7 +123,7 @@ if it has not already been set by others. In contrast to the other
 schemes that are proper HTTP schemes, this one doesn't set a
 \code{WWW-Authenticate} header.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{AuthKey$reject_response(response, scope)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{AuthKey$reject_response(response, scope, ..., .session)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -113,6 +132,10 @@ schemes that are proper HTTP schemes, this one doesn't set a
 \item{\code{response}}{The response object}
 
 \item{\code{scope}}{The scope of the endpoint}
+
+\item{\code{...}}{Ignored}
+
+\item{\code{.session}}{The session storage for the current session}
 }
 \if{html}{\out{</div>}}
 }

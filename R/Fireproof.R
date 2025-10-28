@@ -55,30 +55,48 @@ Fireproof <- R6::R6Class(
       super$add_handler(
         method,
         path,
-        handler = function(request, response, keys, ...) {
+        handler = function(request, response, keys, server, arg_list, ...) {
+          private$STORE_NAME <- private$STORE_NAME %||%
+            server$plugins$firesale$arg_name
+          session <- arg_list[[private$STORE_NAME]]$session
+
           pass <- private$eval_auths(
             authenticators,
             request = request,
             response = response,
             keys = keys,
-            ...
+            ...,
+            .session = session
           )
           success <- eval_op(flow, pass)
           if (!success) {
             failed <- names(pass)[!vapply(pass, isTRUE, logical(1))]
             lapply(private$REJECTION[failed], function(fun) {
-              fun(response, scope)
+              fun(response, scope, ..., .session = session)
             })
-            abort_status(response$status)
+            if (response$status >= 400) {
+              abort_status(response$status)
+            }
+            return(response$status < 300)
           }
-          if (
-            !is.null(scope) && !all(scope %in% response$get_data("auth_scope"))
-          ) {
-            succeeded <- names(pass)[vapply(pass, isTRUE, logical(1))]
-            lapply(private$FORBID[succeeded], function(fun) {
-              fun(response, scope)
+          if (!is.null(scope)) {
+            has_sufficient_scope <- lapply(authenticators, function(auth) {
+              all(scope %in% session[[auth]]$scopes)
             })
-            abort_status(response$status)
+            success <- eval_op(
+              flow,
+              set_names(has_sufficient_scope, authenticators)
+            )
+            if (!success) {
+              succeeded <- names(pass)[vapply(pass, isTRUE, logical(1))]
+              lapply(private$FORBID[succeeded], function(fun) {
+                fun(response, scope, ...)
+              })
+              if (response$status >= 400) {
+                abort_status(response$status)
+              }
+              return(response$status < 300)
+            }
           }
           TRUE
         },
@@ -117,6 +135,7 @@ Fireproof <- R6::R6Class(
         forbid <- auth$forbid_user
         auth <- auth$check_request
         name <- name %||% auth$name
+        auth$register_handler(super$add_handler)
       }
       check_string(name)
       private$AUTHS[[name]] <- auth
@@ -194,6 +213,10 @@ Fireproof <- R6::R6Class(
     name = function() {
       "fireproof"
     },
+    #' @field require Required plugins for Fireproof
+    require = function() {
+      "firesale"
+    },
     #' @field auths The name of all the authentication schemes currently added
     #' to the plugin
     auths = function() {
@@ -204,8 +227,16 @@ Fireproof <- R6::R6Class(
     AUTHS = list(),
     REJECTION = list(),
     FORBID = list(),
+    STORE_NAME = NULL,
 
-    eval_auths = function(.authenticators, request, response, keys, ...) {
+    eval_auths = function(
+      .authenticators,
+      request,
+      response,
+      keys,
+      ...,
+      .session = session
+    ) {
       auths <- private$AUTHS[.authenticators]
       missing <- lengths(auths) == 0
       if (any(missing)) {
@@ -215,7 +246,13 @@ Fireproof <- R6::R6Class(
         auths[missing] <- true_fun
       }
       lapply(auths, function(x) {
-        x(request = request, response = response, keys = keys, ...)
+        x(
+          request = request,
+          response = response,
+          keys = keys,
+          ...,
+          .session = session
+        )
       })
     }
   )

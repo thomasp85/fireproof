@@ -24,10 +24,17 @@ See \code{\link[=auth_bearer]{auth_bearer()}} for more information.
 \item \href{#method-AuthBearer-new}{\code{AuthBearer$new()}}
 \item \href{#method-AuthBearer-check_request}{\code{AuthBearer$check_request()}}
 \item \href{#method-AuthBearer-reject_response}{\code{AuthBearer$reject_response()}}
-\item \href{#method-AuthBearer-forbid_user}{\code{AuthBearer$forbid_user()}}
 \item \href{#method-AuthBearer-clone}{\code{AuthBearer$clone()}}
 }
 }
+\if{html}{\out{
+<details open><summary>Inherited methods</summary>
+<ul>
+<li><span class="pkg-link" data-pkg="fireproof" data-topic="Auth" data-id="forbid_user"><a href='../../fireproof/html/Auth.html#method-Auth-forbid_user'><code>fireproof::Auth$forbid_user()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="fireproof" data-topic="Auth" data-id="register_handler"><a href='../../fireproof/html/Auth.html#method-Auth-register_handler'><code>fireproof::Auth$register_handler()</code></a></span></li>
+</ul>
+</details>
+}}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-AuthBearer-new"></a>}}
 \if{latex}{\out{\hypertarget{method-AuthBearer-new}{}}}
@@ -36,6 +43,7 @@ Constructor for the class
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AuthBearer$new(
   authenticator,
+  user_info = NULL,
   realm = "private",
   allow_body_token = TRUE,
   allow_query_token = FALSE,
@@ -48,10 +56,21 @@ Constructor for the class
 \describe{
 \item{\code{authenticator}}{A function that takes a token, realm, request, and
 response and returns \code{TRUE} if the token is valid, and \code{FALSE}
-otherwise. If the function sets a character vector of scopes for the token in
-the \code{auth_scope} field of the response data
-(\code{response$set_data("auth_scope", ...)}) then it will be tested against the
-scopes needed for the specific endpoint}
+otherwise. If the function returns a character vector it is considered to be
+authenticated and the return value will be understood as scopes the user is
+granted.}
+
+\item{\code{user_info}}{A function to extract user information from the
+username. It takes two arguments: \code{token} and \code{setter},
+the first being the token used for the successful authentication, the
+second being a function that must be called in the end with the relevant
+information. The \code{setter} function takes the following arguments:
+\code{id} (the identifier of the user), \code{display_name} (the name the user has
+chosen as public name), \code{name_given} (the users real given name),
+\code{name_middle} (the users middle name), \code{name_family} (the users family
+name), \code{emails} (a vector of emails, potentially named with type, e.g.
+"work", "home" etc), \code{photos} (a vector of urls for profile photos),
+and \code{...} with additional named fields to add.}
 
 \item{\code{realm}}{The realm this authentication corresponds to. Will be returned
 to the client on a failed authentication attempt to inform them of the
@@ -84,7 +103,7 @@ token is present multiple times it will fail with \code{400} is this is not
 allowed. It will store the token in the \code{auth_token} field of the
 response data.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{AuthBearer$check_request(request, response, keys, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{AuthBearer$check_request(request, response, keys, ..., .session)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -99,6 +118,8 @@ object}
 \item{\code{keys}}{A named list of path parameters from the path matching}
 
 \item{\code{...}}{Ignored}
+
+\item{\code{.session}}{The session storage for the current session}
 }
 \if{html}{\out{</div>}}
 }
@@ -113,7 +134,7 @@ any scope is provided by the endpoint it will be appended as
 \verb{, scope="<scope>"} and if the token is present but invalid, it will
 append \verb{, error="invalid_token"}
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{AuthBearer$reject_response(response, scope)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{AuthBearer$reject_response(response, scope, ..., .session)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -122,27 +143,10 @@ append \verb{, error="invalid_token"}
 \item{\code{response}}{The response object}
 
 \item{\code{scope}}{The scope of the endpoint}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-AuthBearer-forbid_user"></a>}}
-\if{latex}{\out{\hypertarget{method-AuthBearer-forbid_user}{}}}
-\subsection{Method \code{forbid_user()}}{
-Upon rejection due to insufficient permission this scheme
-sets the response to \code{403} and sets the \code{WWW-Authenticate} header to
-\verb{Bearer realm="<realm>", scope="<scope>", error="insufficient_scope"}
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{AuthBearer$forbid_user(response, scope)}\if{html}{\out{</div>}}
-}
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{response}}{The response object}
+\item{\code{...}}{Ignored}
 
-\item{\code{scope}}{The scope of the endpoint}
+\item{\code{.session}}{The session storage for the current session}
 }
 \if{html}{\out{</div>}}
 }

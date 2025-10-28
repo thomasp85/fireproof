@@ -15,10 +15,15 @@ BugReports: https://github.com/thomasp85/fireproof/issues
 Imports:
     base64enc,
     cli,
+    curl,
+    fiery,
+    jose,
+    jsonlite,
     R6,
     reqres,
     rlang,
     routr,
-    sodium
+    sodium,
+    urltools
 Suggests:
     dplyr

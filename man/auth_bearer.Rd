@@ -6,21 +6,32 @@
 \usage{
 auth_bearer(
   authenticator,
-  name = "BearerAuth",
+  user_info = NULL,
   realm = "private",
   allow_body_token = TRUE,
-  allow_query_token = FALSE
+  allow_query_token = FALSE,
+  token_parser = identity,
+  name = "BearerAuth"
 )
 }
 \arguments{
 \item{authenticator}{A function that takes a token, realm, request, and
 response and returns \code{TRUE} if the token is valid, and \code{FALSE}
-otherwise. If the function sets a character vector of scopes for the token in
-the \code{auth_scope} field of the response data
-(\code{response$set_data("auth_scope", ...)}) then it will be tested against the
-scopes needed for the specific endpoint}
+otherwise. If the function returns a character vector it is considered to be
+authenticated and the return value will be understood as scopes the user is
+granted.}
 
-\item{name}{The name of the authentication}
+\item{user_info}{A function to extract user information from the
+username. It takes two arguments: \code{token} and \code{setter},
+the first being the token used for the successful authentication, the
+second being a function that must be called in the end with the relevant
+information. The \code{setter} function takes the following arguments:
+\code{id} (the identifier of the user), \code{display_name} (the name the user has
+chosen as public name), \code{name_given} (the users real given name),
+\code{name_middle} (the users middle name), \code{name_family} (the users family
+name), \code{emails} (a vector of emails, potentially named with type, e.g.
+"work", "home" etc), \code{photos} (a vector of urls for profile photos),
+and \code{...} with additional named fields to add.}
 
 \item{realm}{The realm this authentication corresponds to. Will be returned
 to the client on a failed authentication attempt to inform them of the
@@ -35,6 +46,11 @@ header.}
 string of the url with the \code{access_token} name. Default to \code{FALSE} due to
 severe security implications but can be turned on if you have very
 well-thought-out reasons to do so.}
+
+\item{token_parser}{Optional function to parse the token before passing it on
+to the \code{authenticator} function.}
+
+\item{name}{The name of the authentication}
 }
 \value{
 An \link{AuthBearer} R6 object

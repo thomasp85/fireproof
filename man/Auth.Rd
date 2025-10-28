@@ -31,6 +31,7 @@ this and will work transparently with fireproof.
 \item \href{#method-Auth-check_request}{\code{Auth$check_request()}}
 \item \href{#method-Auth-reject_response}{\code{Auth$reject_response()}}
 \item \href{#method-Auth-forbid_user}{\code{Auth$forbid_user()}}
+\item \href{#method-Auth-register_handler}{\code{Auth$register_handler()}}
 \item \href{#method-Auth-clone}{\code{Auth$clone()}}
 }
 }
@@ -59,7 +60,7 @@ A function that validates an incoming request, returning
 \code{TRUE} if it is valid and \code{FALSE} if not. The base class simply returns
 \code{TRUE} for all requests
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Auth$check_request(request, response, keys, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Auth$check_request(request, response, keys, ..., .session)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -74,6 +75,8 @@ object}
 \item{\code{keys}}{A named list of path parameters from the path matching}
 
 \item{\code{...}}{Ignored}
+
+\item{\code{.session}}{The session storage for the current session}
 }
 \if{html}{\out{</div>}}
 }
@@ -87,7 +90,7 @@ to get validated by any instance in the flow. All failing instances will
 have this method called one by one so be mindful if you are overwriting
 information set by another instance
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Auth$reject_response(response, scope)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Auth$reject_response(response, scope, ..., .session)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -96,6 +99,10 @@ information set by another instance
 \item{\code{response}}{The response object}
 
 \item{\code{scope}}{The scope of the endpoint}
+
+\item{\code{...}}{Ignored}
+
+\item{\code{.session}}{The session storage for the current session}
 }
 \if{html}{\out{</div>}}
 }
@@ -110,7 +117,7 @@ instances will have this method called one by one if permissions are
 insufficient so be mindful if you are overwriting information set by
 another instance
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Auth$forbid_user(response, scope)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Auth$forbid_user(response, scope, ..., .session)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -119,6 +126,29 @@ another instance
 \item{\code{response}}{The response object}
 
 \item{\code{scope}}{The scope of the endpoint}
+
+\item{\code{...}}{Ignored}
+
+\item{\code{.session}}{The session storage for the current session}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Auth-register_handler"></a>}}
+\if{latex}{\out{\hypertarget{method-Auth-register_handler}{}}}
+\subsection{Method \code{register_handler()}}{
+Hook for registering endpoint handlers needed for this
+authentication method
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Auth$register_handler(add_handler)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{add_handler}}{The \code{add_handler} method from \link{Fireproof} to be called
+for adding additional handlers}
 }
 \if{html}{\out{</div>}}
 }

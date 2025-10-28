@@ -24,8 +24,9 @@ Auth <- R6::R6Class(
     #' [Response][reqres::Response] object
     #' @param keys A named list of path parameters from the path matching
     #' @param ... Ignored
+    #' @param .session The session storage for the current session
     #'
-    check_request = function(request, response, keys, ...) {
+    check_request = function(request, response, keys, ..., .session) {
       TRUE
     },
     #' @description Action to perform on the response in case the request fails
@@ -34,8 +35,10 @@ Auth <- R6::R6Class(
     #' information set by another instance
     #' @param response The response object
     #' @param scope The scope of the endpoint
-    reject_response = function(response, scope) {
-      response$status <- 400L
+    #' @param ... Ignored
+    #' @param .session The session storage for the current session
+    reject_response = function(response, scope, ..., .session) {
+      response$status_with_text(400L)
     },
     #' @description Action to perform on the response in case the request does
     #' not have the necessary permissions for the endpoint. All succeeding
@@ -44,8 +47,17 @@ Auth <- R6::R6Class(
     #' another instance
     #' @param response The response object
     #' @param scope The scope of the endpoint
-    forbid_user = function(response, scope) {
-      response$status <- 403L
+    #' @param ... Ignored
+    #' @param .session The session storage for the current session
+    forbid_user = function(response, scope, ..., .session) {
+      response$status_with_text(403L)
+    },
+    #' @description Hook for registering endpoint handlers needed for this
+    #' authentication method
+    #' @param add_handler The `add_handler` method from [Fireproof] to be called
+    #' for adding additional handlers
+    register_handler = function(add_handler) {
+      invisible(NULL)
     }
   ),
   active = list(
@@ -65,4 +77,5 @@ Auth <- R6::R6Class(
 
 #' @rdname Auth
 #' @param x An object
+#' @export
 is_auth <- function(x) inherits(x, "Auth")

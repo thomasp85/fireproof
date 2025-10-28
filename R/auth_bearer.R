@@ -27,11 +27,21 @@
 #'
 #' @param authenticator A function that takes a token, realm, request, and
 #' response and returns `TRUE` if the token is valid, and `FALSE`
-#' otherwise. If the function sets a character vector of scopes for the token in
-#' the `auth_scope` field of the response data
-#' (`response$set_data("auth_scope", ...)`) then it will be tested against the
-#' scopes needed for the specific endpoint
+#' otherwise. If the function returns a character vector it is considered to be
+#' authenticated and the return value will be understood as scopes the user is
+#' granted.
 #' @param name The name of the authentication
+#' @param user_info A function to extract user information from the
+#' username. It takes two arguments: `token` and `setter`,
+#' the first being the token used for the successful authentication, the
+#' second being a function that must be called in the end with the relevant
+#' information. The `setter` function takes the following arguments:
+#' `id` (the identifier of the user), `display_name` (the name the user has
+#' chosen as public name), `name_given` (the users real given name),
+#' `name_middle` (the users middle name), `name_family` (the users family
+#' name), `emails` (a vector of emails, potentially named with type, e.g.
+#' "work", "home" etc), `photos` (a vector of urls for profile photos),
+#' and `...` with additional named fields to add.
 #' @param realm The realm this authentication corresponds to. Will be returned
 #' to the client on a failed authentication attempt to inform them of the
 #' credentials required, though most often these days it is kept from the user.
@@ -43,6 +53,8 @@
 #' string of the url with the `access_token` name. Default to `FALSE` due to
 #' severe security implications but can be turned on if you have very
 #' well-thought-out reasons to do so.
+#' @param token_parser Optional function to parse the token before passing it on
+#' to the `authenticator` function.
 #'
 #' @return An [AuthBearer] R6 object
 #'
@@ -50,13 +62,16 @@
 #'
 auth_bearer <- function(
   authenticator,
-  name = "BearerAuth",
+  user_info = NULL,
   realm = "private",
   allow_body_token = TRUE,
-  allow_query_token = FALSE
+  allow_query_token = FALSE,
+  token_parser = identity,
+  name = "BearerAuth"
 ) {
   AuthBasic$new(
     authenticator = authenticator,
+    user_info = user_info,
     realm = realm,
     allow_body_token = allow_body_token,
     allow_query_token = allow_query_token,
@@ -80,10 +95,20 @@ AuthBearer <- R6::R6Class(
     #' @description Constructor for the class
     #' @param authenticator A function that takes a token, realm, request, and
     #' response and returns `TRUE` if the token is valid, and `FALSE`
-    #' otherwise. If the function sets a character vector of scopes for the token in
-    #' the `auth_scope` field of the response data
-    #' (`response$set_data("auth_scope", ...)`) then it will be tested against the
-    #' scopes needed for the specific endpoint
+    #' otherwise. If the function returns a character vector it is considered to be
+    #' authenticated and the return value will be understood as scopes the user is
+    #' granted.
+    #' @param user_info A function to extract user information from the
+    #' username. It takes two arguments: `token` and `setter`,
+    #' the first being the token used for the successful authentication, the
+    #' second being a function that must be called in the end with the relevant
+    #' information. The `setter` function takes the following arguments:
+    #' `id` (the identifier of the user), `display_name` (the name the user has
+    #' chosen as public name), `name_given` (the users real given name),
+    #' `name_middle` (the users middle name), `name_family` (the users family
+    #' name), `emails` (a vector of emails, potentially named with type, e.g.
+    #' "work", "home" etc), `photos` (a vector of urls for profile photos),
+    #' and `...` with additional named fields to add.
     #' @param realm The realm this authentication corresponds to. Will be returned
     #' to the client on a failed authentication attempt to inform them of the
     #' credentials required, though most often these days it is kept from the user.
@@ -98,6 +123,7 @@ AuthBearer <- R6::R6Class(
     #' @param name The name of the authentication
     initialize = function(
       authenticator,
+      user_info = NULL,
       realm = "private",
       allow_body_token = TRUE,
       allow_query_token = FALSE,
@@ -107,7 +133,10 @@ AuthBearer <- R6::R6Class(
         name = name
       )
       check_function(authenticator)
-      if (length(fn_fmls(authenticator)) != 4 && !"..." %in% fn_fmls_names(authenticator)) {
+      if (
+        length(fn_fmls(authenticator)) != 4 &&
+          !"..." %in% fn_fmls_names(authenticator)
+      ) {
         cli::cli_abort(
           "{.arg authenticator} must be a function with four arguments: `token`, `realm`, `request`, and `response`"
         )
@@ -115,6 +144,23 @@ AuthBearer <- R6::R6Class(
       private$AUTHENTICATOR <- authenticator
       check_string(realm)
       private$REALM <- realm
+
+      user_info <- user_info %||%
+        function(token, setter) {
+          setter()
+        }
+      check_function(user_info)
+      if (
+        !identical(
+          fn_fmls_names(user_info),
+          c("token", "setter")
+        )
+      ) {
+        cli::cli_abort(
+          "{.arg user_info} must be a function with two arguments: `token` and `setter`"
+        )
+      }
+      private$USER_INFO <- user_info
     },
     #' @description A function that validates an incoming request, returning
     #' `TRUE` if it is valid and `FALSE` if not. It fetches the token from the
@@ -129,55 +175,79 @@ AuthBearer <- R6::R6Class(
     #' [Response][reqres::Response] object
     #' @param keys A named list of path parameters from the path matching
     #' @param ... Ignored
+    #' @param .session The session storage for the current session
     #'
-    check_request = function(request, response, keys, ...) {
-      token <- list()
-      auth_header <- request$headers$authorization
-      if (
-        !is.null(auth_header) &&
-          grepl("^Bearer ", auth_header)
-      ) {
-        token$header <- sub("^Bearer ", "", auth_header)
-      }
-      if (
-        allow_body_token &&
-          request$method %in% c("post", "put", "patch") &&
-          request$is("application/x-www-form-urlencoded")
-      ) {
-        success <- request$parse(
-          "application/x-www-form-urlencoded" = reqres::parse_queryform(),
-          autofail = FALSE
-        )
-        if (success) token$body <- request$body$access_token
-      }
-      if (
-        allow_query_token && grepl("no-store", request$headers$cache_control)
-      ) {
-        token$query <- request$query$access_token
-        if (!is.null(token$query)) {
-          response$set_header("Cache-Control", "private")
+    check_request = function(request, response, keys, ..., .session) {
+      info <- .session[[private$NAME]]
+
+      if (length(info) == 0) {
+        token <- list()
+        auth_header <- request$headers$authorization
+        if (
+          !is.null(auth_header) &&
+            grepl("^Bearer ", auth_header)
+        ) {
+          token$header <- sub("^Bearer ", "", auth_header)
         }
-      }
-      token <- unlist(token)
-      if (length(token) > 1) {
-        response$append_header(
-          "WWW-Authenticate",
-          paste0(
-            'Bearer realm="',
-            private$REALM,
-            '", error="invalid_request"'
+        if (
+          allow_body_token &&
+            request$method %in% c("post", "put", "patch") &&
+            request$is("application/x-www-form-urlencoded")
+        ) {
+          success <- request$parse(
+            "application/x-www-form-urlencoded" = reqres::parse_queryform(),
+            autofail = FALSE
           )
-        )
-        reqres::abort_http_problem(
-          400L,
-          "Clients MUST NOT use more than one method to transmit a bearer token",
-          type = "https://datatracker.ietf.org/doc/html/rfc6750#section-2"
-        )
+          if (success) token$body <- request$body$access_token
+        }
+        if (
+          allow_query_token && grepl("no-store", request$headers$cache_control)
+        ) {
+          token$query <- request$query$access_token
+          if (!is.null(token$query)) {
+            response$set_header("Cache-Control", "private")
+          }
+        }
+        token <- unlist(token)
+        if (length(token) > 1) {
+          reqres::abort_http_problem(
+            400L,
+            "Clients MUST NOT use more than one method to transmit a bearer token",
+            type = "https://datatracker.ietf.org/doc/html/rfc6750#section-2"
+          )
+        }
+        scopes <- private$SCOPES
+        if (length(token) == 1) {
+          authenticated <- private$AUTHENTICATOR(
+            token,
+            private$REALM,
+            request,
+            response
+          )
+          if (is.character(authenticated)) {
+            scopes <- authenticated
+            authenticated <- TRUE
+          }
+        } else {
+          authenticated <- FALSE
+        }
+        if (authenticated) {
+          private$USER_INFO(
+            token = token,
+            setter = bearer_user_info_setter(
+              .session,
+              private$NAME,
+              token,
+              scopes
+            )
+          )
+        } else {
+          .session[[private$NAME]] <- list()
+        }
+        authenticated
+      } else {
+        TRUE
       }
-      response$set_data("auth_token", token)
-      authenticated <- length(token) == 1 &&
-        private$AUTHENTICATOR(token, private$REALM, request, response)
-      authenticated
     },
     #' @description Upon rejection this scheme sets the response status to `401`
     #' and sets the `WWW-Authenticate` header to `Bearer realm="<realm>"`. If
@@ -186,36 +256,31 @@ AuthBearer <- R6::R6Class(
     #' append `, error="invalid_token"`
     #' @param response The response object
     #' @param scope The scope of the endpoint
-    reject_response = function(response, scope) {
-      response$append_header(
-        "WWW-Authenticate",
-        paste0(
-          'Bearer realm="',
-          private$REALM,
-          '"',
-          if (!is.null(scope)) paste0(', scope="', paste0(scope, collapse = " "), '"'),
-          if (!is.null(response$get_data("token"))) paste0(', error="invalid_token"')
-        )
-      )
-      response$status <- 401L
-    },
-    #' @description Upon rejection due to insufficient permission this scheme
-    #' sets the response to `403` and sets the `WWW-Authenticate` header to
-    #' `Bearer realm="<realm>", scope="<scope>", error="insufficient_scope"`
-    #' @param response The response object
-    #' @param scope The scope of the endpoint
-    forbid_user = function(response, scope) {
-      response$append_header(
-        "WWW-Authenticate",
-        paste0(
-          'Bearer realm="',
-          private$REALM,
-          '", scope="',
-          paste0(scope, collapse = " "),
-          '", error="insufficient_scope"'
-        )
-      )
-      response$status <- 403L
+    #' @param ... Ignored
+    #' @param .session The session storage for the current session
+    reject_response = function(response, scope, ..., .session) {
+      if (response$status %in% c(400L, 404L)) {
+        if (!is.null(.session[[private$NAME]])) {
+          .session[[private$NAME]] <- NULL
+          response$status_with_text(403L)
+        } else {
+          response$append_header(
+            "WWW-Authenticate",
+            paste0(
+              'Bearer realm="',
+              private$REALM,
+              '"',
+              if (!is.null(scope)) {
+                paste0(', scope="', paste0(scope, collapse = " "), '"')
+              },
+              if (!is.null(response$get_data("token"))) {
+                paste0(', error="invalid_token"')
+              }
+            )
+          )
+          response$status_with_text(401L)
+        }
+      }
     }
   ),
   active = list(
@@ -229,6 +294,36 @@ AuthBearer <- R6::R6Class(
   ),
   private = list(
     AUTHENTICATOR = NULL,
-    REALM = ""
+    REALM = "",
+    USER_INFO = NULL,
+    TOKEN_PARSER = NULL
   )
 )
+
+bearer_user_info_setter <- function(session, name, token, scopes) {
+  function(
+    id = NULL,
+    display_name = NULL,
+    name_given = NULL,
+    name_middle = NULL,
+    name_family = NULL,
+    emails = character(0),
+    photos = character(0),
+    ...
+  ) {
+    session[[name]] <- list2(
+      id = id,
+      display_name = display_name,
+      name = c(given = name_given, middle = name_middle, family = name_family),
+      emails = emails,
+      photos = photos,
+      scopes = scopes,
+      token = list(
+        access_token = token,
+        token_type = "bearer",
+        scope = scopes
+      ),
+      ...
+    )
+  }
+}

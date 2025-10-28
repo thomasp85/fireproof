@@ -17,11 +17,21 @@
 #'
 #' @param authenticator A function that takes a username, password, realm,
 #' request, and response and returns `TRUE` if the pair is valid, and `FALSE`
-#' otherwise. If the function sets a character vector of scopes for the user in
-#' the `auth_scope` field of the response data
-#' (`response$set_data("auth_scope", ...)`) then it will be tested against the
-#' scopes needed for the specific endpoint
+#' otherwise. If the function returns a character vector it is considered to be
+#' authenticated and the return value will be understood as scopes the user is
+#' granted.
 #' @param name The name of the authentication
+#' @param user_info A function to extract user information from the
+#' username. It takes two arguments: `user` and `setter`,
+#' the first being the username used for the successful authentication, the
+#' second being a function that must be called in the end with the relevant
+#' information. The `setter` function takes the following arguments:
+#' `id` (the identifier of the user), `display_name` (the name the user has
+#' chosen as public name), `name_given` (the users real given name),
+#' `name_middle` (the users middle name), `name_family` (the users family
+#' name), `emails` (a vector of emails, potentially named with type, e.g.
+#' "work", "home" etc), `photos` (a vector of urls for profile photos),
+#' and `...` with additional named fields to add.
 #' @param realm The realm this authentication corresponds to. Will be returned
 #' to the client on a failed authentication attempt to inform them of the
 #' credentials required, though most often these days it is kept from the user.
@@ -33,11 +43,13 @@
 #'
 auth_basic <- function(
   authenticator,
-  name = "BasicAuth",
-  realm = "private"
+  user_info = NULL,
+  realm = "private",
+  name = "BasicAuth"
 ) {
   AuthBasic$new(
     authenticator = authenticator,
+    user_info = user_info,
     realm = realm,
     name = name
   )
@@ -83,16 +95,27 @@ AuthBasic <- R6::R6Class(
     #' @description Constructor for the class
     #' @param authenticator A function that takes a username, password, realm,
     #' request, and response and returns `TRUE` if the pair is valid, and `FALSE`
-    #' otherwise. If the function sets a character vector of scopes for the user in
-    #' the `auth_scope` field of the response data
-    #' (`response$set_data("auth_scope", ...)`) then it will be tested against the
-    #' scopes needed for the specific endpoint
+    #' otherwise. If the function returns a character vector it is considered to be
+    #' authenticated and the return value will be understood as scopes the user is
+    #' granted.
+    #' @param user_info A function to extract user information from the
+    #' username. It takes two arguments: `user` and `setter`,
+    #' the first being the username used for the successful authentication, the
+    #' second being a function that must be called in the end with the relevant
+    #' information. The `setter` function takes the following arguments:
+    #' `id` (the identifier of the user), `display_name` (the name the user has
+    #' chosen as public name), `name_given` (the users real given name),
+    #' `name_middle` (the users middle name), `name_family` (the users family
+    #' name), `emails` (a vector of emails, potentially named with type, e.g.
+    #' "work", "home" etc), `photos` (a vector of urls for profile photos),
+    #' and `...` with additional named fields to add.
     #' @param realm The realm this authentication corresponds to. Will be returned
     #' to the client on a failed authentication attempt to inform them of the
     #' credentials required, though most often these days it is kept from the user.
     #' @param name The name of the authentication
     initialize = function(
       authenticator,
+      user_info = NULL,
       realm = "private",
       name = NULL
     ) {
@@ -100,7 +123,10 @@ AuthBasic <- R6::R6Class(
         name = name
       )
       check_function(authenticator)
-      if (length(fn_fmls(authenticator)) != 5 && !"..." %in% fn_fmls_names(authenticator)) {
+      if (
+        length(fn_fmls(authenticator)) != 5 &&
+          !"..." %in% fn_fmls_names(authenticator)
+      ) {
         cli::cli_abort(
           "{.arg authenticator} must be a function with five arguments: `username`, `password`, `realm`, `request`, and `response`"
         )
@@ -108,6 +134,23 @@ AuthBasic <- R6::R6Class(
       private$AUTHENTICATOR <- authenticator
       check_string(realm)
       private$REALM <- realm
+
+      user_info <- user_info %||%
+        function(user, setter) {
+          setter(id = user)
+        }
+      check_function(user_info)
+      if (
+        !identical(
+          fn_fmls_names(user_info),
+          c("user", "setter")
+        )
+      ) {
+        cli::cli_abort(
+          "{.arg user_info} must be a function with two arguments: `user` and `setter`"
+        )
+      }
+      private$USER_INFO <- user_info
     },
     #' @description A function that validates an incoming request, returning
     #' `TRUE` if it is valid and `FALSE` if not. It decodes the credentials in
@@ -118,12 +161,18 @@ AuthBasic <- R6::R6Class(
     #' @param response The corresponding response to the request as a
     #' [Response][reqres::Response] object
     #' @param keys A named list of path parameters from the path matching
+    #' @param server The fiery server handling the request
+    #' @param arg_list A list of additional arguments extracted be the
+    #' `before_request` handlers (will be used to access the session data store)
     #' @param ... Ignored
+    #' @param .session The session storage for the current session
     #'
-    check_request = function(request, response, keys, ...) {
+    check_request = function(request, response, keys, ..., .session) {
+      info <- .session[[private$NAME]]
+      authenticated <- length(info) != 0
+
       auth <- request$headers$authorization
-      authenticated <- FALSE
-      if (!is.null(auth) && grepl("^Basic ", auth)) {
+      if (!authenticated && !is.null(auth) && grepl("^Basic ", auth)) {
         auth <- sub("^Basic ", "", auth)
         auth <- base64decode(auth)
         auth <- strsplit(auth, ":", fixed = TRUE)[[1]]
@@ -138,6 +187,19 @@ AuthBasic <- R6::R6Class(
           request,
           response
         )
+        scopes <- private$SCOPES
+        if (is.character(authenticated)) {
+          scopes <- authenticated
+          authenticated <- TRUE
+        }
+        if (authenticated) {
+          private$USER_INFO(
+            user = auth[1],
+            setter = basic_user_info_setter(.session, private$NAME, auth[1], scopes)
+          )
+        } else {
+          .session[[private$NAME]] <- list()
+        }
       }
       authenticated
     },
@@ -146,12 +208,21 @@ AuthBasic <- R6::R6Class(
     #' `Basic realm="<realm>", charset=UTF-8`
     #' @param response The response object
     #' @param scope The scope of the endpoint
-    reject_response = function(response, scope) {
-      response$append_header(
-        "WWW-Authenticate",
-        paste0('Basic realm="', private$REALM, '", charset=UTF-8')
-      )
-      response$status <- 401L
+    #' @param ... Ignored
+    #' @param .session The session storage for the current session
+    reject_response = function(response, scope, ..., .session) {
+      if (response$status %in% c(400L, 404L)) {
+        if (!is.null(.session[[private$NAME]])) {
+          .session[[private$NAME]] <- NULL
+          response$status_with_text(403L)
+        } else {
+          response$append_header(
+            "WWW-Authenticate",
+            paste0('Basic realm="', private$REALM, '", charset=UTF-8')
+          )
+          response$status_with_text(401L)
+        }
+      }
     }
   ),
   active = list(
@@ -165,6 +236,29 @@ AuthBasic <- R6::R6Class(
   ),
   private = list(
     AUTHENTICATOR = NULL,
-    REALM = ""
+    REALM = "",
+    USER_INFO = NULL
   )
 )
+
+basic_user_info_setter <- function(session, name, user, scopes) {
+  function(
+    display_name = NULL,
+    name_given = NULL,
+    name_middle = NULL,
+    name_family = NULL,
+    emails = character(0),
+    photos = character(0),
+    ...
+  ) {
+    session[[name]] <- list2(
+      id = user,
+      display_name = display_name,
+      name = c(given = name_given, middle = name_middle, family = name_family),
+      emails = emails,
+      photos = photos,
+      scopes = scopes,
+      ...
+    )
+  }
+}

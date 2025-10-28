@@ -36,6 +36,8 @@ user has permission to the resource.
 \describe{
 \item{\code{name}}{The name of the plugin: \code{"fireproof"}}
 
+\item{\code{require}}{Required plugins for Fireproof}
+
 \item{\code{auths}}{The name of all the authentication schemes currently added
 to the plugin}
 }
