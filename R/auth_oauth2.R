@@ -28,9 +28,9 @@
 #' `"authorization_code"` or `"password"`
 #' @param scopes Optional character vector of scopes to request the user to
 #' grant you during authorization
-#' @param validate Function to validate the user once logged in. It must
-#' have a single argument `info`, which gets the information of the user as
-#' provided by the `user_info` function in the. By default it returns `TRUE`
+#' @param validate Function to validate the user once logged in. It will be
+#' called with a single argument `info`, which gets the information of the user
+#' as provided by the `user_info` function in the. By default it returns `TRUE`
 #' on everything meaning that anyone who can log in with the provider will
 #' be accepted, but you can provide a different function to e.g. restrict
 #' access to certain user names etc.
@@ -40,7 +40,7 @@
 #' doesn't yields the correct result for your server setup you can overwrite
 #' it here.
 #' @param on_auth A function which will handle the result of a successful
-#' authorization. It must have four arguments: `request`, `response`,
+#' authorization. It will be called with four arguments: `request`, `response`,
 #' `session_state`, and `server`. The first contains the current request
 #' being responded to, the second is the response being send back, the third
 #' is a list recording the state of the original request which initiated the
@@ -49,10 +49,10 @@
 #' [replay_request] to internally replay the original request and send back
 #' the response.
 #' @param user_info A function to extract user information from the
-#' authorization provider. It takes two arguments: `token_info` and `setter`,
-#' the first being the token information returned from the provider as a
-#' list (notably with a `token` field for the actual token), the second
-#' being a function that must be called in the end with the relevant
+#' authorization provider. It will be called with two arguments: `token_info`
+#' and `setter`, the first being the token information returned from the
+#' provider as a list (notably with a `token` field for the actual token), the
+#' second being a function that must be called in the end with the relevant
 #' information. The `setter` function takes the following arguments:
 #' `provider` (the name of the oauth2 provider), `id` (the identifier of the
 #' user), `display_name` (the name the user has chosen as public name),
@@ -131,9 +131,9 @@ AuthOAuth2 <- R6::R6Class(
     #' `"authorization_code"` or `"password"`
     #' @param scopes Optional character vector of scopes to request the user to
     #' grant you during authorization
-    #' @param validate Function to validate the user once logged in. It must
-    #' have a single argument `info`, which gets the information of the user as
-    #' provided by the `user_info` function in the. By default it returns `TRUE`
+    #' @param validate Function to validate the user once logged in. It will be
+    #' called with a single argument `info`, which gets the information of the user
+    #' as provided by the `user_info` function in the. By default it returns `TRUE`
     #' on everything meaning that anyone who can log in with the provider will
     #' be accepted, but you can provide a different function to e.g. restrict
     #' access to certain user names etc.
@@ -143,7 +143,7 @@ AuthOAuth2 <- R6::R6Class(
     #' doesn't yields the correct result for your server setup you can overwrite
     #' it here.
     #' @param on_auth A function which will handle the result of a successful
-    #' authorization. It must have four arguments: `request`, `response`,
+    #' authorization. It will be called with four arguments: `request`, `response`,
     #' `session_state`, and `server`. The first contains the current request
     #' being responded to, the second is the response being send back, the third
     #' is a list recording the state of the original request which initiated the
@@ -152,10 +152,10 @@ AuthOAuth2 <- R6::R6Class(
     #' [replay_request] to internally replay the original request and send back
     #' the response.
     #' @param user_info A function to extract user information from the
-    #' authorization provider. It takes two arguments: `token_info` and `setter`,
-    #' the first being the token information returned from the provider as a
-    #' list (notably with a `token` field for the actual token), the second
-    #' being a function that must be called in the end with the relevant
+    #' authorization provider. It will be called with two arguments: `token_info`
+    #' and `setter`, the first being the token information returned from the
+    #' provider as a list (notably with a `token` field for the actual token), the
+    #' second being a function that must be called in the end with the relevant
     #' information. The `setter` function takes the following arguments:
     #' `provider` (the name of the oauth2 provider), `id` (the identifier of the
     #' user), `display_name` (the name the user has chosen as public name),
@@ -163,7 +163,7 @@ AuthOAuth2 <- R6::R6Class(
     #' name), `name_family` (the users family name), `emails` (a vector of
     #' emails, potentially named with type, e.g. "work", "home" etc), `photos`
     #' (a vector of urls for profile photos), and `...` with additional named
-    #' fields to add.
+    #' fields to add
     #' @param service_params A named list of additional query params to add to
     #' the url when constructing the authorization url in the
     #' `"authorization_code"` grant type
@@ -206,41 +206,16 @@ AuthOAuth2 <- R6::R6Class(
       private$SCOPES <- scopes
 
       check_function(validate)
-      if (!identical(fn_fmls_names(validate), "info")) {
-        cli::cli_abort(
-          "{.arg validate} must be a function a single argument, `info`"
-        )
-      }
-      private$VALIDATE <- validate
+      private$VALIDATE <- with_dots(validate)
       check_function(on_auth)
-      if (
-        !identical(
-          fn_fmls_names(on_auth),
-          c("request", "response", "session_state", "server")
-        )
-      ) {
-        cli::cli_abort(
-          "{.arg on_auth} must be a function with four arguments: `request`, `response`, `session_state`, and `server`"
-        )
-      }
-      private$ON_AUTH <- on_auth
+      private$ON_AUTH <- with_dots(on_auth)
 
       user_info <- user_info %||%
         function(token_info, setter) {
           setter()
         }
       check_function(user_info)
-      if (
-        !identical(
-          fn_fmls_names(user_info),
-          c("token_info", "setter")
-        )
-      ) {
-        cli::cli_abort(
-          "{.arg user_info} must be a function with two arguments: `token_info` and `setter`"
-        )
-      }
-      private$USER_INFO <- user_info
+      private$USER_INFO <- with_dots(user_info)
       if (!is.list(service_params) || !is_named2(service_params)) {
         stop_input_type(service_params, "a named list")
       }
@@ -263,7 +238,7 @@ AuthOAuth2 <- R6::R6Class(
     #'
     check_request = function(request, response, keys, ..., .session) {
       info <- .session[[private$NAME]]
-      !is.null(info) && private$VALIDATE(info)
+      !is.null(info) && private$VALIDATE(info = info)
     },
     #' @description Upon rejection this scheme sets the response status to `400`
     #' if it has not already been set by others. In contrast to the other
@@ -405,7 +380,7 @@ AuthOAuth2 <- R6::R6Class(
           client_secret = private$CLIENT_SECRET
         )
         private$request_token(token_par, session)
-        if (!private$VALIDATE(session[[private$NAME]])) {
+        if (!private$VALIDATE(info = session[[private$NAME]])) {
           self$reject_response(response, .session = session)
         } else {
           response$status <- 200L
@@ -441,10 +416,15 @@ AuthOAuth2 <- R6::R6Class(
         token_par$redirect_uri <- private$REDIRECT_URL
       }
       private$request_token(token_par, session, session_state)
-      if (!private$VALIDATE(session[[private$NAME]])) {
+      if (!private$VALIDATE(info = session[[private$NAME]])) {
         self$reject_response(response, .session = session)
       } else {
-        private$ON_AUTH(request, response, session_state, server)
+        private$ON_AUTH(
+          request = request,
+          response = response,
+          session_state = session_state,
+          server = server
+        )
       }
     },
     request_token = function(token_par, session, session_state = NULL) {

@@ -8,3 +8,10 @@ abort_auth <- function(internal_msg, call = caller_env(), ...) {
     ...
   )
 }
+
+with_dots <- function(fun) {
+  if (!"..." %in% fn_fmls_names(fun)) {
+    fn_fmls(fun) <- c(fn_fmls(fun), "..." = missing_arg())
+  }
+  fun
+}

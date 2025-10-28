@@ -15,23 +15,22 @@
 #' If the authentication passes, the username from the authorization header is
 #' written to the `username` data slot in the request
 #'
-#' @param authenticator A function that takes a username, password, realm,
-#' request, and response and returns `TRUE` if the pair is valid, and `FALSE`
-#' otherwise. If the function returns a character vector it is considered to be
-#' authenticated and the return value will be understood as scopes the user is
-#' granted.
+#' @param authenticator A function that will be called with the arguments
+#' `username`, `password`, `realm`, `request`, and `response` and returns `TRUE`
+#' if the user is valid, and `FALSE` otherwise. If the function returns a
+#' character vector it is considered to be authenticated and the return value
+#' will be understood as scopes the user is granted.
 #' @param name The name of the authentication
 #' @param user_info A function to extract user information from the
-#' username. It takes two arguments: `user` and `setter`,
+#' username. It is called with two arguments: `user` and `setter`,
 #' the first being the username used for the successful authentication, the
 #' second being a function that must be called in the end with the relevant
 #' information. The `setter` function takes the following arguments:
-#' `id` (the identifier of the user), `display_name` (the name the user has
-#' chosen as public name), `name_given` (the users real given name),
-#' `name_middle` (the users middle name), `name_family` (the users family
-#' name), `emails` (a vector of emails, potentially named with type, e.g.
-#' "work", "home" etc), `photos` (a vector of urls for profile photos),
-#' and `...` with additional named fields to add.
+#' `display_name` (the name the user has chosen as public name), `name_given`
+#' (the users real given name), `name_middle` (the users middle name),
+#' `name_family` (the users family name), `emails` (a vector of emails,
+#' potentially named with type, e.g. "work", "home" etc), `photos` (a vector of
+#' urls for profile photos), and `...` with additional named fields to add.
 #' @param realm The realm this authentication corresponds to. Will be returned
 #' to the client on a failed authentication attempt to inform them of the
 #' credentials required, though most often these days it is kept from the user.
@@ -40,6 +39,12 @@
 #'
 #' @export
 #' @importFrom base64enc base64decode
+#'
+#' @examples
+#' # Create an authenticator of dubious quality
+#' basic <- auth_basic(
+#'   authenticator = function(user)
+#' )
 #'
 auth_basic <- function(
   authenticator,
@@ -93,22 +98,22 @@ AuthBasic <- R6::R6Class(
   inherit = Auth,
   public = list(
     #' @description Constructor for the class
-    #' @param authenticator A function that takes a username, password, realm,
-    #' request, and response and returns `TRUE` if the pair is valid, and `FALSE`
-    #' otherwise. If the function returns a character vector it is considered to be
-    #' authenticated and the return value will be understood as scopes the user is
-    #' granted.
+    #' @param authenticator A function that will be called with the arguments
+    #' `username`, `password`, `realm`, `request`, and `response` and returns `TRUE`
+    #' if the user is valid, and `FALSE` otherwise. If the function returns a
+    #' character vector it is considered to be authenticated and the return value
+    #' will be understood as scopes the user is granted.
     #' @param user_info A function to extract user information from the
-    #' username. It takes two arguments: `user` and `setter`,
+    #' username. It is called with two arguments: `user` and `setter`,
     #' the first being the username used for the successful authentication, the
     #' second being a function that must be called in the end with the relevant
     #' information. The `setter` function takes the following arguments:
-    #' `id` (the identifier of the user), `display_name` (the name the user has
-    #' chosen as public name), `name_given` (the users real given name),
-    #' `name_middle` (the users middle name), `name_family` (the users family
-    #' name), `emails` (a vector of emails, potentially named with type, e.g.
-    #' "work", "home" etc), `photos` (a vector of urls for profile photos),
-    #' and `...` with additional named fields to add.
+    #' `display_name` (the name the user has chosen as public name),
+    #' `name_given` (the users real given name), `name_middle` (the users middle
+    #' name), `name_family` (the users family name), `emails` (a vector of
+    #' emails, potentially named with type, e.g. "work", "home" etc), `photos`
+    #' (a vector of urls for profile photos), and `...` with additional named
+    #' fields to add.
     #' @param realm The realm this authentication corresponds to. Will be returned
     #' to the client on a failed authentication attempt to inform them of the
     #' credentials required, though most often these days it is kept from the user.
@@ -123,15 +128,7 @@ AuthBasic <- R6::R6Class(
         name = name
       )
       check_function(authenticator)
-      if (
-        length(fn_fmls(authenticator)) != 5 &&
-          !"..." %in% fn_fmls_names(authenticator)
-      ) {
-        cli::cli_abort(
-          "{.arg authenticator} must be a function with five arguments: `username`, `password`, `realm`, `request`, and `response`"
-        )
-      }
-      private$AUTHENTICATOR <- authenticator
+      private$AUTHENTICATOR <- with_dots(authenticator)
       check_string(realm)
       private$REALM <- realm
 
@@ -139,18 +136,7 @@ AuthBasic <- R6::R6Class(
         function(user, setter) {
           setter(id = user)
         }
-      check_function(user_info)
-      if (
-        !identical(
-          fn_fmls_names(user_info),
-          c("user", "setter")
-        )
-      ) {
-        cli::cli_abort(
-          "{.arg user_info} must be a function with two arguments: `user` and `setter`"
-        )
-      }
-      private$USER_INFO <- user_info
+      private$USER_INFO <- with_dots(user_info)
     },
     #' @description A function that validates an incoming request, returning
     #' `TRUE` if it is valid and `FALSE` if not. It decodes the credentials in
@@ -181,11 +167,11 @@ AuthBasic <- R6::R6Class(
         }
         response$set_data("auth_username", auth[1])
         authenticated <- private$AUTHENTICATOR(
-          auth[1],
-          auth[2],
-          private$REALM,
-          request,
-          response
+          username = auth[1],
+          password = auth[2],
+          realm = private$REALM,
+          request = request,
+          response = response
         )
         scopes <- private$SCOPES
         if (is.character(authenticated)) {

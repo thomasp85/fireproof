@@ -15,14 +15,14 @@ auth_bearer(
 )
 }
 \arguments{
-\item{authenticator}{A function that takes a token, realm, request, and
-response and returns \code{TRUE} if the token is valid, and \code{FALSE}
-otherwise. If the function returns a character vector it is considered to be
-authenticated and the return value will be understood as scopes the user is
-granted.}
+\item{authenticator}{A function that will be called with the arguments
+\code{token}, \code{realm}, \code{request}, and \code{response} and returns \code{TRUE} if the token
+is valid, and \code{FALSE} otherwise. If the function returns a character vector
+it is considered to be authenticated and the return value will be understood
+as scopes the user is granted.}
 
 \item{user_info}{A function to extract user information from the
-username. It takes two arguments: \code{token} and \code{setter},
+username. It will be called with two arguments: \code{token} and \code{setter},
 the first being the token used for the successful authentication, the
 second being a function that must be called in the end with the relevant
 information. The \code{setter} function takes the following arguments:

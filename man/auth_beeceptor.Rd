@@ -40,9 +40,9 @@ authorization (only needed for \code{grant_type = "authorization_code"})}
 \code{"authorization_code"} or \code{"password"}}
     \item{\code{scopes}}{Optional character vector of scopes to request the user to
 grant you during authorization}
-    \item{\code{validate}}{Function to validate the user once logged in. It must
-have a single argument \code{info}, which gets the information of the user as
-provided by the \code{user_info} function in the. By default it returns \code{TRUE}
+    \item{\code{validate}}{Function to validate the user once logged in. It will be
+called with a single argument \code{info}, which gets the information of the user
+as provided by the \code{user_info} function in the. By default it returns \code{TRUE}
 on everything meaning that anyone who can log in with the provider will
 be accepted, but you can provide a different function to e.g. restrict
 access to certain user names etc.}
@@ -52,7 +52,7 @@ by removing the domain part of the url, but if for some reason this
 doesn't yields the correct result for your server setup you can overwrite
 it here.}
     \item{\code{on_auth}}{A function which will handle the result of a successful
-authorization. It must have four arguments: \code{request}, \code{response},
+authorization. It will be called with four arguments: \code{request}, \code{response},
 \code{session_state}, and \code{server}. The first contains the current request
 being responded to, the second is the response being send back, the third
 is a list recording the state of the original request which initiated the
@@ -61,10 +61,10 @@ with information from the original request). By default it will use
 \link{replay_request} to internally replay the original request and send back
 the response.}
     \item{\code{user_info}}{A function to extract user information from the
-authorization provider. It takes two arguments: \code{token_info} and \code{setter},
-the first being the token information returned from the provider as a
-list (notably with a \code{token} field for the actual token), the second
-being a function that must be called in the end with the relevant
+authorization provider. It will be called with two arguments: \code{token_info}
+and \code{setter}, the first being the token information returned from the
+provider as a list (notably with a \code{token} field for the actual token), the
+second being a function that must be called in the end with the relevant
 information. The \code{setter} function takes the following arguments:
 \code{provider} (the name of the oauth2 provider), \code{id} (the identifier of the
 user), \code{display_name} (the name the user has chosen as public name),

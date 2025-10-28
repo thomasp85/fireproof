@@ -52,15 +52,15 @@ Constructor for the class
 \item{\code{key}}{The name of the header or cookie to store the secret under}
 
 \item{\code{secret}}{The secret to check for. Either a single string with the secret
-or a function that takes the key, the request and the response and returns
-\code{TRUE} if its a valid secret (useful if you have multiple or rotating
-secrets). If the function returns a character vector it is considered to be
-authenticated and the return value will be understood as scopes the user is
-granted. Make sure never to store secrets in plain text and avoid
-checking them into version control.}
+or a function that will be called with the arguments \code{key}, \code{request}, and
+\code{response} and returns \code{TRUE} if its a valid secret (useful if you have
+multiple or rotating secrets). If the function returns a character vector it
+is considered to be authenticated and the return value will be understood as
+scopes the user is granted. Make sure never to store secrets in plain text
+and avoid checking them into version control.}
 
 \item{\code{user_info}}{A function to extract user information from the
-username. It takes two arguments: \code{key} and \code{setter},
+username. It will be called with two arguments: \code{key} and \code{setter},
 the first being the key used for the successful authentication, the
 second being a function that must be called in the end with the relevant
 information. The \code{setter} function takes the following arguments:

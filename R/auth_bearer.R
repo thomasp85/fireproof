@@ -25,14 +25,14 @@
 #' authenticator should write any additional user information that gets fetched
 #' during the validation to relevant fields in the response data
 #'
-#' @param authenticator A function that takes a token, realm, request, and
-#' response and returns `TRUE` if the token is valid, and `FALSE`
-#' otherwise. If the function returns a character vector it is considered to be
-#' authenticated and the return value will be understood as scopes the user is
-#' granted.
+#' @param authenticator A function that will be called with the arguments
+#' `token`, `realm`, `request`, and `response` and returns `TRUE` if the token
+#' is valid, and `FALSE` otherwise. If the function returns a character vector
+#' it is considered to be authenticated and the return value will be understood
+#' as scopes the user is granted.
 #' @param name The name of the authentication
 #' @param user_info A function to extract user information from the
-#' username. It takes two arguments: `token` and `setter`,
+#' username. It will be called with two arguments: `token` and `setter`,
 #' the first being the token used for the successful authentication, the
 #' second being a function that must be called in the end with the relevant
 #' information. The `setter` function takes the following arguments:
@@ -93,13 +93,13 @@ AuthBearer <- R6::R6Class(
   inherit = Auth,
   public = list(
     #' @description Constructor for the class
-    #' @param authenticator A function that takes a token, realm, request, and
-    #' response and returns `TRUE` if the token is valid, and `FALSE`
-    #' otherwise. If the function returns a character vector it is considered to be
-    #' authenticated and the return value will be understood as scopes the user is
-    #' granted.
+    #' @param authenticator A function that will be called with the arguments
+    #' `token`, `realm`, `request`, and `response` and returns `TRUE` if the token
+    #' is valid, and `FALSE` otherwise. If the function returns a character vector
+    #' it is considered to be authenticated and the return value will be understood
+    #' as scopes the user is granted.
     #' @param user_info A function to extract user information from the
-    #' username. It takes two arguments: `token` and `setter`,
+    #' username. It will be called with two arguments: `token` and `setter`,
     #' the first being the token used for the successful authentication, the
     #' second being a function that must be called in the end with the relevant
     #' information. The `setter` function takes the following arguments:
@@ -133,15 +133,7 @@ AuthBearer <- R6::R6Class(
         name = name
       )
       check_function(authenticator)
-      if (
-        length(fn_fmls(authenticator)) != 4 &&
-          !"..." %in% fn_fmls_names(authenticator)
-      ) {
-        cli::cli_abort(
-          "{.arg authenticator} must be a function with four arguments: `token`, `realm`, `request`, and `response`"
-        )
-      }
-      private$AUTHENTICATOR <- authenticator
+      private$AUTHENTICATOR <- with_dots(authenticator)
       check_string(realm)
       private$REALM <- realm
 
@@ -150,17 +142,7 @@ AuthBearer <- R6::R6Class(
           setter()
         }
       check_function(user_info)
-      if (
-        !identical(
-          fn_fmls_names(user_info),
-          c("token", "setter")
-        )
-      ) {
-        cli::cli_abort(
-          "{.arg user_info} must be a function with two arguments: `token` and `setter`"
-        )
-      }
-      private$USER_INFO <- user_info
+      private$USER_INFO <- with_dots(user_info)
     },
     #' @description A function that validates an incoming request, returning
     #' `TRUE` if it is valid and `FALSE` if not. It fetches the token from the
@@ -219,10 +201,10 @@ AuthBearer <- R6::R6Class(
         scopes <- private$SCOPES
         if (length(token) == 1) {
           authenticated <- private$AUTHENTICATOR(
-            token,
-            private$REALM,
-            request,
-            response
+            token = token,
+            realm = private$REALM,
+            request = request,
+            response = response
           )
           if (is.character(authenticated)) {
             scopes <- authenticated

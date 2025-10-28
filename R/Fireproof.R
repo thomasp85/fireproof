@@ -114,9 +114,7 @@ Fireproof <- R6::R6Class(
     #'
     add_auth = function(auth, name = NULL) {
       if (is.function(auth)) {
-        if (!"..." %in% fn_fmls_names(auth)) {
-          fn_fmls(auth) <- c(fn_fmls(auth), "..." = missing_arg())
-        }
+        auth <- with_dots(auth)
         reject <- function(response) {
           if (response$status == 404L) {
             response$status <- 400L

@@ -15,14 +15,14 @@
 #'
 #' @param key The name of the header or cookie to store the secret under
 #' @param secret The secret to check for. Either a single string with the secret
-#' or a function that takes the key, the request and the response and returns
-#' `TRUE` if its a valid secret (useful if you have multiple or rotating
-#' secrets). If the function returns a character vector it is considered to be
-#' authenticated and the return value will be understood as scopes the user is
-#' granted. Make sure never to store secrets in
-#' plain text and avoid checking them into version control.
+#' or a function that will be called with the arguments `key`, `request`, and
+#' `response` and returns `TRUE` if its a valid secret (useful if you have
+#' multiple or rotating secrets). If the function returns a character vector it
+#' is considered to be authenticated and the return value will be understood as
+#' scopes the user is granted. Make sure never to store secrets in plain text
+#' and avoid checking them into version control.
 #' @param user_info A function to extract user information from the
-#' username. It takes two arguments: `key` and `setter`,
+#' username. It will be called with two arguments: `key` and `setter`,
 #' the first being the key used for the successful authentication, the
 #' second being a function that must be called in the end with the relevant
 #' information. The `setter` function takes the following arguments:
@@ -71,14 +71,14 @@ AuthKey <- R6::R6Class(
     #' @description Constructor for the class
     #' @param key The name of the header or cookie to store the secret under
     #' @param secret The secret to check for. Either a single string with the secret
-    #' or a function that takes the key, the request and the response and returns
-    #' `TRUE` if its a valid secret (useful if you have multiple or rotating
-    #' secrets). If the function returns a character vector it is considered to be
-    #' authenticated and the return value will be understood as scopes the user is
-    #' granted. Make sure never to store secrets in plain text and avoid
-    #' checking them into version control.
+    #' or a function that will be called with the arguments `key`, `request`, and
+    #' `response` and returns `TRUE` if its a valid secret (useful if you have
+    #' multiple or rotating secrets). If the function returns a character vector it
+    #' is considered to be authenticated and the return value will be understood as
+    #' scopes the user is granted. Make sure never to store secrets in plain text
+    #' and avoid checking them into version control.
     #' @param user_info A function to extract user information from the
-    #' username. It takes two arguments: `key` and `setter`,
+    #' username. It will be called with two arguments: `key` and `setter`,
     #' the first being the key used for the successful authentication, the
     #' second being a function that must be called in the end with the relevant
     #' information. The `setter` function takes the following arguments:
@@ -105,17 +105,10 @@ AuthKey <- R6::R6Class(
       private$KEY <- key
       if (is_string(secret)) {
         secret_string <- secret
-        secret <- function(key, request, response) identical(key, secret_string)
+        secret <- function(key, ...) identical(key, secret_string)
       }
       check_function(secret)
-      if (
-        length(fn_fmls(secret)) != 3 && !"..." %in% fn_fmls_names(authenticator)
-      ) {
-        cli::cli_abort(
-          "{.arg secret} must be a string or a function with three arguments: `key`, `request`, and `response`"
-        )
-      }
-      private$SECRET <- secret
+      private$SECRET <- with_dots(secret)
       check_bool(cookie)
       private$COOKIE <- cookie
 
@@ -124,17 +117,7 @@ AuthKey <- R6::R6Class(
           setter()
         }
       check_function(user_info)
-      if (
-        !identical(
-          fn_fmls_names(user_info),
-          c("key", "setter")
-        )
-      ) {
-        cli::cli_abort(
-          "{.arg user_info} must be a function with two arguments: `key` and `setter`"
-        )
-      }
-      private$USER_INFO <- user_info
+      private$USER_INFO <- with_dots(user_info)
     },
     #' @description A function that validates an incoming request, returning
     #' `TRUE` if it is valid and `FALSE` if not. It extracts the secret from
@@ -160,7 +143,11 @@ AuthKey <- R6::R6Class(
         } else {
           request$cookies[[private$KEY]]
         }
-        authenticated <- private$SECRET(key, request, response)
+        authenticated <- private$SECRET(
+          key = key,
+          request = request,
+          response = response
+        )
         scopes <- private$SCOPES
         if (is.character(authenticated)) {
           scopes <- authenticated
