@@ -272,6 +272,67 @@ as the first route to it.</p><div class="section">
 
     </div>
 
+    <div id="ref-examples">
+    <h2>Examples</h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Create a fireproof plugin</span></span></span>
+<span class="r-in"><span><span class="va">fp</span> <span class="op">&lt;-</span> <span class="va">Fireproof</span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Create some authentication schemes and add them</span></span></span>
+<span class="r-in"><span><span class="va">basic</span> <span class="op">&lt;-</span> <span class="fu"><a href="auth_basic.html">auth_basic</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  authenticator <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">user</span>, <span class="va">password</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>    <span class="va">user</span> <span class="op">==</span> <span class="st">"thomas"</span> <span class="op">&amp;&amp;</span> <span class="va">password</span> <span class="op">==</span> <span class="st">"pedersen"</span></span></span>
+<span class="r-in"><span>  <span class="op">}</span>,</span></span>
+<span class="r-in"><span>  user_info <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">user</span>, <span class="va">setter</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>    <span class="fu">setter</span><span class="op">(</span></span></span>
+<span class="r-in"><span>      name_given <span class="op">=</span> <span class="st">"Thomas"</span>,</span></span>
+<span class="r-in"><span>      name_middle <span class="op">=</span> <span class="st">"Lin"</span>,</span></span>
+<span class="r-in"><span>      name_family <span class="op">=</span> <span class="st">"Pedersen"</span></span></span>
+<span class="r-in"><span>    <span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="op">}</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">fp</span><span class="op">$</span><span class="fu">add_auth</span><span class="op">(</span><span class="va">basic</span>, <span class="st">"basic_auth"</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in auth$register_handler:</span> object of type 'closure' is not subsettable</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">key</span> <span class="op">&lt;-</span> <span class="fu"><a href="auth_key.html">auth_key</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  key <span class="op">=</span> <span class="st">"my-key-location"</span>,</span></span>
+<span class="r-in"><span>  secret <span class="op">=</span> <span class="st">"SHHH!!DONT_TELL_ANYONE"</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">fp</span><span class="op">$</span><span class="fu">add_auth</span><span class="op">(</span><span class="va">key</span>, <span class="st">"key_auth"</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in auth$register_handler:</span> object of type 'closure' is not subsettable</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">google</span> <span class="op">&lt;-</span> <span class="fu"><a href="auth_google.html">auth_google</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  redirect_url <span class="op">=</span> <span class="st">"https://example.com/auth"</span>,</span></span>
+<span class="r-in"><span>  client_id <span class="op">=</span> <span class="st">"MY_APP_ID"</span>,</span></span>
+<span class="r-in"><span>  client_secret <span class="op">=</span> <span class="st">"SUCHASECRET"</span>,</span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in super$initialize(token_url = "", redirect_url = redirect_url,     client_id = client_id, client_secret = client_secret, auth_url = "",     grant_type = "authorization_code", scopes = unique(c("openid",         scopes)), validate = validate, redirect_path = redirect_path,     on_auth = on_auth, user_info = NULL, service_params = service_params,     name = name, ):</span> unused argument (alist())</span>
+<span class="r-in"><span><span class="va">fp</span><span class="op">$</span><span class="fu">add_auth</span><span class="op">(</span><span class="va">google</span>, <span class="st">"google_auth"</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'google' not found</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Add authentication to different paths</span></span></span>
+<span class="r-in"><span><span class="va">fp</span><span class="op">$</span><span class="fu">add_auth_handler</span><span class="op">(</span><span class="st">"get"</span>, <span class="st">"/require_basic"</span>, <span class="va">basic_auth</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">fp</span><span class="op">$</span><span class="fu">add_auth_handler</span><span class="op">(</span><span class="st">"get"</span>, <span class="st">"/require_basic_and_key"</span>, <span class="va">basic_auth</span> <span class="op">&amp;&amp;</span> <span class="va">key_auth</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">fp</span><span class="op">$</span><span class="fu">add_auth_handler</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="st">"get"</span>,</span></span>
+<span class="r-in"><span>  <span class="st">"/require_google_or_the_others"</span>,</span></span>
+<span class="r-in"><span>  <span class="va">google_auth</span> <span class="op">||</span> <span class="op">(</span><span class="va">basic_auth</span> <span class="op">&amp;&amp;</span> <span class="va">key_auth</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># requireNamespace("fiery", quietly = TRUE) &amp;&amp; requireNamespace("firesale", quietly = TRUE)</span></span></span>
+<span class="r-in"><span><span class="co"># Add plugin to fiery app</span></span></span>
+<span class="r-in"><span><span class="va">app</span> <span class="op">&lt;-</span> <span class="fu">fiery</span><span class="fu">::</span><span class="va"><a href="https://fiery.data-imaginist.com/reference/Fire.html" class="external-link">Fire</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># First add the firesale plugin as it is required</span></span></span>
+<span class="r-in"><span><span class="va">fs</span> <span class="op">&lt;-</span> <span class="fu">firesale</span><span class="fu">::</span><span class="va">FireSale</span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="fu">storr</span><span class="fu">::</span><span class="fu">driver_environment</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/environment.html" class="external-link">new.env</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">app</span><span class="op">$</span><span class="kw">attach</span><span class="op">(</span><span class="va">fs</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Then add the fireproof plugin</span></span></span>
+<span class="r-in"><span><span class="va">app</span><span class="op">$</span><span class="kw">attach</span><span class="op">(</span><span class="va">fp</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+</code></pre></div>
+    </div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top"><h2 data-toc-skip>Contents</h2>
