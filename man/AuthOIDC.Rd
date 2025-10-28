@@ -7,6 +7,16 @@
 This class encapsulates the logic of the OpenID Connect based authentication
 scheme. See \code{\link[=auth_oidc]{auth_oidc()}} for more information
 }
+\examples{
+# Example using Google endpoint (use `auth_google()` in real code)
+google <- AuthOIDC$new(
+  service_url = "https://accounts.google.com/",
+  redirect_url = "https://example.com/auth",
+  client_id = "MY_APP_ID",
+  client_secret = "SUCHASECRET",
+)
+
+}
 \section{Super classes}{
 \code{\link[fireproof:Auth]{fireproof::Auth}} -> \code{\link[fireproof:AuthOAuth2]{fireproof::AuthOAuth2}} -> \code{AuthOIDC}
 }

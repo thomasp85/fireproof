@@ -29,6 +29,61 @@
 #'
 #' @importFrom routr Route
 #' @importFrom reqres abort_status
+#'
+#' @examples
+#' # Create a fireproof plugin
+#' fp <- Fireproof$new()
+#'
+#' # Create some authentication schemes and add them
+#' basic <- auth_basic(
+#'   authenticator = function(user, password) {
+#'     user == "thomas" && password == "pedersen"
+#'   },
+#'   user_info = function(user, setter) {
+#'     setter(
+#'       name_given = "Thomas",
+#'       name_middle = "Lin",
+#'       name_family = "Pedersen"
+#'     )
+#'   }
+#' )
+#' fp$add_auth(basic, "basic_auth")
+#'
+#' key <- auth_key(
+#'   key = "my-key-location",
+#'   secret = "SHHH!!DONT_TELL_ANYONE"
+#' )
+#' fp$add_auth(key, "key_auth")
+#'
+#' google <- auth_google(
+#'   redirect_url = "https://example.com/auth",
+#'   client_id = "MY_APP_ID",
+#'   client_secret = "SUCHASECRET",
+#' )
+#' fp$add_auth(google, "google_auth")
+#'
+#' # Add authentication to different paths
+#' fp$add_auth_handler("get", "/require_basic", basic_auth)
+#'
+#' fp$add_auth_handler("get", "/require_basic_and_key", basic_auth && key_auth)
+#'
+#' fp$add_auth_handler(
+#'   "get",
+#'   "/require_google_or_the_others",
+#'   google_auth || (basic_auth && key_auth)
+#' )
+#'
+#' @examplesIf requireNamespace("fiery", quietly = TRUE) && requireNamespace("firesale", quietly = TRUE)
+#' # Add plugin to fiery app
+#' app <- fiery::Fire$new()
+#'
+#' # First add the firesale plugin as it is required
+#' fs <- firesale::FireSale$new(storr::driver_environment(new.env()))
+#' app$attach(fs)
+#'
+#' # Then add the fireproof plugin
+#' app$attach(fp)
+#'
 Fireproof <- R6::R6Class(
   "Fireproof",
   inherit = Route,
@@ -283,54 +338,4 @@ parse_auth_flow <- function(expr) {
       and(!!!elems)
     }
   }
-}
-
-and <- function(...) {
-  structure(
-    list2(...),
-    class = "fireproof_op",
-    op = "&&"
-  )
-}
-or <- function(...) {
-  structure(
-    list2(...),
-    class = "fireproof_op",
-    op = "||"
-  )
-}
-scalar <- function(x) {
-  structure(list(x), class = "fireproof_op", op = NULL)
-}
-may_collapse <- function(x, op) {
-  (attr(x, "op") %||% op) == op
-}
-#' @export
-format.fireproof_op <- function(x, ...) {
-  paste0(
-    if (length(x) > 1) "(" else "",
-    paste0(lapply(x, format, ...), collapse = paste0(" ", attr(x, "op"), " ")),
-    if (length(x) > 1) ")" else ""
-  )
-}
-#' @export
-print.fireproof_op <- function(x, ...) {
-  cat(format(x, ...))
-}
-eval_op <- function(op, table) {
-  if (length(op) == 1) {
-    return(table[[op[[1]]]])
-  }
-  res <- vapply(op, eval_op, logical(1), table = table)
-  if (attr(op, "op") == "||") any(res) else all(res)
-}
-
-is_flow_valid_openapi <- function(flow) {
-  attr(flow, "op") == "||" && flow_depth(flow) <= 3
-}
-flow_depth <- function(flow) {
-  if (length(flow) == 1) {
-    return(1L)
-  }
-  max(vapply(flow, flow_depth, integer(1))) + 1L
 }

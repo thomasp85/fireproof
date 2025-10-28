@@ -15,6 +15,20 @@
 #'
 #' @export
 #'
+#' @examples
+#' github <- auth_github(
+#'   redirect_url = "https://example.com/auth",
+#'   client_id = "MY_APP_ID",
+#'   client_secret = "SUCHASECRET",
+#' )
+#'
+#' # Add it to a fireproof plugin
+#' fp <- Fireproof$new()
+#' fp$add_auth(github, "github_auth")
+#'
+#' # Use it in an endpoint
+#' fp$add_auth_handler("get", "/*", github_auth)
+#'
 auth_github <- function(
   redirect_url,
   client_id,

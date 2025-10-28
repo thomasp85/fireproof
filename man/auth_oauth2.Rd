@@ -104,3 +104,22 @@ etc. Central for all of these is the need for your server to register itself
 with the provider and get a client id and a client secret which must be used
 when logging users in.
 }
+\examples{
+# Example using GitHub endpoints (use `auth_github()` in real code)
+github <- auth_oauth2(
+  token_url = "https://github.com/login/oauth/access_token",
+  redirect_url = "https://example.com/auth",
+  client_id = "MY_APP_ID",
+  client_secret = "SUCHASECRET",
+  auth_url = "https://github.com/login/oauth/authorize",
+  grant_type = "authorization_code"
+)
+
+# Add it to a fireproof plugin
+fp <- Fireproof$new()
+fp$add_auth(github, "github_auth")
+
+# Use it in an endpoint
+fp$add_auth_handler("get", "/*", github_auth)
+
+}

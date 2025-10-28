@@ -91,3 +91,16 @@ provided by
 obviously not be used for production because they allow anyone to be
 authenticated, but they can be used while testing your authentication setup.
 }
+\examples{
+beeceptor <- auth_beeceptor_github(
+  redirect_url = "https://example.com/auth"
+)
+
+# Add it to a fireproof plugin
+fp <- Fireproof$new()
+fp$add_auth(beeceptor, "beeceptor_auth")
+
+# Use it in an endpoint
+fp$add_auth_handler("get", "/*", beeceptor_auth)
+
+}

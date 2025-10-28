@@ -54,3 +54,24 @@ user to fit your needs. As with any routr handler it should return a boolean
 indicating if further processing should happen. For this situation it is
 usually sensible to return \code{FALSE}.
 }
+\examples{
+# These functions are never called directly but passed on to the `on_auth`
+# argument in OAuth 2.0 and OpenID Connect authentication flows
+
+# Default
+google <- auth_google(
+  redirect_url = "https://example.com/auth",
+  client_id = "MY_APP_ID",
+  client_secret = "SUCHASECRET",
+  on_auth = replay_request
+)
+
+# Alternative
+google <- auth_google(
+  redirect_url = "https://example.com/auth",
+  client_id = "MY_APP_ID",
+  client_secret = "SUCHASECRET",
+  on_auth = redirect_back
+)
+
+}

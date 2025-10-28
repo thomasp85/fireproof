@@ -95,3 +95,20 @@ all of these is the need for your server to register itself with the
 provider and get a client id and a client secret which must be used when
 logging users in.
 }
+\examples{
+# Example using Google endpoint (use `auth_google()` in real code)
+google <- auth_oidc(
+  service_url = "https://accounts.google.com/",
+  redirect_url = "https://example.com/auth",
+  client_id = "MY_APP_ID",
+  client_secret = "SUCHASECRET",
+)
+
+# Add it to a fireproof plugin
+fp <- Fireproof$new()
+fp$add_auth(google, "google_auth")
+
+# Use it in an endpoint
+fp$add_auth_handler("get", "/*", google_auth)
+
+}

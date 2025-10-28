@@ -28,6 +28,61 @@ required to be had to access the endpoint. If your scheme has scope support
 then the request will be tested against these to see if the (otherwise valid)
 user has permission to the resource.
 }
+\examples{
+# Create a fireproof plugin
+fp <- Fireproof$new()
+
+# Create some authentication schemes and add them
+basic <- auth_basic(
+  authenticator = function(user, password) {
+    user == "thomas" && password == "pedersen"
+  },
+  user_info = function(user, setter) {
+    setter(
+      name_given = "Thomas",
+      name_middle = "Lin",
+      name_family = "Pedersen"
+    )
+  }
+)
+fp$add_auth(basic, "basic_auth")
+
+key <- auth_key(
+  key = "my-key-location",
+  secret = "SHHH!!DONT_TELL_ANYONE"
+)
+fp$add_auth(key, "key_auth")
+
+google <- auth_google(
+  redirect_url = "https://example.com/auth",
+  client_id = "MY_APP_ID",
+  client_secret = "SUCHASECRET",
+)
+fp$add_auth(google, "google_auth")
+
+# Add authentication to different paths
+fp$add_auth_handler("get", "/require_basic", basic_auth)
+
+fp$add_auth_handler("get", "/require_basic_and_key", basic_auth && key_auth)
+
+fp$add_auth_handler(
+  "get",
+  "/require_google_or_the_others",
+  google_auth || (basic_auth && key_auth)
+)
+
+\dontshow{if (requireNamespace("fiery", quietly = TRUE) && requireNamespace("firesale", quietly = TRUE)) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+# Add plugin to fiery app
+app <- fiery::Fire$new()
+
+# First add the firesale plugin as it is required
+fs <- firesale::FireSale$new(storr::driver_environment(new.env()))
+app$attach(fs)
+
+# Then add the fireproof plugin
+app$attach(fp)
+\dontshow{\}) # examplesIf}
+}
 \section{Super class}{
 \code{\link[routr:Route]{routr::Route}} -> \code{Fireproof}
 }

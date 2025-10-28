@@ -6,6 +6,11 @@
 #' this and will work transparently with fireproof.
 #'
 #' @export
+#'
+#' @examples
+#' # You'd never actually do this, rather you'd use the subclasses
+#' auth <- Auth$new(name = "base_auth")
+#'
 Auth <- R6::R6Class(
   "Auth",
   public = list(

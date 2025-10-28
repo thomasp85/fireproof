@@ -13,7 +13,18 @@
 #'
 #' @rdname auth_beeceptor
 #' @name auth_beeceptor
-#' @export
+#'
+#' @examples
+#' beeceptor <- auth_beeceptor_github(
+#'   redirect_url = "https://example.com/auth"
+#' )
+#'
+#' # Add it to a fireproof plugin
+#' fp <- Fireproof$new()
+#' fp$add_auth(beeceptor, "beeceptor_auth")
+#'
+#' # Use it in an endpoint
+#' fp$add_auth_handler("get", "/*", beeceptor_auth)
 #'
 auth_beeceptor_github <- function(
   redirect_url,

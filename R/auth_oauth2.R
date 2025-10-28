@@ -72,6 +72,24 @@
 #' @export
 #' @importFrom urltools url_encode
 #'
+#' @examples
+#' # Example using GitHub endpoints (use `auth_github()` in real code)
+#' github <- auth_oauth2(
+#'   token_url = "https://github.com/login/oauth/access_token",
+#'   redirect_url = "https://example.com/auth",
+#'   client_id = "MY_APP_ID",
+#'   client_secret = "SUCHASECRET",
+#'   auth_url = "https://github.com/login/oauth/authorize",
+#'   grant_type = "authorization_code"
+#' )
+#'
+#' # Add it to a fireproof plugin
+#' fp <- Fireproof$new()
+#' fp$add_auth(github, "github_auth")
+#'
+#' # Use it in an endpoint
+#' fp$add_auth_handler("get", "/*", github_auth)
+#'
 auth_oauth2 <- function(
   token_url,
   redirect_url,
@@ -111,6 +129,17 @@ auth_oauth2 <- function(
 #' scheme. See [auth_oauth2()] for more information
 #'
 #' @export
+#'
+#' @examples
+#' # Example using GitHub endpoints (use `auth_github()` in real code)
+#' github <- AuthOAuth2$new(
+#'   token_url = "https://github.com/login/oauth/access_token",
+#'   redirect_url = "https://example.com/auth",
+#'   client_id = "MY_APP_ID",
+#'   client_secret = "SUCHASECRET",
+#'   auth_url = "https://github.com/login/oauth/authorize",
+#'   grant_type = "authorization_code"
+#' )
 #'
 AuthOAuth2 <- R6::R6Class(
   "AuthOAuth2",

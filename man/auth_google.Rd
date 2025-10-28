@@ -75,3 +75,18 @@ application at \url{https://developers.google.com/identity/protocols/oauth2}. If
 you want to limit access to only select users you should make sure to provide
 a \code{validation} function that checks the userinfo against a whitelist.
 }
+\examples{
+google <- auth_google(
+  redirect_url = "https://example.com/auth",
+  client_id = "MY_APP_ID",
+  client_secret = "SUCHASECRET",
+)
+
+# Add it to a fireproof plugin
+fp <- Fireproof$new()
+fp$add_auth(google, "google_auth")
+
+# Use it in an endpoint
+fp$add_auth_handler("get", "/*", google_auth)
+
+}

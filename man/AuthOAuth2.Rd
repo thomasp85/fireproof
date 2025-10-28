@@ -7,6 +7,18 @@
 This class encapsulates the logic of the oauth 2.0 based authentication
 scheme. See \code{\link[=auth_oauth2]{auth_oauth2()}} for more information
 }
+\examples{
+# Example using GitHub endpoints (use `auth_github()` in real code)
+github <- AuthOAuth2$new(
+  token_url = "https://github.com/login/oauth/access_token",
+  redirect_url = "https://example.com/auth",
+  client_id = "MY_APP_ID",
+  client_secret = "SUCHASECRET",
+  auth_url = "https://github.com/login/oauth/authorize",
+  grant_type = "authorization_code"
+)
+
+}
 \section{Super class}{
 \code{\link[fireproof:Auth]{fireproof::Auth}} -> \code{AuthOAuth2}
 }

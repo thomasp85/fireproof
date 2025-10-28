@@ -63,3 +63,18 @@ ID and client secret for this to work. Register an application at
 to only select users you should make sure to provide a \code{validation} function
 that checks the userinfo against a whitelist.
 }
+\examples{
+github <- auth_github(
+  redirect_url = "https://example.com/auth",
+  client_id = "MY_APP_ID",
+  client_secret = "SUCHASECRET",
+)
+
+# Add it to a fireproof plugin
+fp <- Fireproof$new()
+fp$add_auth(github, "github_auth")
+
+# Use it in an endpoint
+fp$add_auth_handler("get", "/*", github_auth)
+
+}

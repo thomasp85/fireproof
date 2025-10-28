@@ -15,6 +15,11 @@ All schemes inherit from this base class and adapts it for the particular
 scheme it implements. Additional schemes can be implemented as subclasses of
 this and will work transparently with fireproof.
 }
+\examples{
+# You'd never actually do this, rather you'd use the subclasses
+auth <- Auth$new(name = "base_auth")
+
+}
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{

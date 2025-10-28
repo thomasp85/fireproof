@@ -42,6 +42,26 @@
 #' @name on_auth
 #' @export
 #'
+#' @examples
+#' # These functions are never called directly but passed on to the `on_auth`
+#' # argument in OAuth 2.0 and OpenID Connect authentication flows
+#'
+#' # Default
+#' google <- auth_google(
+#'   redirect_url = "https://example.com/auth",
+#'   client_id = "MY_APP_ID",
+#'   client_secret = "SUCHASECRET",
+#'   on_auth = replay_request
+#' )
+#'
+#' # Alternative
+#' google <- auth_google(
+#'   redirect_url = "https://example.com/auth",
+#'   client_id = "MY_APP_ID",
+#'   client_secret = "SUCHASECRET",
+#'   on_auth = redirect_back
+#' )
+#'
 replay_request = function(request, response, session_state, server) {
   old_req <- fiery::fake_request(
     url = session_state$url,
