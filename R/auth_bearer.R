@@ -181,6 +181,11 @@ AuthBearer <- R6::R6Class(
         }
       check_function(user_info)
       private$USER_INFO <- with_dots(user_info)
+
+      check_bool(allow_body_token)
+      private$ALLOW_BODY <- allow_body_token
+      check_bool(allow_query_token)
+      private$ALLOW_QUERY <- allow_query_token
     },
     #' @description A function that validates an incoming request, returning
     #' `TRUE` if it is valid and `FALSE` if not. It fetches the token from the
@@ -210,7 +215,7 @@ AuthBearer <- R6::R6Class(
           token$header <- sub("^Bearer ", "", auth_header)
         }
         if (
-          allow_body_token &&
+          private$ALLOW_BODY &&
             request$method %in% c("post", "put", "patch") &&
             request$is("application/x-www-form-urlencoded")
         ) {
@@ -221,7 +226,8 @@ AuthBearer <- R6::R6Class(
           if (success) token$body <- request$body$access_token
         }
         if (
-          allow_query_token && grepl("no-store", request$headers$cache_control)
+          private$ALLOW_QUERY &&
+            grepl("no-store", request$headers$cache_control %||% "")
         ) {
           token$query <- request$query$access_token
           if (!is.null(token$query)) {
@@ -316,7 +322,8 @@ AuthBearer <- R6::R6Class(
     AUTHENTICATOR = NULL,
     REALM = "",
     USER_INFO = NULL,
-    TOKEN_PARSER = NULL
+    ALLOW_BODY = TRUE,
+    ALLOW_QUERY = FALSE
   )
 )
 
