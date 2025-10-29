@@ -93,16 +93,10 @@ as scopes the user is granted.</p></dd>
 
 <dt id="arg-user-info">user_info<a class="anchor" aria-label="anchor" href="#arg-user-info"></a></dt>
 <dd><p>A function to extract user information from the
-username. It will be called with two arguments: <code>token</code> and <code>setter</code>,
+username. It is called with two arguments: <code>token</code> and <code>setter</code>,
 the first being the token used for the successful authentication, the
 second being a function that must be called in the end with the relevant
-information. The <code>setter</code> function takes the following arguments:
-<code>id</code> (the identifier of the user), <code>display_name</code> (the name the user has
-chosen as public name), <code>name_given</code> (the users real given name),
-<code>name_middle</code> (the users middle name), <code>name_family</code> (the users family
-name), <code>emails</code> (a vector of emails, potentially named with type, e.g.
-"work", "home" etc), <code>photos</code> (a vector of urls for profile photos),
-and <code>...</code> with additional named fields to add.</p></dd>
+information (see <code><a href="user_info.html">user_info()</a></code>).</p></dd>
 
 
 <dt id="arg-realm">realm<a class="anchor" aria-label="anchor" href="#arg-realm"></a></dt>
@@ -148,6 +142,18 @@ data store (<code>response$set_data("auth_scope", ...)</code>). The scope requir
 the exact endpoint will then be tested automatically. Further, the
 authenticator should write any additional user information that gets fetched
 during the validation to relevant fields in the response data</p>
+    </div>
+    <div id="user-information">
+    <h2>User information</h2>
+    <p><code>auth_bearer()</code> automatically adds <a href="user_info.html">user information</a> after
+authentication. By default it will set the <code>provider</code> field to <code>"local"</code>.
+Further, it will set the <code>scopes</code> field to any scopes returned by the
+<code>authenticator</code> function and the <code>token</code> field to a list with the following
+elements:</p><ul><li><p><code>access_token</code>: The provided token</p></li>
+<li><p><code>token_type</code>: <code>"bearer"</code></p></li>
+<li><p><code>scope</code> The scopes concatenated into a space separated string</p></li>
+</ul><p>This structure mimics the structure of the token information returned by
+OAuth 2.0 and OpenID Connect services.</p>
     </div>
 
     <div id="ref-examples">

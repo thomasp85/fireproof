@@ -186,6 +186,29 @@ under which token info and user info is saved in the session store</p></dd>
     <h2>Value</h2>
     <p>An <a href="AuthOIDC.html">AuthOIDC</a> object</p>
     </div>
+    <div id="user-information">
+    <h2>User information</h2>
+    <p><code>auth_oidc()</code> automatically adds <a href="user_info.html">user information</a> after
+authentication, based on the standardized user claims provided in the
+<code>id_token</code> as well as any additional user information provided at the
+<code>userinfo_endpoint</code> of the service if <code>request_user_info = TRUE</code>. You can see
+a list of standard user information defined by OpenID Connect at the
+<a href="https://openid.net/specs/openid-connect-core-1_0.html#StandardClaims" class="external-link">OpenID website</a>.
+The mapping of these to <code><a href="user_info.html">user_info()</a></code> is as follows:</p><ul><li><p><code>sub</code> -&gt; <code>id</code></p></li>
+<li><p><code>name</code> -&gt; <code>name_display</code></p></li>
+<li><p><code>given_name</code> -&gt; <code>name_given</code></p></li>
+<li><p><code>middle_name</code> -&gt; <code>name_middle</code></p></li>
+<li><p><code>family_name</code> -&gt; <code>name_family</code></p></li>
+<li><p><code>email</code> -&gt; <code>emails</code></p></li>
+<li><p><code>picture</code> -&gt; <code>photos</code></p></li>
+</ul><p>Further, it will set the <code>scopes</code> field to any scopes returned by the provider
+during authorization, the <code>provider</code> field to <code>service_name</code>, the <code>token</code>
+field to the token information as described in <code><a href="auth_oauth2.html">auth_oauth2()</a></code>, and <code>.raw</code> to
+the full list of user information as provided unaltered by the service. Be
+aware that the information reported by the service depends on the scopes
+requested by fireproof and granted by the user. You can therefore never
+assume the existence of any information besides <code>id</code>, <code>provider</code> and <code>token</code>.</p>
+    </div>
 
     <div id="ref-examples">
     <h2>Examples</h2>

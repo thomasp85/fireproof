@@ -139,6 +139,19 @@ under which token info and user info is saved in the session store</p></dd>
     <h2>Value</h2>
     <p>An <a href="AuthOAuth2.html">AuthOAuth2</a> object</p>
     </div>
+    <div id="user-information">
+    <h2>User information</h2>
+    <p><code>auth_github()</code> automatically adds user information according to the
+description in <code><a href="auth_oauth2.html">auth_oauth2()</a></code>. It sets the <code>provider</code> field to <code>"github"</code>.
+Further, extracts information from the <code>https://api.github.com/user</code> endpoint
+and maps the information accordingly:</p><ul><li><p><code>id</code> -&gt; <code>id</code></p></li>
+<li><p><code>name</code> -&gt; <code>name_display</code></p></li>
+<li><p><code>login</code> -&gt; <code>name_user</code></p></li>
+<li><p><code>email</code> -&gt; <code>emails</code></p></li>
+<li><p><code>avatar_url</code> -&gt; <code>photos</code></p></li>
+</ul><p>It also sets the <code>.raw</code> field to the full list of information returned from
+github.</p>
+    </div>
 
     <div id="ref-examples">
     <h2>Examples</h2>
