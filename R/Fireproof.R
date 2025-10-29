@@ -186,10 +186,10 @@ Fireproof <- R6::R6Class(
         }
         reject <- auth$reject_response
         forbid <- auth$forbid_user
-        auth <- auth$check_request
         name <- name %||% auth$name
         auth$name <- name
         auth$register_handler(super$add_handler)
+        auth <- auth$check_request
       }
       check_string(name)
       private$AUTHS[[name]] <- auth

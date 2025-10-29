@@ -128,7 +128,7 @@ google <- auth_oidc(
   service_url = "https://accounts.google.com/",
   redirect_url = "https://example.com/auth",
   client_id = "MY_APP_ID",
-  client_secret = "SUCHASECRET",
+  client_secret = "SUCHASECRET"
 )
 
 # Add it to a fireproof plugin

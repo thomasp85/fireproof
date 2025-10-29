@@ -46,7 +46,7 @@
 #' @examples
 #' user_info(
 #'   provider = "local",
-#'   id = 1234
+#'   id = 1234,
 #'   name_display = "thomasp85",
 #'   name_given = "Thomas",
 #'   name_middle = "Lin",

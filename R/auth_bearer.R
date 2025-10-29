@@ -98,7 +98,7 @@ auth_bearer <- function(
   allow_query_token = FALSE,
   name = "BearerAuth"
 ) {
-  AuthBasic$new(
+  AuthBearer$new(
     authenticator = authenticator,
     user_info = user_info,
     realm = realm,

@@ -63,7 +63,7 @@
 #'   service_url = "https://accounts.google.com/",
 #'   redirect_url = "https://example.com/auth",
 #'   client_id = "MY_APP_ID",
-#'   client_secret = "SUCHASECRET",
+#'   client_secret = "SUCHASECRET"
 #' )
 #'
 #' # Add it to a fireproof plugin
@@ -117,7 +117,7 @@ auth_oidc <- function(
 #'   service_url = "https://accounts.google.com/",
 #'   redirect_url = "https://example.com/auth",
 #'   client_id = "MY_APP_ID",
-#'   client_secret = "SUCHASECRET",
+#'   client_secret = "SUCHASECRET"
 #' )
 #'
 AuthOIDC <- R6::R6Class(
@@ -198,7 +198,7 @@ AuthOIDC <- R6::R6Class(
         on_auth = on_auth,
         user_info = NULL,
         service_params = service_params,
-        name = name,
+        name = name
       )
       check_string(service_url)
       private$SERVICE_URL = service_url

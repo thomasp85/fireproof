@@ -9,6 +9,8 @@
 #' @inheritParams auth_oauth2
 #' @inheritDotParams auth_oauth2
 #'
+#' @export
+#'
 #' @return An [AuthOAuth2] object
 #'
 #' @rdname auth_beeceptor
