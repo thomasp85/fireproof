@@ -93,7 +93,7 @@ logging users in.</p>
 <span>  scopes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"profile"</span><span class="op">)</span>,</span>
 <span>  request_user_info <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  validate <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">info</span><span class="op">)</span> <span class="cn">TRUE</span>,</span>
-<span>  redirect_path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">"^.*?(?=(?&lt;!/)/(?!/))"</span>, <span class="st">""</span>, <span class="va">redirect_url</span><span class="op">)</span>,</span>
+<span>  redirect_path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">"^.*?(?=(?&lt;!:/?)/)"</span>, <span class="st">""</span>, <span class="va">redirect_url</span>, perl <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
 <span>  on_auth <span class="op">=</span> <span class="va">replay_request</span>,</span>
 <span>  service_name <span class="op">=</span> <span class="va">service_url</span>,</span>
 <span>  service_params <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>

@@ -147,8 +147,10 @@ under which token info and user info is saved in the session store</p></dd>
 <span class="r-in"><span>  client_id <span class="op">=</span> <span class="st">"MY_APP_ID"</span>,</span></span>
 <span class="r-in"><span>  client_secret <span class="op">=</span> <span class="st">"SUCHASECRET"</span>,</span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>TRE pattern compilation error 'Invalid regexp'</span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in sub("^.*?(?=(?&lt;!/)/(?!/))", "", redirect_url):</span> invalid regular expression '^.*?(?=(?&lt;!/)/(?!/))', reason 'Invalid regexp'</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>PCRE pattern compilation error</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> 	'lookbehind assertion is not fixed length'</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> 	at '(?&lt;!:/?)/)'</span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in sub("^.*?(?=(?&lt;!:/?)/)", "", redirect_url, perl = TRUE):</span> invalid regular expression '^.*?(?=(?&lt;!:/?)/)'</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Add it to a fireproof plugin</span></span></span>
 <span class="r-in"><span><span class="va">fp</span> <span class="op">&lt;-</span> <span class="va"><a href="Fireproof.html">Fireproof</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="op">)</span></span></span>
