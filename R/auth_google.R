@@ -9,6 +9,10 @@
 #' you want to limit access to only select users you should make sure to provide
 #' a `validation` function that checks the userinfo against a whitelist.
 #'
+#' # User information
+#' `auth_google()` automatically adds user information according to the
+#' description in [auth_oidc()]. It sets the `provider` field to `"google"`.
+#'
 #' @inheritParams auth_oidc
 #' @inheritDotParams auth_oidc -service_url -service_name
 #'

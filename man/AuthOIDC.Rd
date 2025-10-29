@@ -39,6 +39,7 @@ google <- AuthOIDC$new(
 <ul>
 <li><span class="pkg-link" data-pkg="fireproof" data-topic="Auth" data-id="forbid_user"><a href='../../fireproof/html/Auth.html#method-Auth-forbid_user'><code>fireproof::Auth$forbid_user()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="fireproof" data-topic="AuthOAuth2" data-id="check_request"><a href='../../fireproof/html/AuthOAuth2.html#method-AuthOAuth2-check_request'><code>fireproof::AuthOAuth2$check_request()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="fireproof" data-topic="AuthOAuth2" data-id="refresh_token"><a href='../../fireproof/html/AuthOAuth2.html#method-AuthOAuth2-refresh_token'><code>fireproof::AuthOAuth2$refresh_token()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="fireproof" data-topic="AuthOAuth2" data-id="register_handler"><a href='../../fireproof/html/AuthOAuth2.html#method-AuthOAuth2-register_handler'><code>fireproof::AuthOAuth2$register_handler()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="fireproof" data-topic="AuthOAuth2" data-id="reject_response"><a href='../../fireproof/html/AuthOAuth2.html#method-AuthOAuth2-reject_response'><code>fireproof::AuthOAuth2$reject_response()</code></a></span></li>
 </ul>

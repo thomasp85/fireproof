@@ -73,13 +73,7 @@ will be understood as scopes the user is granted.}
 username. It is called with two arguments: \code{user} and \code{setter},
 the first being the username used for the successful authentication, the
 second being a function that must be called in the end with the relevant
-information. The \code{setter} function takes the following arguments:
-\code{display_name} (the name the user has chosen as public name),
-\code{name_given} (the users real given name), \code{name_middle} (the users middle
-name), \code{name_family} (the users family name), \code{emails} (a vector of
-emails, potentially named with type, e.g. "work", "home" etc), \code{photos}
-(a vector of urls for profile photos), and \code{...} with additional named
-fields to add.}
+information (see \code{\link[=user_info]{user_info()}}).}
 
 \item{\code{realm}}{The realm this authentication corresponds to. Will be returned
 to the client on a failed authentication attempt to inform them of the

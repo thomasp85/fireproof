@@ -47,7 +47,7 @@ auth_beeceptor_github <- function(
       setter(
         provider = "beeceptor",
         id = info$id,
-        display_name = info$name,
+        name_display = info$name,
         emails = info$email,
         photos = info$avatar_url,
         login = info$login
@@ -81,7 +81,7 @@ auth_beeceptor_google <- function(
       setter(
         provider = "beeceptor",
         id = info$sub,
-        display_name = info$name,
+        name_display = info$name,
         name_given = info$given_name,
         name_family = info$family_name,
         emails = info$email,

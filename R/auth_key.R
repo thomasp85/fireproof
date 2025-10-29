@@ -13,6 +13,15 @@
 #' returns a `400` response unless another authenticator has already set the
 #' response status to something else.
 #'
+#' # User information
+#' `auth_key()` automatically adds [user information][user_info] after
+#' authentication. By default it will set the `provider` field to `"local"`.
+#' Further, it will set the `scopes` field to any scopes returned by the
+#' `authenticator` function.
+#'
+#' Since Key based authentication is seldom used with user specific keys it is
+#' unlikely that it makes sense to populate the information any further.
+#'
 #' @param key The name of the header or cookie to store the secret under
 #' @param secret The secret to check for. Either a single string with the secret
 #' or a function that will be called with the arguments `key`, `request`, and
@@ -22,16 +31,10 @@
 #' scopes the user is granted. Make sure never to store secrets in plain text
 #' and avoid checking them into version control.
 #' @param user_info A function to extract user information from the
-#' username. It will be called with two arguments: `key` and `setter`,
+#' username. It is called with two arguments: `key` and `setter`,
 #' the first being the key used for the successful authentication, the
 #' second being a function that must be called in the end with the relevant
-#' information. The `setter` function takes the following arguments:
-#' `id` (the identifier of the user), `display_name` (the name the user has
-#' chosen as public name), `name_given` (the users real given name),
-#' `name_middle` (the users middle name), `name_family` (the users family
-#' name), `emails` (a vector of emails, potentially named with type, e.g.
-#' "work", "home" etc), `photos` (a vector of urls for profile photos),
-#' and `...` with additional named fields to add.
+#' information (see [user_info()]).
 #' @param cookie Boolean. Should the secret be transmitted as a cookie. If
 #' `FALSE` it is expected to be transmitted as a header.
 #' @inheritParams auth_basic
@@ -99,16 +102,10 @@ AuthKey <- R6::R6Class(
     #' scopes the user is granted. Make sure never to store secrets in plain text
     #' and avoid checking them into version control.
     #' @param user_info A function to extract user information from the
-    #' username. It will be called with two arguments: `key` and `setter`,
+    #' username. It is called with two arguments: `token` and `setter`,
     #' the first being the key used for the successful authentication, the
     #' second being a function that must be called in the end with the relevant
-    #' information. The `setter` function takes the following arguments:
-    #' `id` (the identifier of the user), `display_name` (the name the user has
-    #' chosen as public name), `name_given` (the users real given name),
-    #' `name_middle` (the users middle name), `name_family` (the users family
-    #' name), `emails` (a vector of emails, potentially named with type, e.g.
-    #' "work", "home" etc), `photos` (a vector of urls for profile photos),
-    #' and `...` with additional named fields to add.
+    #' information (see [user_info()]).
     #' @param cookie Boolean. Should the secret be transmitted as a cookie. If
     #' `FALSE` it is expected to be transmitted as a header.
     #' @param name The name of the scheme instance
@@ -230,8 +227,9 @@ AuthKey <- R6::R6Class(
 
 key_user_info_setter <- function(session, name, scopes) {
   function(
+    provider = "local",
     id = NULL,
-    display_name = NULL,
+    name_display = NULL,
     name_given = NULL,
     name_middle = NULL,
     name_family = NULL,
@@ -239,10 +237,13 @@ key_user_info_setter <- function(session, name, scopes) {
     photos = character(0),
     ...
   ) {
-    session[[name]] <- list2(
+    session[[name]] <- user_info(
+      provider = provider,
       id = id,
-      display_name = display_name,
-      name = c(given = name_given, middle = name_middle, family = name_family),
+      name_display = name_display,
+      name_given = name_given,
+      name_middle = name_middle,
+      name_family = name_family,
       emails = emails,
       photos = photos,
       scopes = scopes,

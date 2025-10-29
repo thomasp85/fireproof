@@ -18,16 +18,10 @@ scopes the user is granted. Make sure never to store secrets in plain text
 and avoid checking them into version control.}
 
 \item{user_info}{A function to extract user information from the
-username. It will be called with two arguments: \code{key} and \code{setter},
+username. It is called with two arguments: \code{key} and \code{setter},
 the first being the key used for the successful authentication, the
 second being a function that must be called in the end with the relevant
-information. The \code{setter} function takes the following arguments:
-\code{id} (the identifier of the user), \code{display_name} (the name the user has
-chosen as public name), \code{name_given} (the users real given name),
-\code{name_middle} (the users middle name), \code{name_family} (the users family
-name), \code{emails} (a vector of emails, potentially named with type, e.g.
-"work", "home" etc), \code{photos} (a vector of urls for profile photos),
-and \code{...} with additional named fields to add.}
+information (see \code{\link[=user_info]{user_info()}}).}
 
 \item{cookie}{Boolean. Should the secret be transmitted as a cookie. If
 \code{FALSE} it is expected to be transmitted as a header.}
@@ -51,6 +45,16 @@ doesn't return a \code{401} response with a \code{WWW-Authenticate} header. Inst
 returns a \code{400} response unless another authenticator has already set the
 response status to something else.
 }
+\section{User information}{
+\code{auth_key()} automatically adds \link[=user_info]{user information} after
+authentication. By default it will set the \code{provider} field to \code{"local"}.
+Further, it will set the \code{scopes} field to any scopes returned by the
+\code{authenticator} function.
+
+Since Key based authentication is seldom used with user specific keys it is
+unlikely that it makes sense to populate the information any further.
+}
+
 \examples{
 # Create an authenticator of dubious quality
 key <- auth_key(

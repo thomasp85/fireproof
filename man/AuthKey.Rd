@@ -68,16 +68,10 @@ scopes the user is granted. Make sure never to store secrets in plain text
 and avoid checking them into version control.}
 
 \item{\code{user_info}}{A function to extract user information from the
-username. It will be called with two arguments: \code{key} and \code{setter},
+username. It is called with two arguments: \code{token} and \code{setter},
 the first being the key used for the successful authentication, the
 second being a function that must be called in the end with the relevant
-information. The \code{setter} function takes the following arguments:
-\code{id} (the identifier of the user), \code{display_name} (the name the user has
-chosen as public name), \code{name_given} (the users real given name),
-\code{name_middle} (the users middle name), \code{name_family} (the users family
-name), \code{emails} (a vector of emails, potentially named with type, e.g.
-"work", "home" etc), \code{photos} (a vector of urls for profile photos),
-and \code{...} with additional named fields to add.}
+information (see \code{\link[=user_info]{user_info()}}).}
 
 \item{\code{cookie}}{Boolean. Should the secret be transmitted as a cookie. If
 \code{FALSE} it is expected to be transmitted as a header.}

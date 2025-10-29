@@ -15,6 +15,12 @@
 #' If the authentication passes, the username from the authorization header is
 #' written to the `username` data slot in the request
 #'
+#' # User information
+#' `auth_basic()` automatically adds [user information][user_info] after
+#' authentication. By default it will set the `provider` field to `"local"` and
+#' the `id` field to the username of used for logging in. Further, it will set
+#' the `scopes` field to any scopes returned by the `authenticator` function.
+#'
 #' @param authenticator A function that will be called with the arguments
 #' `username`, `password`, `realm`, `request`, and `response` and returns `TRUE`
 #' if the user is valid, and `FALSE` otherwise. If the function returns a
@@ -25,12 +31,7 @@
 #' username. It is called with two arguments: `user` and `setter`,
 #' the first being the username used for the successful authentication, the
 #' second being a function that must be called in the end with the relevant
-#' information. The `setter` function takes the following arguments:
-#' `display_name` (the name the user has chosen as public name), `name_given`
-#' (the users real given name), `name_middle` (the users middle name),
-#' `name_family` (the users family name), `emails` (a vector of emails,
-#' potentially named with type, e.g. "work", "home" etc), `photos` (a vector of
-#' urls for profile photos), and `...` with additional named fields to add.
+#' information (see [user_info()]).
 #' @param realm The realm this authentication corresponds to. Will be returned
 #' to the client on a failed authentication attempt to inform them of the
 #' credentials required, though most often these days it is kept from the user.
@@ -138,13 +139,7 @@ AuthBasic <- R6::R6Class(
     #' username. It is called with two arguments: `user` and `setter`,
     #' the first being the username used for the successful authentication, the
     #' second being a function that must be called in the end with the relevant
-    #' information. The `setter` function takes the following arguments:
-    #' `display_name` (the name the user has chosen as public name),
-    #' `name_given` (the users real given name), `name_middle` (the users middle
-    #' name), `name_family` (the users family name), `emails` (a vector of
-    #' emails, potentially named with type, e.g. "work", "home" etc), `photos`
-    #' (a vector of urls for profile photos), and `...` with additional named
-    #' fields to add.
+    #' information (see [user_info()]).
     #' @param realm The realm this authentication corresponds to. Will be returned
     #' to the client on a failed authentication attempt to inform them of the
     #' credentials required, though most often these days it is kept from the user.
@@ -260,7 +255,9 @@ AuthBasic <- R6::R6Class(
 
 basic_user_info_setter <- function(session, name, user, scopes) {
   function(
-    display_name = NULL,
+    provider = "local",
+    id = user,
+    name_display = NULL,
     name_given = NULL,
     name_middle = NULL,
     name_family = NULL,
@@ -268,10 +265,12 @@ basic_user_info_setter <- function(session, name, user, scopes) {
     photos = character(0),
     ...
   ) {
-    session[[name]] <- list2(
-      id = user,
-      display_name = display_name,
-      name = c(given = name_given, middle = name_middle, family = name_family),
+    session[[name]] <- user_info(
+      id = id,
+      name_display = name_display,
+      name_given = name_given,
+      name_middle = name_middle,
+      name_family = name_family,
       emails = emails,
       photos = photos,
       scopes = scopes,

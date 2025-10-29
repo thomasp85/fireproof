@@ -63,6 +63,23 @@ ID and client secret for this to work. Register an application at
 to only select users you should make sure to provide a \code{validation} function
 that checks the userinfo against a whitelist.
 }
+\section{User information}{
+\code{auth_github()} automatically adds user information according to the
+description in \code{\link[=auth_oauth2]{auth_oauth2()}}. It sets the \code{provider} field to \code{"github"}.
+Further, extracts information from the \verb{https://api.github.com/user} endpoint
+and maps the information accordingly:
+\itemize{
+\item \code{id} -> \code{id}
+\item \code{name} -> \code{name_display}
+\item \code{login} -> \code{name_user}
+\item \code{email} -> \code{emails}
+\item \code{avatar_url} -> \code{photos}
+}
+
+It also sets the \code{.raw} field to the full list of information returned from
+github.
+}
+
 \examples{
 github <- auth_github(
   redirect_url = "https://example.com/auth",

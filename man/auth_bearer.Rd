@@ -21,16 +21,10 @@ it is considered to be authenticated and the return value will be understood
 as scopes the user is granted.}
 
 \item{user_info}{A function to extract user information from the
-username. It will be called with two arguments: \code{token} and \code{setter},
+username. It is called with two arguments: \code{token} and \code{setter},
 the first being the token used for the successful authentication, the
 second being a function that must be called in the end with the relevant
-information. The \code{setter} function takes the following arguments:
-\code{id} (the identifier of the user), \code{display_name} (the name the user has
-chosen as public name), \code{name_given} (the users real given name),
-\code{name_middle} (the users middle name), \code{name_family} (the users family
-name), \code{emails} (a vector of emails, potentially named with type, e.g.
-"work", "home" etc), \code{photos} (a vector of urls for profile photos),
-and \code{...} with additional named fields to add.}
+information (see \code{\link[=user_info]{user_info()}}).}
 
 \item{realm}{The realm this authentication corresponds to. Will be returned
 to the client on a failed authentication attempt to inform them of the
@@ -78,6 +72,22 @@ the exact endpoint will then be tested automatically. Further, the
 authenticator should write any additional user information that gets fetched
 during the validation to relevant fields in the response data
 }
+\section{User information}{
+\code{auth_bearer()} automatically adds \link[=user_info]{user information} after
+authentication. By default it will set the \code{provider} field to \code{"local"}.
+Further, it will set the \code{scopes} field to any scopes returned by the
+\code{authenticator} function and the \code{token} field to a list with the following
+elements:
+\itemize{
+\item \code{access_token}: The provided token
+\item \code{token_type}: \code{"bearer"}
+\item \code{scope} The scopes concatenated into a space separated string
+}
+
+This structure mimics the structure of the token information returned by
+OAuth 2.0 and OpenID Connect services.
+}
+
 \examples{
 # Create an authenticator of dubious quality
 bearer <- auth_bearer(

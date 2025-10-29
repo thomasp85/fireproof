@@ -22,12 +22,7 @@ will be understood as scopes the user is granted.}
 username. It is called with two arguments: \code{user} and \code{setter},
 the first being the username used for the successful authentication, the
 second being a function that must be called in the end with the relevant
-information. The \code{setter} function takes the following arguments:
-\code{display_name} (the name the user has chosen as public name), \code{name_given}
-(the users real given name), \code{name_middle} (the users middle name),
-\code{name_family} (the users family name), \code{emails} (a vector of emails,
-potentially named with type, e.g. "work", "home" etc), \code{photos} (a vector of
-urls for profile photos), and \code{...} with additional named fields to add.}
+information (see \code{\link[=user_info]{user_info()}}).}
 
 \item{realm}{The realm this authentication corresponds to. Will be returned
 to the client on a failed authentication attempt to inform them of the
@@ -54,6 +49,13 @@ testing of the passwords in a sensible and responsible way. See
 If the authentication passes, the username from the authorization header is
 written to the \code{username} data slot in the request
 }
+\section{User information}{
+\code{auth_basic()} automatically adds \link[=user_info]{user information} after
+authentication. By default it will set the \code{provider} field to \code{"local"} and
+the \code{id} field to the username of used for logging in. Further, it will set
+the \code{scopes} field to any scopes returned by the \code{authenticator} function.
+}
+
 \examples{
 # Create an authenticator of dubious quality
 basic <- auth_basic(

@@ -95,6 +95,33 @@ all of these is the need for your server to register itself with the
 provider and get a client id and a client secret which must be used when
 logging users in.
 }
+\section{User information}{
+\code{auth_oidc()} automatically adds \link[=user_info]{user information} after
+authentication, based on the standardized user claims provided in the
+\code{id_token} as well as any additional user information provided at the
+\code{userinfo_endpoint} of the service if \code{request_user_info = TRUE}. You can see
+a list of standard user information defined by OpenID Connect at the
+\href{https://openid.net/specs/openid-connect-core-1_0.html#StandardClaims}{OpenID website}.
+The mapping of these to \code{\link[=user_info]{user_info()}} is as follows:
+\itemize{
+\item \code{sub} -> \code{id}
+\item \code{name} -> \code{name_display}
+\item \code{given_name} -> \code{name_given}
+\item \code{middle_name} -> \code{name_middle}
+\item \code{family_name} -> \code{name_family}
+\item \code{email} -> \code{emails}
+\item \code{picture} -> \code{photos}
+}
+
+Further, it will set the \code{scopes} field to any scopes returned by the provider
+during authorization, the \code{provider} field to \code{service_name}, the \code{token}
+field to the token information as described in \code{\link[=auth_oauth2]{auth_oauth2()}}, and \code{.raw} to
+the full list of user information as provided unaltered by the service. Be
+aware that the information reported by the service depends on the scopes
+requested by fireproof and granted by the user. You can therefore never
+assume the existence of any information besides \code{id}, \code{provider} and \code{token}.
+}
+
 \examples{
 # Example using Google endpoint (use `auth_google()` in real code)
 google <- auth_oidc(

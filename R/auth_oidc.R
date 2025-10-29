@@ -18,6 +18,31 @@
 #' provider and get a client id and a client secret which must be used when
 #' logging users in.
 #'
+#' # User information
+#' `auth_oidc()` automatically adds [user information][user_info] after
+#' authentication, based on the standardized user claims provided in the
+#' `id_token` as well as any additional user information provided at the
+#' `userinfo_endpoint` of the service if `request_user_info = TRUE`. You can see
+#' a list of standard user information defined by OpenID Connect at the
+#' [OpenID website](https://openid.net/specs/openid-connect-core-1_0.html#StandardClaims).
+#' The mapping of these to [user_info()] is as follows:
+#'
+#' - `sub` -> `id`
+#' - `name` -> `name_display`
+#' - `given_name` -> `name_given`
+#' - `middle_name` -> `name_middle`
+#' - `family_name` -> `name_family`
+#' - `email` -> `emails`
+#' - `picture` -> `photos`
+#'
+#' Further, it will set the `scopes` field to any scopes returned by the provider
+#' during authorization, the `provider` field to `service_name`, the `token`
+#' field to the token information as described in [auth_oauth2()], and `.raw` to
+#' the full list of user information as provided unaltered by the service. Be
+#' aware that the information reported by the service depends on the scopes
+#' requested by fireproof and granted by the user. You can therefore never
+#' assume the existence of any information besides `id`, `provider` and `token`.
+#'
 #' @param service_url The url to the authentication service
 #' @inheritParams auth_oauth2
 #' @param request_user_info Logical. Should the userinfo endpoint be followed to
@@ -291,6 +316,7 @@ AuthOIDC <- R6::R6Class(
           collapse = ": "
         ))
       }
+      content$timestamp <- Sys.time()
       jwt <- private$validate_id_token(content$id_token)
       if (
         private$REQ_USER_INFO && !is.null(private$SERVICE$userinfo_endpoint)
@@ -302,8 +328,10 @@ AuthOIDC <- R6::R6Class(
         )
         info <- curl_fetch_memory(private$SERVICE$userinfo_endpoint, ch)
         info <- jsonlite::parse_json(rawToChar(info$content))
-        extra_info <- setdiff(names(info), names(jwt))
-        jwt[extra_info] <- info[extra_info]
+        if (info$sub == jwt$sub) {
+          extra_info <- setdiff(names(info), names(jwt))
+          jwt[extra_info] <- info[extra_info]
+        }
       }
       scope <- if (!is.null(content$scope)) {
         strsplit(content$scope, " ", fixed = TRUE)[[1]]
@@ -317,7 +345,7 @@ AuthOIDC <- R6::R6Class(
       setter(
         provider = private$SERVICE_NAME,
         id = jwt$sub,
-        display_name = jwt$name,
+        name_display = jwt$name,
         name_given = jwt$given_name,
         name_middle = jwt$middle_name,
         name_family = jwt$family_name,

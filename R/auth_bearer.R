@@ -25,6 +25,20 @@
 #' authenticator should write any additional user information that gets fetched
 #' during the validation to relevant fields in the response data
 #'
+#' # User information
+#' `auth_bearer()` automatically adds [user information][user_info] after
+#' authentication. By default it will set the `provider` field to `"local"`.
+#' Further, it will set the `scopes` field to any scopes returned by the
+#' `authenticator` function and the `token` field to a list with the following
+#' elements:
+#'
+#' - `access_token`: The provided token
+#' - `token_type`: `"bearer"`
+#' - `scope` The scopes concatenated into a space separated string
+#'
+#' This structure mimics the structure of the token information returned by
+#' OAuth 2.0 and OpenID Connect services.
+#'
 #' @param authenticator A function that will be called with the arguments
 #' `token`, `realm`, `request`, and `response` and returns `TRUE` if the token
 #' is valid, and `FALSE` otherwise. If the function returns a character vector
@@ -32,16 +46,10 @@
 #' as scopes the user is granted.
 #' @param name The name of the authentication
 #' @param user_info A function to extract user information from the
-#' username. It will be called with two arguments: `token` and `setter`,
+#' username. It is called with two arguments: `token` and `setter`,
 #' the first being the token used for the successful authentication, the
 #' second being a function that must be called in the end with the relevant
-#' information. The `setter` function takes the following arguments:
-#' `id` (the identifier of the user), `display_name` (the name the user has
-#' chosen as public name), `name_given` (the users real given name),
-#' `name_middle` (the users middle name), `name_family` (the users family
-#' name), `emails` (a vector of emails, potentially named with type, e.g.
-#' "work", "home" etc), `photos` (a vector of urls for profile photos),
-#' and `...` with additional named fields to add.
+#' information (see [user_info()]).
 #' @param realm The realm this authentication corresponds to. Will be returned
 #' to the client on a failed authentication attempt to inform them of the
 #' credentials required, though most often these days it is kept from the user.
@@ -135,16 +143,10 @@ AuthBearer <- R6::R6Class(
     #' it is considered to be authenticated and the return value will be understood
     #' as scopes the user is granted.
     #' @param user_info A function to extract user information from the
-    #' username. It will be called with two arguments: `token` and `setter`,
+    #' username. It is called with two arguments: `token` and `setter`,
     #' the first being the token used for the successful authentication, the
     #' second being a function that must be called in the end with the relevant
-    #' information. The `setter` function takes the following arguments:
-    #' `id` (the identifier of the user), `display_name` (the name the user has
-    #' chosen as public name), `name_given` (the users real given name),
-    #' `name_middle` (the users middle name), `name_family` (the users family
-    #' name), `emails` (a vector of emails, potentially named with type, e.g.
-    #' "work", "home" etc), `photos` (a vector of urls for profile photos),
-    #' and `...` with additional named fields to add.
+    #' information (see [user_info()]).
     #' @param realm The realm this authentication corresponds to. Will be returned
     #' to the client on a failed authentication attempt to inform them of the
     #' credentials required, though most often these days it is kept from the user.
@@ -320,8 +322,9 @@ AuthBearer <- R6::R6Class(
 
 bearer_user_info_setter <- function(session, name, token, scopes) {
   function(
+    provider = "local",
     id = NULL,
-    display_name = NULL,
+    name_display = NULL,
     name_given = NULL,
     name_middle = NULL,
     name_family = NULL,
@@ -329,17 +332,20 @@ bearer_user_info_setter <- function(session, name, token, scopes) {
     photos = character(0),
     ...
   ) {
-    session[[name]] <- list2(
+    session[[name]] <- user_info(
+      provider = provider,
       id = id,
-      display_name = display_name,
-      name = c(given = name_given, middle = name_middle, family = name_family),
+      name_display = name_display,
+      name_given = name_given,
+      name_middle = name_middle,
+      name_family = name_family,
       emails = emails,
       photos = photos,
       scopes = scopes,
       token = list(
         access_token = token,
         token_type = "bearer",
-        scope = scopes
+        scope = paste0(scopes, collapse = " ")
       ),
       ...
     )

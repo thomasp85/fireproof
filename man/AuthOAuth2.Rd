@@ -39,6 +39,7 @@ github <- AuthOAuth2$new(
 \item \href{#method-AuthOAuth2-check_request}{\code{AuthOAuth2$check_request()}}
 \item \href{#method-AuthOAuth2-reject_response}{\code{AuthOAuth2$reject_response()}}
 \item \href{#method-AuthOAuth2-register_handler}{\code{AuthOAuth2$register_handler()}}
+\item \href{#method-AuthOAuth2-refresh_token}{\code{AuthOAuth2$refresh_token()}}
 \item \href{#method-AuthOAuth2-clone}{\code{AuthOAuth2$clone()}}
 }
 }
@@ -120,18 +121,11 @@ with information from the original request). By default it will use
 the response.}
 
 \item{\code{user_info}}{A function to extract user information from the
-authorization provider. It will be called with two arguments: \code{token_info}
-and \code{setter}, the first being the token information returned from the
-provider as a list (notably with a \code{token} field for the actual token), the
-second being a function that must be called in the end with the relevant
-information. The \code{setter} function takes the following arguments:
-\code{provider} (the name of the oauth2 provider), \code{id} (the identifier of the
-user), \code{display_name} (the name the user has chosen as public name),
-\code{name_given} (the users real given name), \code{name_middle} (the users middle
-name), \code{name_family} (the users family name), \code{emails} (a vector of
-emails, potentially named with type, e.g. "work", "home" etc), \code{photos}
-(a vector of urls for profile photos), and \code{...} with additional named
-fields to add}
+username. It is called with two arguments: \code{token_info} and \code{setter},
+the first being the token information returned from the provider as a list
+(notably with a \code{token} field for the actual token), the second being a
+function that must be called in the end with the relevant information (see
+\code{\link[=user_info]{user_info()}}).}
 
 \item{\code{service_params}}{A named list of additional query params to add to
 the url when constructing the authorization url in the
@@ -219,6 +213,28 @@ authentication method
 \describe{
 \item{\code{add_handler}}{The \code{add_handler} method from \link{Fireproof} to be called
 for adding additional handlers}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-AuthOAuth2-refresh_token"></a>}}
+\if{latex}{\out{\hypertarget{method-AuthOAuth2-refresh_token}{}}}
+\subsection{Method \code{refresh_token()}}{
+Refresh the access token of the session. Will return \code{TRUE}
+upon success and \code{FALSE} upon failure. Failure can either be issues with
+the token provider, but also lack of a refresh token.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{AuthOAuth2$refresh_token(session, force = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{session}}{The session data store}
+
+\item{\code{force}}{Boolean. Should the token be refreshed even if it hasn't
+expired yet}
 }
 \if{html}{\out{</div>}}
 }

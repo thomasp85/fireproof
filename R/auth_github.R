@@ -8,6 +8,21 @@
 #' to only select users you should make sure to provide a `validation` function
 #' that checks the userinfo against a whitelist.
 #'
+#' # User information
+#' `auth_github()` automatically adds user information according to the
+#' description in [auth_oauth2()]. It sets the `provider` field to `"github"`.
+#' Further, extracts information from the `https://api.github.com/user` endpoint
+#' and maps the information accordingly:
+#'
+#' - `id` -> `id`
+#' - `name` -> `name_display`
+#' - `login` -> `name_user`
+#' - `email` -> `emails`
+#' - `avatar_url` -> `photos`
+#'
+#' It also sets the `.raw` field to the full list of information returned from
+#' github.
+#'
 #' @inheritParams auth_oauth2
 #' @inheritDotParams auth_oauth2 -token_url -auth_url -user_info
 #'
@@ -52,8 +67,8 @@ auth_github <- function(
       setter(
         provider = "github",
         id = info$id,
-        display_name = info$name,
-        username = info$login,
+        name_display = info$name,
+        name_user = info$login,
         emails = info$email,
         photos = info$avatar_url,
         .raw = info

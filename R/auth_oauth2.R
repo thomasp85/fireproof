@@ -9,10 +9,30 @@
 #' login and potentially extract basic information about the user. The
 #' `auth_oauth2()` function is the base constructor which can be used to create
 #' authenticators with any provider. For ease of use `fireproof` comes with a
-#' range of predefined constructors for popular services such as GitHub, Google
-#' etc. Central for all of these is the need for your server to register itself
+#' range of predefined constructors for popular services such as GitHub etc.
+#' Central for all of these is the need for your server to register itself
 #' with the provider and get a client id and a client secret which must be used
 #' when logging users in.
+#'
+#' # User information
+#' `auth_oauth2()` automatically adds some [user information][user_info] after
+#' authentication, but it is advised to consult the service provider for more
+#' information (this is done automatically for the provider specific
+#' constructors. See their documentation for details about what information is
+#' assigned to which field). The base constructor will set the `scopes` field to
+#' any scopes returned by the provider during authorization. It will also set
+#' the `token` field to a list with the token data provided by the service
+#' during authorization. Some standard fields in the list are:
+#'
+#' - `access_token`: The actual token value
+#' - `token_type`: The type of token (usually `"bearer"`)
+#' - `expires_in`: The lifetime of the token in seconds
+#' - `refresh_token`: A long-lived token that can be used to issue a new
+#'   access token if the current becomes stale
+#' - `timestamp`: The time the token was received
+#'
+#' But OAuth 2.0 providers may choose to supply more. Consult the documentation
+#' for the provider to learn of additional fields it may provide.
 #'
 #' @param token_url The URL to the authorization servers token endpoint
 #' @param redirect_url The URL the authorization server should redirect to
@@ -49,18 +69,11 @@
 #' [replay_request] to internally replay the original request and send back
 #' the response.
 #' @param user_info A function to extract user information from the
-#' authorization provider. It will be called with two arguments: `token_info`
-#' and `setter`, the first being the token information returned from the
-#' provider as a list (notably with a `token` field for the actual token), the
-#' second being a function that must be called in the end with the relevant
-#' information. The `setter` function takes the following arguments:
-#' `provider` (the name of the oauth2 provider), `id` (the identifier of the
-#' user), `display_name` (the name the user has chosen as public name),
-#' `name_given` (the users real given name), `name_middle` (the users middle
-#' name), `name_family` (the users family name), `emails` (a vector of
-#' emails, potentially named with type, e.g. "work", "home" etc), `photos`
-#' (a vector of urls for profile photos), and `...` with additional named
-#' fields to add
+#' username. It is called with two arguments: `token_info` and `setter`,
+#' the first being the token information returned from the provider as a list
+#' (notably with a `token` field for the actual token), the second being a
+#' function that must be called in the end with the relevant information (see
+#' [user_info()]).
 #' @param service_params A named list of additional query params to add to
 #' the url when constructing the authorization url in the
 #' `"authorization_code"` grant type
@@ -181,18 +194,11 @@ AuthOAuth2 <- R6::R6Class(
     #' [replay_request] to internally replay the original request and send back
     #' the response.
     #' @param user_info A function to extract user information from the
-    #' authorization provider. It will be called with two arguments: `token_info`
-    #' and `setter`, the first being the token information returned from the
-    #' provider as a list (notably with a `token` field for the actual token), the
-    #' second being a function that must be called in the end with the relevant
-    #' information. The `setter` function takes the following arguments:
-    #' `provider` (the name of the oauth2 provider), `id` (the identifier of the
-    #' user), `display_name` (the name the user has chosen as public name),
-    #' `name_given` (the users real given name), `name_middle` (the users middle
-    #' name), `name_family` (the users family name), `emails` (a vector of
-    #' emails, potentially named with type, e.g. "work", "home" etc), `photos`
-    #' (a vector of urls for profile photos), and `...` with additional named
-    #' fields to add
+    #' username. It is called with two arguments: `token_info` and `setter`,
+    #' the first being the token information returned from the provider as a list
+    #' (notably with a `token` field for the actual token), the second being a
+    #' function that must be called in the end with the relevant information (see
+    #' [user_info()]).
     #' @param service_params A named list of additional query params to add to
     #' the url when constructing the authorization url in the
     #' `"authorization_code"` grant type
@@ -303,6 +309,50 @@ AuthOAuth2 <- R6::R6Class(
           private$exchange_code_to_token(request, response, session)
         }
       )
+    },
+    #' @description Refresh the access token of the session. Will return `TRUE`
+    #' upon success and `FALSE` upon failure. Failure can either be issues with
+    #' the token provider, but also lack of a refresh token.
+    #' @param session The session data store
+    #' @param force Boolean. Should the token be refreshed even if it hasn't
+    #' expired yet
+    refresh_token = function(session, force = FALSE) {
+      token <- session[[private$NAME]]$token
+      if (is.null(token$refresh_token)) {
+        return(
+          !force &&
+            !is.null(token$expires_in) &&
+            Sys.time() < token$timestamp + as.integer(token$expires_in)
+        )
+      }
+      if (
+        force ||
+          is.null(token$expires_in) ||
+          Sys.time() > token$timestamp + as.integer(token$expires_in)
+      ) {
+        token_par <- list(
+          grant_type = "refresh_token",
+          refresh_token = token$refresh_token,
+          client_id = private$CLIENT_ID,
+          client_secret = private$CLIENT_SECRET
+        )
+        ch <- curl::new_handle()
+        curl::handle_setopt(ch, post = 1)
+        curl::handle_setform(ch, .list = token_par)
+        res <- curl_fetch_memory(private$TOKEN_URL, ch)
+        if (res$status_code != 200L) {
+          return(FALSE)
+        }
+        content <- jsonlite::parse_json(rawToChar(res$content))
+        content$timestamp <- Sys.time()
+        session[[private$NAME]]$token <- modifyList(
+          session[[private$NAME]]$token,
+          content
+        )
+        TRUE
+      } else {
+        TRUE
+      }
     }
   ),
   active = list(
@@ -473,6 +523,7 @@ AuthOAuth2 <- R6::R6Class(
           collapse = ": "
         ))
       }
+      content$timestamp <- Sys.time()
       if (!is.null(content$scope)) {
         content$scope <- strsplit(content$scope, " ", fixed = TRUE)[[1]]
       }
@@ -516,7 +567,7 @@ oauth_user_info_setter <- function(session, name, token, scopes) {
   function(
     provider = NULL,
     id = NULL,
-    display_name = NULL,
+    name_display = NULL,
     name_given = NULL,
     name_middle = NULL,
     name_family = NULL,
@@ -524,11 +575,13 @@ oauth_user_info_setter <- function(session, name, token, scopes) {
     photos = character(0),
     ...
   ) {
-    session[[name]] <- list2(
+    session[[name]] <- user_info(
       provider = provider,
       id = id,
-      display_name = display_name,
-      name = c(given = name_given, middle = name_middle, family = name_family),
+      name_display = name_display,
+      name_given = name_given,
+      name_middle = name_middle,
+      name_family = name_family,
       emails = emails,
       photos = photos,
       scopes = scopes,

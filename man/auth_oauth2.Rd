@@ -66,18 +66,11 @@ with information from the original request). By default it will use
 the response.}
 
 \item{user_info}{A function to extract user information from the
-authorization provider. It will be called with two arguments: \code{token_info}
-and \code{setter}, the first being the token information returned from the
-provider as a list (notably with a \code{token} field for the actual token), the
-second being a function that must be called in the end with the relevant
-information. The \code{setter} function takes the following arguments:
-\code{provider} (the name of the oauth2 provider), \code{id} (the identifier of the
-user), \code{display_name} (the name the user has chosen as public name),
-\code{name_given} (the users real given name), \code{name_middle} (the users middle
-name), \code{name_family} (the users family name), \code{emails} (a vector of
-emails, potentially named with type, e.g. "work", "home" etc), \code{photos}
-(a vector of urls for profile photos), and \code{...} with additional named
-fields to add}
+username. It is called with two arguments: \code{token_info} and \code{setter},
+the first being the token information returned from the provider as a list
+(notably with a \code{token} field for the actual token), the second being a
+function that must be called in the end with the relevant information (see
+\code{\link[=user_info]{user_info()}}).}
 
 \item{service_params}{A named list of additional query params to add to
 the url when constructing the authorization url in the
@@ -99,11 +92,33 @@ context of \code{fireproof} is to validate that the user can perform a successfu
 login and potentially extract basic information about the user. The
 \code{auth_oauth2()} function is the base constructor which can be used to create
 authenticators with any provider. For ease of use \code{fireproof} comes with a
-range of predefined constructors for popular services such as GitHub, Google
-etc. Central for all of these is the need for your server to register itself
+range of predefined constructors for popular services such as GitHub etc.
+Central for all of these is the need for your server to register itself
 with the provider and get a client id and a client secret which must be used
 when logging users in.
 }
+\section{User information}{
+\code{auth_oauth2()} automatically adds some \link[=user_info]{user information} after
+authentication, but it is advised to consult the service provider for more
+information (this is done automatically for the provider specific
+constructors. See their documentation for details about what information is
+assigned to which field). The base constructor will set the \code{scopes} field to
+any scopes returned by the provider during authorization. It will also set
+the \code{token} field to a list with the token data provided by the service
+during authorization. Some standard fields in the list are:
+\itemize{
+\item \code{access_token}: The actual token value
+\item \code{token_type}: The type of token (usually \code{"bearer"})
+\item \code{expires_in}: The lifetime of the token in seconds
+\item \code{refresh_token}: A long-lived token that can be used to issue a new
+access token if the current becomes stale
+\item \code{timestamp}: The time the token was received
+}
+
+But OAuth 2.0 providers may choose to supply more. Consult the documentation
+for the provider to learn of additional fields it may provide.
+}
+
 \examples{
 # Example using GitHub endpoints (use `auth_github()` in real code)
 github <- auth_oauth2(

@@ -75,6 +75,11 @@ application at \url{https://developers.google.com/identity/protocols/oauth2}. If
 you want to limit access to only select users you should make sure to provide
 a \code{validation} function that checks the userinfo against a whitelist.
 }
+\section{User information}{
+\code{auth_google()} automatically adds user information according to the
+description in \code{\link[=auth_oidc]{auth_oidc()}}. It sets the \code{provider} field to \code{"google"}.
+}
+
 \examples{
 google <- auth_google(
   redirect_url = "https://example.com/auth",
