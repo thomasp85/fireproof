@@ -261,8 +261,8 @@ basic_user_info_setter <- function(session, name, user, scopes) {
     name_given = NULL,
     name_middle = NULL,
     name_family = NULL,
-    emails = character(0),
-    photos = character(0),
+    emails = NULL,
+    photos = NULL,
     ...
   ) {
     session[[name]] <- user_info(
