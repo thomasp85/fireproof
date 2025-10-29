@@ -88,7 +88,6 @@ user_info <- function(
 #' @export
 print.firesale_user_info <- function(x, ...) {
   for (name in names(x)) {
-    cat(name, ": ", format(x[name]), sep = "")
+    cat(name, ": ", format(x[name]), "\n", sep = "")
   }
-  cat("\n")
 }
