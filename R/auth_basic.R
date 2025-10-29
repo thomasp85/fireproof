@@ -187,7 +187,7 @@ AuthBasic <- R6::R6Class(
       if (!authenticated && !is.null(auth) && grepl("^Basic ", auth)) {
         auth <- sub("^Basic ", "", auth)
         auth <- base64decode(auth)
-        auth <- strsplit(auth, ":", fixed = TRUE)[[1]]
+        auth <- strsplit(rawToChar(auth), ":", fixed = TRUE)[[1]]
         if (length(auth) != 2) {
           reqres::abort_bad_request("Malformed Authorization header")
         }
