@@ -99,7 +99,7 @@ auth_oauth2 <- function(
   grant_type = c("authorization_code", "password"),
   scopes = NULL,
   validate = function(info) TRUE,
-  redirect_path = sub("^.*?(?=(?<!/)/(?!/))", "", redirect_url),
+  redirect_path = sub("^.*?(?=(?<!:/?)/)", "", redirect_url, perl = TRUE),
   on_auth = replay_request,
   user_info = NULL,
   service_params = list(),
@@ -207,7 +207,12 @@ AuthOAuth2 <- R6::R6Class(
       grant_type = c("authorization_code", "password"),
       scopes = NULL,
       validate = function(info) TRUE,
-      redirect_path = sub("^.*?(?=(?<!/)/(?!/))", "", redirect_url),
+      redirect_path = sub(
+        "^.*?(?=(?<!:/?)/)",
+        "",
+        redirect_url,
+        perl = TRUE
+      ),
       on_auth = replay_request,
       user_info = NULL,
       service_params = list(),
