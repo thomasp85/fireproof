@@ -223,7 +223,7 @@ AuthBearer <- R6::R6Class(
             "application/x-www-form-urlencoded" = reqres::parse_queryform(),
             autofail = FALSE
           )
-          if (success) token$body <- request$body$access_token
+          if (success) token$body <- trimws(request$body$access_token)
         }
         if (
           private$ALLOW_QUERY &&
