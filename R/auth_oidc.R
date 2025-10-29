@@ -228,10 +228,10 @@ AuthOIDC <- R6::R6Class(
     GRANT_TYPE = "authorization_code",
     SERVICE = list(),
     SERVICE_URL = "",
-    SERVICE_EXPIRES = as.POSIXct(0),
+    SERVICE_EXPIRES = as.POSIXct(0, origin = "1970-01-01"),
     SERVICE_NAME = "",
     KEYS = list(),
-    KEYS_EXPIRES = as.POSIXct(0),
+    KEYS_EXPIRES = as.POSIXct(0, origin = "1970-01-01"),
     REQ_USER_INFO = FALSE,
 
     service_discovery = function() {
