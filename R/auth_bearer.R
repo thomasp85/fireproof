@@ -244,6 +244,7 @@ AuthBearer <- R6::R6Class(
         }
         scopes <- private$SCOPES %||% character()
         if (length(token) == 1) {
+          .session[[private$NAME]] <- list()
           authenticated <- private$AUTHENTICATOR(
             token = token,
             realm = private$REALM,
@@ -267,8 +268,6 @@ AuthBearer <- R6::R6Class(
               scopes
             )
           )
-        } else {
-          .session[[private$NAME]] <- list()
         }
         authenticated
       } else {
