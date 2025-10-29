@@ -234,7 +234,7 @@ AuthBearer <- R6::R6Class(
             response$set_header("Cache-Control", "private")
           }
         }
-        token <- unlist(token)
+        token <- unlist(token, use.names = FALSE)
         if (length(token) > 1) {
           reqres::abort_http_problem(
             400L,
