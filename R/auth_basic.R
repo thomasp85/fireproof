@@ -199,7 +199,7 @@ AuthBasic <- R6::R6Class(
           request = request,
           response = response
         )
-        scopes <- private$SCOPES
+        scopes <- private$SCOPES %||% character()
         if (is.character(authenticated)) {
           scopes <- authenticated
           authenticated <- TRUE

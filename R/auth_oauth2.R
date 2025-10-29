@@ -533,7 +533,7 @@ AuthOAuth2 <- R6::R6Class(
           session,
           private$NAME,
           content,
-          content$scope %||% private$SCOPES
+          content$scope %||% private$SCOPES %||% character()
         )
       )
     }

@@ -340,7 +340,7 @@ AuthOIDC <- R6::R6Class(
         session,
         private$NAME,
         content,
-        scope %||% private$SCOPES
+        scope %||% private$SCOPES %||% character()
       )
       setter(
         provider = private$SERVICE_NAME,

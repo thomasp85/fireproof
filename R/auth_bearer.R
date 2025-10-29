@@ -236,7 +236,7 @@ AuthBearer <- R6::R6Class(
             type = "https://datatracker.ietf.org/doc/html/rfc6750#section-2"
           )
         }
-        scopes <- private$SCOPES
+        scopes <- private$SCOPES %||% character()
         if (length(token) == 1) {
           authenticated <- private$AUTHENTICATOR(
             token = token,
