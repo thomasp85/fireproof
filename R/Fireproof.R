@@ -188,6 +188,7 @@ Fireproof <- R6::R6Class(
         forbid <- auth$forbid_user
         auth <- auth$check_request
         name <- name %||% auth$name
+        auth$name <- name
         auth$register_handler(super$add_handler)
       }
       check_string(name)
