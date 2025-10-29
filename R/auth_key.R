@@ -157,9 +157,12 @@ AuthKey <- R6::R6Class(
       authenticated <- length(info) != 0
       if (!authenticated) {
         key <- if (private$COOKIE) {
-          request$headers[[private$KEY]]
-        } else {
           request$cookies[[private$KEY]]
+        } else {
+          request$get_header(private$KEY)
+        }
+        if (is.null(key)) {
+          return(FALSE)
         }
         authenticated <- private$SECRET(
           key = key,
