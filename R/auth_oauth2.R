@@ -236,7 +236,7 @@ AuthOAuth2 <- R6::R6Class(
       private$REDIRECT_URL <- redirect_url
       check_string(redirect_path)
       private$REDIRECT_PATH <- redirect_path
-      check_character(scopes)
+      check_character(scopes, allow_null = TRUE)
       private$SCOPES <- scopes
 
       check_function(validate)
