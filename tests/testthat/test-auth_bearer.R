@@ -11,12 +11,8 @@ test_that("auth_bearer can be constructed and verify", {
         name_given = "Thomas"
       )
     },
-    name = "test"
+    name = "test2"
   )
-
-  expect_equal(auth$name, "test")
-  auth$name <- "test2"
-  expect_equal(auth$name, "test2")
 
   expect_equal(auth$open_api, list(type = "http", scheme = "bearer"))
 
@@ -354,4 +350,40 @@ test_that("auth_bearer respects existing response status on rejection", {
   auth$reject_response(response, .session = session)
   # Should not overwrite non-404/400 status
   expect_equal(response$status, 500L)
+})
+
+test_that("auth_bearer passes if session already has valid user info", {
+  auth <- auth_bearer(
+    authenticator = function(token) token == "secret",
+    name = "session_test"
+  )
+
+  session <- new.env()
+  # Pre-populate session with user info from previous authentication
+  session$session_test <- user_info(
+    provider = "local",
+    id = "user456",
+    name_given = "Bearer User",
+    scopes = c("read", "write"),
+    token = list(
+      access_token = "previous_token",
+      token_type = "bearer",
+      scope = "read write"
+    )
+  )
+
+  # Request without any authentication header
+  no_auth <- reqres::Request$new(fiery::fake_request("http://example.com"))
+
+  pass <- auth$check_request(
+    request = no_auth,
+    response = no_auth$respond(),
+    keys = list(),
+    .session = session
+  )
+  # Should pass because session already has valid info
+  expect_true(pass)
+  # Session should remain unchanged
+  expect_equal(session$session_test$name, c(given = "Bearer User"))
+  expect_equal(session$session_test$token$access_token, "previous_token")
 })

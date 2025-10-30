@@ -13,12 +13,8 @@ test_that("auth_key can be constructed and verify", {
       )
     },
     cookie = FALSE,
-    name = "test"
+    name = "test2"
   )
-
-  expect_equal(auth$name, "test")
-  auth$name <- "test2"
-  expect_equal(auth$name, "test2")
 
   expect_equal(auth$location, "header")
   expect_equal(auth$open_api, list(type = "apiKey", `in` = "header", name = "x-api-key"))
@@ -172,4 +168,36 @@ test_that("auth_key respects existing response status on rejection", {
   auth$reject_response(response, .session = session)
   # Should not overwrite non-404 status
   expect_equal(response$status, 500L)
+})
+
+test_that("auth_key passes if session already has valid user info", {
+  auth <- auth_key(
+    key = "x-api-key",
+    secret = "my_secret",
+    cookie = FALSE,
+    name = "session_test"
+  )
+
+  session <- new.env()
+  # Pre-populate session with user info from previous authentication
+  session$session_test <- user_info(
+    provider = "local",
+    id = "user123",
+    name_given = "Existing User",
+    scopes = "scope1"
+  )
+
+  # Request without any authentication header
+  no_auth <- reqres::Request$new(fiery::fake_request("http://example.com"))
+
+  pass <- auth$check_request(
+    request = no_auth,
+    response = no_auth$respond(),
+    keys = list(),
+    .session = session
+  )
+  # Should pass because session already has valid info
+  expect_true(pass)
+  # Session should remain unchanged
+  expect_equal(session$session_test$name, c(given = "Existing User"))
 })

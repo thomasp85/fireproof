@@ -12,7 +12,7 @@ auth_oidc(
   scopes = c("profile"),
   request_user_info = FALSE,
   validate = function(info) TRUE,
-  redirect_path = sub("^.*?(?=(?<!:/?)/)", "", redirect_url, perl = TRUE),
+  redirect_path = get_path(redirect_url),
   on_auth = replay_request,
   service_name = service_url,
   service_params = list(),

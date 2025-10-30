@@ -112,7 +112,7 @@ auth_oauth2 <- function(
   grant_type = c("authorization_code", "password"),
   scopes = NULL,
   validate = function(info) TRUE,
-  redirect_path = sub("^.*?(?=(?<!:/?)/)", "", redirect_url, perl = TRUE),
+  redirect_path = get_path(redirect_url),
   on_auth = replay_request,
   user_info = NULL,
   service_params = list(),
@@ -213,12 +213,7 @@ AuthOAuth2 <- R6::R6Class(
       grant_type = c("authorization_code", "password"),
       scopes = NULL,
       validate = function(info) TRUE,
-      redirect_path = sub(
-        "^.*?(?=(?<!:/?)/)",
-        "",
-        redirect_url,
-        perl = TRUE
-      ),
+      redirect_path = get_path(redirect_url),
       on_auth = replay_request,
       user_info = NULL,
       service_params = list(),
@@ -356,11 +351,6 @@ AuthOAuth2 <- R6::R6Class(
     }
   ),
   active = list(
-    #' @field location The location of the secret in the request, either
-    #' `"cookie"` or `"header"`
-    location = function() {
-      if (private$COOKIE) "cookie" else "header"
-    },
     #' @field open_api An OpenID compliant security scheme description
     open_api = function() {
       list(
@@ -371,7 +361,10 @@ AuthOAuth2 <- R6::R6Class(
               authorizationUrl = private$AUTH_URL,
               tokenUrl = private$TOKEN_URL,
               refreshUrl = private$TOKEN_URL,
-              scopes = set_names(rep_along(private$SCOPES, ""), private$SCOPES)
+              scopes = set_names(
+                rep_along(private$SCOPES, ""),
+                private$SCOPES %||% character()
+              )
             )
           )
         } else {
@@ -379,7 +372,10 @@ AuthOAuth2 <- R6::R6Class(
             password = list(
               tokenUrl = private$TOKEN_URL,
               refreshUrl = private$TOKEN_URL,
-              scopes = set_names(rep_along(private$SCOPES, ""), private$SCOPES)
+              scopes = set_names(
+                rep_along(private$SCOPES, ""),
+                private$SCOPES %||% character()
+              )
             )
           )
         }
@@ -389,7 +385,6 @@ AuthOAuth2 <- R6::R6Class(
   private = list(
     CLIENT_ID = "",
     CLIENT_SECRET = "",
-    COOKIE = TRUE,
     AUTH_URL = "",
     TOKEN_URL = "",
     REDIRECT_URL = "",
@@ -407,11 +402,11 @@ AuthOAuth2 <- R6::R6Class(
         "?response_type=code&client_id=",
         private$CLIENT_ID,
         "&state=",
-        state,
+        state$state,
         "&redirect_uri=",
         urltools::url_encode(private$REDIRECT_URL),
         "&code_challenge=",
-        url_safe_raw(sodium::sha256(state$verifier)),
+        url_safe_raw(sodium::sha256(charToRaw(state$verifier))),
         "&code_challenge_method=S256",
         if (!is.null(private$SCOPES)) {
           paste0(
@@ -553,12 +548,12 @@ create_session_state = function(request, session) {
     from = request$ip
   )
   session$oauth_state <- request_state
-  request_state$state
+  request_state
 }
 
 url_safe_raw <- function(x) {
   x <- base64enc::base64encode(x)
-  gsub("=+$", "", x, perl = TRUE)
+  gsub("=*$", "", x, perl = TRUE)
   gsub("+", "-", x, fixed = TRUE)
   gsub("/", "_", x, fixed = TRUE)
 }
@@ -657,3 +652,8 @@ abort_authorization_error <- function(error, detail, uri, call = caller_env()) {
     )
   )
 }
+
+# List of providers to consider
+# Amazon: http://login.amazon.com/ auth: 'https://www.amazon.com/ap/oa' token: https://api.amazon.com/auth/o2/token' user: 'https://api.amazon.com/user/profile'
+# Okta
+# Auth0

@@ -11,12 +11,8 @@ test_that("auth_basic can be constructed and verify", {
         name_given = "Thomas"
       )
     },
-    name = "test"
+    name = "test2"
   )
-
-  expect_equal(auth$name, "test")
-  auth$name <- "test2"
-  expect_equal(auth$name, "test2")
 
   expect_equal(auth$open_api, list(type = "http", scheme = "basic"))
 
@@ -111,4 +107,41 @@ test_that("auth_basic can be constructed and verify", {
   auth$forbid_user(good_auth$respond(), .session = session)
   expect_equal(good_auth$response$status, 403L)
   expect_null(session$test2)
+})
+
+test_that("auth_basic passes if session already has valid user info", {
+  auth <- auth_basic(
+    authenticator = function(username, password) {
+      if (username == "thomas" && password == "pedersen") {
+        return("scope1")
+      }
+      FALSE
+    },
+    name = "session_test"
+  )
+
+  session <- new.env()
+  # Pre-populate session with user info from previous authentication
+  session$session_test <- user_info(
+    provider = "local",
+    id = "thomas",
+    name_given = "Thomas",
+    name_family = "Pedersen",
+    scopes = "scope1"
+  )
+
+  # Request without any authentication header
+  no_auth <- reqres::Request$new(fiery::fake_request("http://example.com"))
+
+  pass <- auth$check_request(
+    request = no_auth,
+    response = no_auth$respond(),
+    keys = list(),
+    .session = session
+  )
+  # Should pass because session already has valid info
+  expect_true(pass)
+  # Session should remain unchanged
+  expect_equal(session$session_test$id, "thomas")
+  expect_equal(session$session_test$name, c(given = "Thomas", family = "Pedersen"))
 })

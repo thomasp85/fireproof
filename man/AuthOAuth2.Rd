@@ -25,9 +25,6 @@ github <- AuthOAuth2$new(
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
-\item{\code{location}}{The location of the secret in the request, either
-\code{"cookie"} or \code{"header"}}
-
 \item{\code{open_api}}{An OpenID compliant security scheme description}
 }
 \if{html}{\out{</div>}}
@@ -65,7 +62,7 @@ Constructor for the class
   grant_type = c("authorization_code", "password"),
   scopes = NULL,
   validate = function(info) TRUE,
-  redirect_path = sub("^.*?(?=(?<!:/?)/)", "", redirect_url, perl = TRUE),
+  redirect_path = get_path(redirect_url),
   on_auth = replay_request,
   user_info = NULL,
   service_params = list(),

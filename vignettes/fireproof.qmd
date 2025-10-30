@@ -1,0 +1,19 @@
+---
+title: "Introduction to auth with fireproof"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction to auth with fireproof}
+  %\VignetteEngine{quarto}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(fireproof)
+```

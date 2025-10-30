@@ -13,7 +13,7 @@ auth_oauth2(
   grant_type = c("authorization_code", "password"),
   scopes = NULL,
   validate = function(info) TRUE,
-  redirect_path = sub("^.*?(?=(?<!:/?)/)", "", redirect_url, perl = TRUE),
+  redirect_path = get_path(redirect_url),
   on_auth = replay_request,
   user_info = NULL,
   service_params = list(),
