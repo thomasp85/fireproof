@@ -67,7 +67,7 @@ replay_request = function(request, response, session_state, server) {
     url = session_state$url,
     method = session_state$method,
     headers = session_state$headers,
-    body = session_state$body
+    content = session_state$body
   )
   true_res <- server$test_request(old_req)
   response$status <- true_res$status
