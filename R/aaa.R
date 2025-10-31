@@ -17,13 +17,17 @@
 #' get_path("https://example.com/auth")
 #'
 #' get_path("https://example.com/api/auth", root = "/api")
-#' 
+#'
 get_path <- function(url, root = NULL) {
   url <- sub("^https?://[^/]+", "", url)
   if (!is.null(root) && !root %in% c("/", "")) {
     root <- sub("^/?", "/", root)
+    root <- sub("(?<!^)/$", "", root, perl = TRUE)
     root <- paste0("^", root)
-    url <- sub(root, "", url)
+    if (!grepl(root, url, ignore.case = TRUE)) {
+      cli::cli_abort("{.arg root} not part of {.arg url}")
+    }
+    url <- sub(root, "", url, ignore.case = TRUE)
   }
   if (url == "") url <- "/"
   url
@@ -35,7 +39,7 @@ abort_auth <- function(internal_msg, call = caller_env(), ...) {
     "Unable to complete authentication",
     title = "authentication_failed",
     message = internal_msg,
-    call = call(),
+    call = call,
     ...
   )
 }
