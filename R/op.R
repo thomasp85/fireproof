@@ -39,7 +39,7 @@ eval_op <- function(op, table) {
 }
 
 is_flow_valid_openapi <- function(flow) {
-  attr(flow, "op") == "||" && flow_depth(flow) <= 3
+  attr(flow, "op") %||% "" == "||" && flow_depth(flow) <= 3
 }
 flow_depth <- function(flow) {
   if (length(flow) == 1) {
