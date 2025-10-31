@@ -248,12 +248,12 @@ Fireproof <- R6::R6Class(
     #' @param ... Ignored
     #'
     on_attach = function(app, ...) {
-      if (is.null(app$plugins$header_routr)) {
+      if (is.null(app$plugins$request_routr)) {
         rs <- routr::RouteStack$new()
-        rs$attach_to <- "header"
+        rs$attach_to <- "request"
         app$attach(rs)
       }
-      app$plugins$header_routr$add_route(
+      app$plugins$request_routr$add_route(
         self,
         "fireproof_auth",
         after = 0
