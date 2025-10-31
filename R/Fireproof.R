@@ -303,7 +303,7 @@ Fireproof <- R6::R6Class(
           response = response,
           keys = keys,
           ...,
-          .session = session
+          .session = .session
         )
       })
     }
