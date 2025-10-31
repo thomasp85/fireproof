@@ -47,7 +47,9 @@
 #' @param grant_type The type of authorization scheme to use, either
 #' `"authorization_code"` or `"password"`
 #' @param scopes Optional character vector of scopes to request the user to
-#' grant you during authorization
+#' grant you during authorization. If named, the names are taken as scopes and
+#' the elements as descriptions of the scopes, e.g. given a scope, `read`, it
+#' can either be provided as `c("read")` or `c(read = "Grant read access")`
 #' @param validate Function to validate the user once logged in. It will be
 #' called with a single argument `info`, which gets the information of the user
 #' as provided by the `user_info` function in the. By default it returns `TRUE`
@@ -238,7 +240,13 @@ AuthOAuth2 <- R6::R6Class(
       check_string(redirect_path)
       private$REDIRECT_PATH <- redirect_path
       check_character(scopes, allow_null = TRUE)
-      private$SCOPES <- scopes
+      if (is_named(scopes)) {
+        private$SCOPES <- names(scopes)
+        private$SCOPE_DESC <- unname(scopes)
+      } else {
+        private$SCOPES <- scopes
+        private$SCOPE_DESC <- rep_along(scopes, "")
+      }
 
       check_function(validate)
       private$VALIDATE <- with_dots(validate)
@@ -362,7 +370,7 @@ AuthOAuth2 <- R6::R6Class(
               tokenUrl = private$TOKEN_URL,
               refreshUrl = private$TOKEN_URL,
               scopes = set_names(
-                rep_along(private$SCOPES, ""),
+                private$SCOPE_DESC,
                 private$SCOPES %||% character()
               )
             )
@@ -373,7 +381,7 @@ AuthOAuth2 <- R6::R6Class(
               tokenUrl = private$TOKEN_URL,
               refreshUrl = private$TOKEN_URL,
               scopes = set_names(
-                rep_along(private$SCOPES, ""),
+                private$SCOPE_DESC,
                 private$SCOPES %||% character()
               )
             )
@@ -391,6 +399,7 @@ AuthOAuth2 <- R6::R6Class(
     REDIRECT_PATH = "",
     GRANT_TYPE = "",
     SCOPES = NULL,
+    SCOPE_DESC = NULL,
     VALIDATE = NULL,
     ON_AUTH = NULL,
     USER_INFO = NULL,
