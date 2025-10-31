@@ -427,6 +427,22 @@ test_that("auth_oauth2 passes if session already has valid user info", {
 # Tests yet to be implemented
 
 test_that("auth_oauth2 handles successful code exchange", {
+  auth <- auth_beeceptor_github("https://my_app.com/auth")
+  fp <- Fireproof$new()
+  fp$add_auth(auth, "mock")
+  fp$add_auth_handler("all", "/*", mock)
+
+  fs <- firesale::FireSale$new(storr::driver_environment(new.env()))
+
+  app <- fiery::Fire$new()
+  app$attach(fs)
+  app$attach(fp)
+
+  auth_req <- fiery::fake_request("https://my_app.com/")
+
+  auth_redir <- app$test_request(auth_req)
+  
+
   # Mock the callback with code and state
   # Verify token exchange happens
   # Verify session is populated with token info
