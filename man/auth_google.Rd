@@ -26,7 +26,9 @@ registering your application}
 registering your application. Do NOT store this in plain text}
 
 \item{scopes}{Optional character vector of scopes to request the user to
-grant you during authorization}
+grant you during authorization. If named, the names are taken as scopes and
+the elements as descriptions of the scopes, e.g. given a scope, \code{read}, it
+can either be provided as \code{c("read")} or \code{c(read = "Grant read access")}}
 
 \item{service_params}{A named list of additional query params to add to
 the url when constructing the authorization url in the

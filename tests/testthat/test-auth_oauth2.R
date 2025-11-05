@@ -329,7 +329,7 @@ test_that("auth_oauth2 register_handler adds redirect endpoint", {
 
   auth$register_handler(mock_add_handler)
 
-  expect_equal(length(handlers_added), 1)
+  expect_equal(length(handlers_added), 2)
   expect_equal(handlers_added[[1]]$method, "get")
   expect_equal(handlers_added[[1]]$path, "/auth/callback")
   expect_type(handlers_added[[1]]$handler, "closure")
@@ -427,37 +427,85 @@ test_that("auth_oauth2 passes if session already has valid user info", {
 # Tests yet to be implemented
 
 test_that("auth_oauth2 handles successful code exchange", {
-  auth <- auth_beeceptor_github("https://my_app.com/auth")
-  fp <- Fireproof$new()
-  fp$add_auth(auth, "mock")
-  fp$add_auth_handler("all", "/*", mock)
+  skip_on_cran()
 
-  fs <- firesale::FireSale$new(storr::driver_environment(new.env()))
+  oauth_service <- webfakes::oauth2_resource_app()
+  oauth_process <- webfakes::new_app_process(oauth_service)
+  on.exit(oauth_process$stop())
 
-  app <- fiery::Fire$new()
-  app$attach(fs)
-  app$attach(fp)
+  auth_url <- oauth_process$url("/authorize")
+  token_url <- oauth_process$url("/token")
 
-  auth_req <- fiery::fake_request("https://my_app.com/")
+  port <- 60123L
+  redirect_url <- paste0("http://127.0.0.1:", port, "/auth")
+  register_url <- oauth_process$url(
+    "/register",
+    list(
+      name = "oauth_test",
+      redirect_uri = redirect_url
+    )
+  )
+  registration <- curl::curl_fetch_memory(register_url)
+  registration <- jsonlite::fromJSON(rawToChar(registration$content))
 
-  auth_redir <- app$test_request(auth_req)
-  
+  r_proc <- callr::r_bg(
+    function(port, auth_url, token_url, redirect_url, registration) {
+      app <- fiery::Fire$new(port = port)
 
-  # Mock the callback with code and state
-  # Verify token exchange happens
-  # Verify session is populated with token info
-})
+      auth <- fireproof::auth_oauth2(
+        token_url = token_url,
+        redirect_url = redirect_url,
+        client_id = registration$client_id,
+        client_secret = registration$client_secret,
+        auth_url = auth_url
+      )
+      fp <- fireproof::Fireproof$new()
+      fp$add_auth(auth, "mock")
+      fp$add_auth_handler("all", "/*", mock)
 
-test_that("auth_oauth2 validates state parameter", {
-  # Test mismatched state rejection
-  # Test expired state rejection
-})
+      fs <- firesale::FireSale$new(storr::driver_environment(new.env()))
 
-test_that("auth_oauth2 refresh_token updates expired tokens", {
-  # Test automatic refresh when expired
-  # Test refresh token is used correctly
-})
+      app$attach(fs)
+      app$attach(fp)
 
-test_that("auth_oauth2 handles OAuth error responses", {
-  # Test access_denied, invalid_scope, etc.
+      route <- routr::Route$new()
+      route$add_handler("all", "/*", function(request, response, keys, ...) {
+        response$status <- 200L
+        response$set_header("x-test", request$path)
+        TRUE
+      })
+      app$plugins$request_routr$add_route(route, "main")
+
+      app$ignite()
+    },
+    args = list(
+      port = port,
+      auth_url = auth_url,
+      token_url = token_url,
+      redirect_url = redirect_url,
+      registration = registration
+    )
+  )
+  on.exit(r_proc$kill(), add = TRUE)
+
+  test_url <- paste0("http://127.0.0.1:", port, "/")
+
+  Sys.sleep(5)
+
+  first_res <- oauth2_login(test_url)
+
+  expect_equal(first_res$login_response$status_code, 200)
+  login_content <- rawToChar(first_res$login_response$content)
+  expect_match(
+    login_content,
+    "<title>Webfakes OAuth 2.0 resource server</title>",
+    fixed = TRUE
+  )
+
+  expect_equal(first_res$token_response$status_code, 200)
+  expect_true(any(grepl(
+    "x-test: /",
+    curl::parse_headers(first_res$token_response$headers),
+    fixed = TRUE
+  )))
 })

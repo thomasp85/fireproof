@@ -40,7 +40,9 @@ authorization (only needed for \code{grant_type = "authorization_code"})}
 \code{"authorization_code"} or \code{"password"}}
 
 \item{scopes}{Optional character vector of scopes to request the user to
-grant you during authorization}
+grant you during authorization. If named, the names are taken as scopes and
+the elements as descriptions of the scopes, e.g. given a scope, \code{read}, it
+can either be provided as \code{c("read")} or \code{c(read = "Grant read access")}}
 
 \item{validate}{Function to validate the user once logged in. It will be
 called with a single argument \code{info}, which gets the information of the user

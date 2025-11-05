@@ -301,16 +301,32 @@ AuthOIDC <- R6::R6Class(
 
     request_token = function(token_par, session) {
       ch <- curl::new_handle()
-      curl::handle_setopt(ch, post = 1)
-      curl::handle_setform(ch, .list = token_par)
-      res <- curl_fetch_memory(private$TOKEN_URL, ch)
-      content <- jsonlite::parse_json(rawToChar(res$content))
+      token_par <- format_queryform(token_par)
+      curl::handle_setopt(
+        ch,
+        post = 1,
+        postfields = token_par,
+        postfieldsize = length(token_par)
+      )
+      curl::handle_setheaders(
+        ch,
+        "content-type" = "application/x-www-form-urlencoded"
+      )
+      res <- curl::curl_fetch_memory(private$TOKEN_URL, ch)
       if (res$status_code != 200L) {
+        content <- rawToChar(res$content)
+        content <- try_fetch(
+          jsonlite::parse_json(content),
+          error = function(...) {
+            list(error_description = content)
+          }
+        )
         abort_auth(paste0(
           c(content$error, content$error_description, content$error_uri),
           collapse = ": "
         ))
       }
+      content <- jsonlite::parse_json(rawToChar(res$content))
       content$timestamp <- Sys.time()
       jwt <- private$validate_id_token(content$id_token)
       if (
@@ -321,7 +337,7 @@ AuthOIDC <- R6::R6Class(
           ch,
           authorization = paste("bearer ", content$token)
         )
-        info <- curl_fetch_memory(private$SERVICE$userinfo_endpoint, ch)
+        info <- curl::curl_fetch_memory(private$SERVICE$userinfo_endpoint, ch)
         info <- jsonlite::parse_json(rawToChar(info$content))
         if (info$sub == jwt$sub) {
           extra_info <- setdiff(names(info), names(jwt))

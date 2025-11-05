@@ -309,7 +309,17 @@ AuthOAuth2 <- R6::R6Class(
         private$REDIRECT_PATH,
         function(request, response, keys, server, arg_list, ...) {
           session <- arg_list[[server$plugins$firesale$arg_name]]$session
-          private$exchange_code_to_token(request, response, session)
+          private$exchange_code_to_token(request, response, session, server)
+        }
+      )
+      # Redirect *may* arrive as a POST even though most browsers convert 302/303
+      # to GET
+      add_handler(
+        "post",
+        private$REDIRECT_PATH,
+        function(request, response, keys, server, arg_list, ...) {
+          session <- arg_list[[server$plugins$firesale$arg_name]]$session
+          private$exchange_code_to_token(request, response, session, server)
         }
       )
     },
@@ -342,7 +352,7 @@ AuthOAuth2 <- R6::R6Class(
         ch <- curl::new_handle()
         curl::handle_setopt(ch, post = 1)
         curl::handle_setform(ch, .list = token_par)
-        res <- curl_fetch_memory(private$TOKEN_URL, ch)
+        res <- curl::curl_fetch_memory(private$TOKEN_URL, ch)
         if (res$status_code != 200L) {
           return(FALSE)
         }
@@ -475,7 +485,7 @@ AuthOAuth2 <- R6::R6Class(
         }
       }
     },
-    exchange_code_to_token = function(request, response, session) {
+    exchange_code_to_token = function(request, response, session, server) {
       session_state <- session$oauth_state
       session$oauth_state <- NULL
       state <- request$query$state
@@ -517,16 +527,32 @@ AuthOAuth2 <- R6::R6Class(
     },
     request_token = function(token_par, session, session_state = NULL) {
       ch <- curl::new_handle()
-      curl::handle_setopt(ch, post = 1)
-      curl::handle_setform(ch, .list = token_par)
-      res <- curl_fetch_memory(private$TOKEN_URL, ch)
-      content <- jsonlite::parse_json(rawToChar(res$content))
+      token_par <- format_queryform(token_par)
+      curl::handle_setopt(
+        ch,
+        post = 1,
+        postfields = token_par,
+        postfieldsize = length(token_par)
+      )
+      curl::handle_setheaders(
+        ch,
+        "content-type" = "application/x-www-form-urlencoded"
+      )
+      res <- curl::curl_fetch_memory(private$TOKEN_URL, ch)
       if (res$status_code != 200L) {
+        content <- rawToChar(res$content)
+        content <- try_fetch(
+          jsonlite::parse_json(content),
+          error = function(...) {
+            list(error_description = content)
+          }
+        )
         abort_auth(paste0(
           c(content$error, content$error_description, content$error_uri),
           collapse = ": "
         ))
       }
+      content <- jsonlite::parse_json(rawToChar(res$content))
       content$timestamp <- Sys.time()
       if (!is.null(content$scope)) {
         content$scope <- strsplit(content$scope, " ", fixed = TRUE)[[1]]
@@ -562,8 +588,8 @@ create_session_state = function(request, session) {
 
 url_safe_raw <- function(x) {
   x <- base64enc::base64encode(x)
-  gsub("=*$", "", x, perl = TRUE)
-  gsub("+", "-", x, fixed = TRUE)
+  x <- gsub("=*$", "", x, perl = TRUE)
+  x <- gsub("+", "-", x, fixed = TRUE)
   gsub("/", "_", x, fixed = TRUE)
 }
 
@@ -660,6 +686,10 @@ abort_authorization_error <- function(error, detail, uri, call = caller_env()) {
       call = call
     )
   )
+}
+
+format_queryform <- function(data) {
+  charToRaw(paste0(names(data), "=", data, collapse = "&"))
 }
 
 # List of providers to consider

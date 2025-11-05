@@ -66,15 +66,18 @@ replay_request = function(request, response, session_state, server) {
   old_req <- fiery::fake_request(
     url = session_state$url,
     method = session_state$method,
-    headers = session_state$headers,
+    headers = lapply(session_state$headers, paste0, collapse = ","),
     content = session_state$body
   )
   true_res <- server$test_request(old_req)
   response$status <- true_res$status
   response$body <- true_res$body
-  response$format("*/*" = function(body, ...) body)
-  for (header in session_state$headers) {
-    response$set_header(header, session_state$headers[[header]])
+  response$format(
+    "text/plain" = function(body, ...) body,
+    default = "text/plain"
+  )
+  for (header in names(true_res$headers)) {
+    response$set_header(gsub("_", "-", header), true_res$headers[[header]])
   }
   FALSE
 }
