@@ -66,7 +66,29 @@ proof$add_auth_handler("get", "/strong/auth", key && basic) # must pass both
 # If you have even more authenticators you can group conditions with () as well
 
 
-# Create a fiery app and attach the plugin
+# Create a fiery app with a firestore plugin and attach the plugin
 app <- fiery::Fire$new()
+fs <- firesale::FireSale$new(storr::driver_environment())
+app$attach(fs)
+
 app$attach(proof)
 ```
+
+## OAuth 2.0 and OpenID Connect
+
+A lot of authorization on the internet has moved towards OAuth 2.0 and
+the authentication layer build on top of it (OpenID Connect). fireproof
+supports both of these and have basic constructors for both flows that
+take the required authorization or discovery endpoints and takes care of
+the rest. It also comes with a selection of predefined constructors for
+well-known providers such as Google and GitHub that makes it easy to use
+them. If you want to use another provider than one already available
+I’ll invite you create a PR for it based on how the current providers
+have been implemented. In this way we can gradually grow the number of
+providers offered out of the box based on what the community needs.
+
+### Current OAuth/OpenID Connect support
+
+- Google✽
+- GitHub
+- Beeceptor (Used for mocking)
