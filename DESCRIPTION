@@ -31,6 +31,7 @@ Suggests:
     quarto,
     rmarkdown,
     storr,
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    webfakes
 Config/testthat/edition: 3
 VignetteBuilder: quarto
