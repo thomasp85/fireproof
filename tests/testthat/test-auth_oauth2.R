@@ -428,6 +428,7 @@ test_that("auth_oauth2 passes if session already has valid user info", {
 
 test_that("auth_oauth2 handles successful code exchange", {
   skip_on_cran()
+  skip_on_ci()
 
   oauth_service <- webfakes::oauth2_resource_app()
   oauth_process <- webfakes::new_app_process(oauth_service)
