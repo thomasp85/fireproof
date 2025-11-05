@@ -27,11 +27,13 @@ Imports:
     sodium,
     urltools
 Suggests:
+    callr,
     dplyr,
     quarto,
     rmarkdown,
     storr,
     testthat (>= 3.0.0),
-    webfakes
+    webfakes,
+    xml2
 Config/testthat/edition: 3
 VignetteBuilder: quarto
