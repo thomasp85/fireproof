@@ -1,7 +1,7 @@
 # Some docs: https://docs.github.com/en/apps/creating-github-apps/writing-code-for-a-github-app/building-a-login-with-github-button-with-a-github-app#introduction
-#' Authenticate with GitHub using OAuth 2.0
+#' Guard for authenticating with the GitHub OAuth 2.0 server
 #'
-#' This authentication requests you to log in with GitHub and authenticates you
+#' This authentication requests you to log in with GitHub and authenticates yourself
 #' through their service. Your server must be registered and have a valid client
 #' ID and client secret for this to work. Register an application at
 #' <https://github.com/settings/applications/new>. If you want to limit access
@@ -9,8 +9,8 @@
 #' that checks the userinfo against a whitelist.
 #'
 #' # User information
-#' `auth_github()` automatically adds user information according to the
-#' description in [auth_oauth2()]. It sets the `provider` field to `"github"`.
+#' `guard_github()` automatically adds user information according to the
+#' description in [guard_oauth2()]. It sets the `provider` field to `"github"`.
 #' Further, extracts information from the `https://api.github.com/user` endpoint
 #' and maps the information accordingly:
 #'
@@ -23,15 +23,15 @@
 #' It also sets the `.raw` field to the full list of information returned from
 #' github.
 #'
-#' @inheritParams auth_oauth2
-#' @inheritDotParams auth_oauth2 -token_url -auth_url -user_info
+#' @inheritParams guard_oauth2
+#' @inheritDotParams guard_oauth2 -token_url -auth_url -user_info
 #'
-#' @return An [AuthOAuth2] object
+#' @return An [GuardOAuth2] object
 #'
 #' @export
 #'
 #' @examples
-#' github <- auth_github(
+#' github <- guard_github(
 #'   redirect_url = "https://example.com/auth",
 #'   client_id = "MY_APP_ID",
 #'   client_secret = "SUCHASECRET"
@@ -39,19 +39,19 @@
 #'
 #' # Add it to a fireproof plugin
 #' fp <- Fireproof$new()
-#' fp$add_auth(github, "github_auth")
+#' fp$add_guard(github, "github_auth")
 #'
 #' # Use it in an endpoint
-#' fp$add_auth_handler("get", "/*", github_auth)
+#' fp$add_auth("get", "/*", github_auth)
 #'
-auth_github <- function(
+guard_github <- function(
   redirect_url,
   client_id,
   client_secret,
   ...,
   name = "github"
 ) {
-  auth_oauth2(
+  guard_oauth2(
     token_url = "https://github.com/login/oauth/access_token",
     redirect_url = redirect_url,
     client_id = client_id,
@@ -59,7 +59,10 @@ auth_github <- function(
     auth_url = "https://github.com/login/oauth/authorize",
     user_info = function(token_info, setter) {
       ch <- curl::new_handle()
-      curl::handle_setheaders(ch, authorization = paste("bearer ", token_info$token))
+      curl::handle_setheaders(
+        ch,
+        authorization = paste("bearer ", token_info$token)
+      )
       info <- curl::curl_fetch_memory(
         url = "https://api.github.com/user",
       )

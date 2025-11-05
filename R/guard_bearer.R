@@ -1,10 +1,11 @@
-#' Bearer authentication plugin
+#' Bearer authentication guard
 #'
-#' Bearer authentication is a HTTP scheme powers most of the modern web
-#' authentication as it is the foundation for OAuth 2.0 and OpenID. It is a
-#' quite simple scheme that is based on the concept of tome and scope limited
+#' Bearer authentication is a HTTP scheme based on tokens. It is used
+#' in a lot of places as it is often used for transmitting the tokens issued as
+#' part of OAuth 2.0 and OpenID. It is a
+#' quite simple scheme that is based on the concept of time and scope limited
 #' bearer tokens. Whoever has a valid token gains access to the resources the
-#' token unlocks. This prevents the leaking of passwords s well as make it easy
+#' token unlocks. This prevents the leaking of passwords as well as makes it easy
 #' to rotate tokens etc. While the time-limited aspect of tokens means that an
 #' attacker may only gain temporary access to a resource if they intercept a
 #' token during transmission, it is still highly recommended to only transmit
@@ -19,14 +20,14 @@
 #' etc.
 #'
 #' The authenticator should in general not test the scope of the token, but
-#' rather write the scope of the token to the `auth_scope` field of the response
-#' data store (`response$set_data("auth_scope", ...)`). The scope requirement of
-#' the exact endpoint will then be tested automatically. Further, the
-#' authenticator should write any additional user information that gets fetched
-#' during the validation to relevant fields in the response data
+#' rather return a vector of scopes (which implicitly means that the token is
+#' valid). The scope requirement of the exact endpoint will then be tested
+#' automatically. Further, the authenticator should write any additional user
+#' information that gets fetched during the validation to relevant fields in the
+#' response data
 #'
 #' # User information
-#' `auth_bearer()` automatically adds [user information][user_info] after
+#' `guard_bearer()` automatically adds [user information][user_info] after
 #' authentication. By default it will set the `provider` field to `"local"`.
 #' Further, it will set the `scopes` field to any scopes returned by the
 #' `authenticator` function and the `token` field to a list with the following
@@ -63,13 +64,13 @@
 #' well-thought-out reasons to do so.
 #' to the `authenticator` function.
 #'
-#' @return An [AuthBearer] R6 object
+#' @return An [GuardBearer] R6 object
 #'
 #' @export
 #'
 #' @examples
-#' # Create an authenticator of dubious quality
-#' bearer <- auth_bearer(
+#' # Create a guard of dubious quality
+#' bearer <- guard_bearer(
 #'   authenticator = function(token) {
 #'     token == "abcd1234"
 #'   },
@@ -85,12 +86,12 @@
 #'
 #' # Add it to a fireproof plugin
 #' fp <- Fireproof$new()
-#' fp$add_auth(bearer, "bearer_auth")
+#' fp$add_guard(bearer, "bearer_auth")
 #'
 #' # Use it in an endpoint
-#' fp$add_auth_handler("get", "/*", bearer_auth)
+#' fp$add_auth("get", "/*", bearer_auth)
 #'
-auth_bearer <- function(
+guard_bearer <- function(
   authenticator,
   user_info = NULL,
   realm = "private",
@@ -98,7 +99,7 @@ auth_bearer <- function(
   allow_query_token = FALSE,
   name = "BearerAuth"
 ) {
-  AuthBearer$new(
+  GuardBearer$new(
     authenticator = authenticator,
     user_info = user_info,
     realm = realm,
@@ -108,18 +109,18 @@ auth_bearer <- function(
   )
 }
 
-#' R6 class for the Bearer authentication scheme
+#' R6 class for the Bearer authentication guard
 #'
 #' @description
 #' This class encapsulates the logic of the
 #' [Bearer authentication scheme](https://datatracker.ietf.org/doc/html/rfc6750).
-#' See [auth_bearer()] for more information.
+#' See [guard_bearer()] for more information.
 #'
 #' @export
 #'
 #' @examples
-#' # Create an authenticator of dubious quality
-#' bearer <- AuthBearer$new(
+#' # Create a guard of dubious quality
+#' bearer <- GuardBearer$new(
 #'   authenticator = function(token) {
 #'     token == "abcd1234"
 #'   },
@@ -132,9 +133,9 @@ auth_bearer <- function(
 #'   }
 #' )
 #'
-AuthBearer <- R6::R6Class(
-  "AuthBearer",
-  inherit = Auth,
+GuardBearer <- R6::R6Class(
+  "GuardBearer",
+  inherit = Guard,
   public = list(
     #' @description Constructor for the class
     #' @param authenticator A function that will be called with the arguments

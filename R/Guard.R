@@ -1,7 +1,7 @@
-#' R6 base class for authentication schemes
+#' R6 base class for guards
 #'
 #' @description
-#' All schemes inherit from this base class and adapts it for the particular
+#' All guards inherit from this base class and adapts it for the particular
 #' scheme it implements. Additional schemes can be implemented as subclasses of
 #' this and will work transparently with fireproof.
 #'
@@ -9,10 +9,10 @@
 #'
 #' @examples
 #' # You'd never actually do this, rather you'd use the subclasses
-#' auth <- Auth$new(name = "base_auth")
+#' guard <- Guard$new(name = "base_auth")
 #'
-Auth <- R6::R6Class(
-  "Auth",
+Guard <- R6::R6Class(
+  "Guard",
   public = list(
     #' @description Constructor for the class
     #' @param name The name of the scheme instance
@@ -60,7 +60,7 @@ Auth <- R6::R6Class(
       response$status_with_text(403L)
     },
     #' @description Hook for registering endpoint handlers needed for this
-    #' authentication method
+    #' auth method
     #' @param add_handler The `add_handler` method from [Fireproof] to be called
     #' for adding additional handlers
     register_handler = function(add_handler) {
@@ -87,7 +87,7 @@ Auth <- R6::R6Class(
   )
 )
 
-#' @rdname Auth
+#' @rdname Guard
 #' @param x An object
 #' @export
-is_auth <- function(x) inherits(x, "Auth")
+is_guard <- function(x) inherits(x, "Guard")

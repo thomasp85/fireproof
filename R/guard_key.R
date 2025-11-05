@@ -1,20 +1,20 @@
-#' Authentication based on shared secret
+#' Shared secret guard
 #'
 #' This authentication scheme is based on a mutually shared secret between the
 #' server and the client. The client provides this secret either as a header or
 #' in a cookie, and the server verifies the authenticity of the secret. Like
-#' with [basic authentication][auth_basic], this scheme relies on additional
+#' with [basic authentication][guard_basic], this scheme relies on additional
 #' technology like HTTPS/SSL to make it secure since the secret can otherwise
 #' easily be extracted from the request by man-in-the-middle attack.
 #'
 #' @details
 #' This authentication is not a classic HTTP authentication scheme and thus
 #' doesn't return a `401` response with a `WWW-Authenticate` header. Instead it
-#' returns a `400` response unless another authenticator has already set the
+#' returns a `400` response unless another guard has already set the
 #' response status to something else.
 #'
 #' # User information
-#' `auth_key()` automatically adds [user information][user_info] after
+#' `guard_key()` automatically adds [user information][user_info] after
 #' authentication. By default it will set the `provider` field to `"local"`.
 #' Further, it will set the `scopes` field to any scopes returned by the
 #' `authenticator` function.
@@ -37,34 +37,34 @@
 #' information (see [user_info()]).
 #' @param cookie Boolean. Should the secret be transmitted as a cookie. If
 #' `FALSE` it is expected to be transmitted as a header.
-#' @inheritParams auth_basic
+#' @inheritParams guard_basic
 #'
-#' @return A [AuthKey] object
+#' @return A [GuardKey] object
 #'
 #' @export
 #'
 #' @examples
-#' # Create an authenticator of dubious quality
-#' key <- auth_key(
+#' # Create a guard of dubious quality
+#' key <- guard_key(
 #'   key = "my-key-location",
 #'   secret = "SHHH!!DONT_TELL_ANYONE"
 #' )
 #'
 #' # Add it to a fireproof plugin
 #' fp <- Fireproof$new()
-#' fp$add_auth(key, "key_auth")
+#' fp$add_guard(key, "key_auth")
 #'
 #' # Use it in an endpoint
-#' fp$add_auth_handler("get", "/*", key_auth)
+#' fp$add_auth("get", "/*", key_auth)
 #'
-auth_key <- function(
+guard_key <- function(
   key,
   secret,
   user_info = NULL,
   cookie = TRUE,
   name = "KeyAuth"
 ) {
-  AuthKey$new(
+  GuardKey$new(
     key = key,
     secret = secret,
     user_info = user_info,
@@ -73,24 +73,24 @@ auth_key <- function(
   )
 }
 
-#' R6 class for the Key authentication scheme
+#' R6 class for the Key guard
 #'
 #' @description
 #' This class encapsulates the logic of the key based authentication scheme. See
-#' [auth_key()] for more information
+#' [guard_key()] for more information
 #'
 #' @export
 #'
 #' @examples
-#' # Create an authenticator of dubious quality
-#' key <- auth_key(
+#' # Create a guard of dubious quality
+#' key <- GuardKey$new(
 #'   key = "my-key-location",
 #'   secret = "SHHH!!DONT_TELL_ANYONE"
 #' )
 #'
-AuthKey <- R6::R6Class(
-  "AuthKey",
-  inherit = Auth,
+GuardKey <- R6::R6Class(
+  "GuardKey",
+  inherit = Guard,
   public = list(
     #' @description Constructor for the class
     #' @param key The name of the header or cookie to store the secret under
@@ -194,7 +194,7 @@ AuthKey <- R6::R6Class(
     #' @param ... Ignored
     #' @param .session The session storage for the current session
     reject_response = function(response, scope, ..., .session) {
-      # Don't overwrite more specific rejection from other auths
+      # Don't overwrite more specific rejection from other guards
       if (response$status == 404L) {
         if (!is.null(.session[[private$NAME]])) {
           .session[[private$NAME]] <- NULL

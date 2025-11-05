@@ -1,5 +1,5 @@
-test_that("auth_basic can be constructed and verify", {
-  auth <- auth_basic(
+test_that("guard_basic can be constructed and verify", {
+  auth <- guard_basic(
     authenticator = function(username, password) {
       if (username == "thomas" && password == "pedersen") {
         return("scope1")
@@ -109,8 +109,8 @@ test_that("auth_basic can be constructed and verify", {
   expect_null(session$test2)
 })
 
-test_that("auth_basic passes if session already has valid user info", {
-  auth <- auth_basic(
+test_that("guard_basic passes if session already has valid user info", {
+  auth <- guard_basic(
     authenticator = function(username, password) {
       if (username == "thomas" && password == "pedersen") {
         return("scope1")

@@ -1,27 +1,25 @@
-#' A plugin that handles authentication
+#' A plugin that handles authentication and/or authorization
 #'
 #' @description
-#' This plugin orchestrates all authentication for your fiery app. It is a
-#' special [Route][routr::Route] that manages all the different authentication
-#' scheme instances you have defined as well as testing all the endpoints that
-#' have authentication requirements.
+#' This plugin orchestrates all guards for your fiery app. It is a
+#' special [Route][routr::Route] that manages all the different guards you have
+#' defined as well as testing all the endpoints that have auth requirements.
 #'
 #' @details
-#' An authentication scheme instance is an object deriving from the [Auth] class
-#' which is usually created with one of the `auth_*()` constructors. You can
-#' provide it with a name as you register it and can thus have multiple
-#' instances of the same scheme (e.g. two `auth_basic()` with different user
-#' lists)
+#' A guard is an object deriving from the [Guard] class which is usually created
+#' with one of the `guard_*()` constructors. You can provide it with a name as
+#' you register it and can thus have multiple instances of the same scheme (e.g.
+#' two `guard_basic()` with different user lists)
 #'
-#' An authentication handler is a handler that consists of a method, path, and
-#' flow. The flow is a logical expression of the various instances the request
+#' An auth handler is a handler that consists of a method, path, and
+#' flow. The flow is a logical expression of the various guards the request
 #' must pass to get access to that endpoint. For example, if you have two
-#' instances named `auth1` and `auth2`, a flow could be `auth1 || auth2` to allow
-#' a request if it passes either of the instances. Given an additional instance,
+#' guards named `auth1` and `auth2`, a flow could be `auth1 || auth2` to allow
+#' a request if it passes either of the guards. Given an additional guard,
 #' `auth3`, it could also be something like `auth1 || (auth2 && auth3)`. The
 #' flow is given as a bare expression, not as a string. In addition to the three
 #' required arguments you can also supply a character vector of scopes that are
-#' required to be had to access the endpoint. If your scheme has scope support
+#' required to be had to access the endpoint. If your guard has scope support
 #' then the request will be tested against these to see if the (otherwise valid)
 #' user has permission to the resource.
 #'
@@ -35,7 +33,7 @@
 #' fp <- Fireproof$new()
 #'
 #' # Create some authentication schemes and add them
-#' basic <- auth_basic(
+#' basic <- guard_basic(
 #'   authenticator = function(user, password) {
 #'     user == "thomas" && password == "pedersen"
 #'   },
@@ -47,27 +45,27 @@
 #'     )
 #'   }
 #' )
-#' fp$add_auth(basic, "basic_auth")
+#' fp$add_guard(basic, "basic_auth")
 #'
-#' key <- auth_key(
+#' key <- guard_key(
 #'   key = "my-key-location",
 #'   secret = "SHHH!!DONT_TELL_ANYONE"
 #' )
-#' fp$add_auth(key, "key_auth")
+#' fp$add_guard(key, "key_auth")
 #'
-#' google <- auth_google(
+#' google <- guard_google(
 #'   redirect_url = "https://example.com/auth",
 #'   client_id = "MY_APP_ID",
 #'   client_secret = "SUCHASECRET",
 #' )
-#' fp$add_auth(google, "google_auth")
+#' fp$add_guard(google, "google_auth")
 #'
 #' # Add authentication to different paths
-#' fp$add_auth_handler("get", "/require_basic", basic_auth)
+#' fp$add_auth("get", "/require_basic", basic_auth)
 #'
-#' fp$add_auth_handler("get", "/require_basic_and_key", basic_auth && key_auth)
+#' fp$add_auth("get", "/require_basic_and_key", basic_auth && key_auth)
 #'
-#' fp$add_auth_handler(
+#' fp$add_auth(
 #'   "get",
 #'   "/require_google_or_the_others",
 #'   google_auth || (basic_auth && key_auth)
@@ -97,14 +95,14 @@ Fireproof <- R6::R6Class(
     #' @param scope An optional character vector of scopes that the request must
     #' have permission for to access the resource
     #'
-    add_auth_handler = function(
+    add_auth = function(
       method,
       path,
       flow,
       scope = NULL
     ) {
       flow <- parse_auth_flow({{ flow }})
-      authenticators <- unique(unlist(flow))
+      guards <- unique(unlist(flow))
       check_character(scope, allow_na = FALSE, allow_null = TRUE)
 
       super$add_handler(
@@ -115,8 +113,8 @@ Fireproof <- R6::R6Class(
             server$plugins$firesale$arg_name
           session <- arg_list[[private$STORE_NAME]]$session
 
-          pass <- private$eval_auths(
-            authenticators,
+          pass <- private$eval_guards(
+            guards,
             request = request,
             response = response,
             keys = keys,
@@ -135,12 +133,12 @@ Fireproof <- R6::R6Class(
             return(response$status < 300)
           }
           if (!is.null(scope)) {
-            has_sufficient_scope <- lapply(authenticators, function(auth) {
+            has_sufficient_scope <- lapply(guards, function(auth) {
               all(scope %in% session[[auth]]$scopes)
             })
             success <- eval_op(
               flow,
-              set_names(has_sufficient_scope, authenticators)
+              set_names(has_sufficient_scope, guards)
             )
             if (!success) {
               succeeded <- names(pass)[vapply(pass, isTRUE, logical(1))]
@@ -159,17 +157,17 @@ Fireproof <- R6::R6Class(
       )
       invisible(flow)
     },
-    #' @description Add an authentication scheme instance to the plugin
-    #' @param auth Either an [Auth] object defining the scheme instance
-    #' (preferred) or a function taking the standard route handler arguments
-    #' (`request`, `response`, `keys`, and `...`) and returns `TRUE` if the
-    #' request is valid and `FALSE` if not.
-    #' @param name The name of the scheme instance to be used when defining flow
-    #' for endpoint authentication.
+    #' @description Add a guard to the plugin
+    #' @param guard Either a [Guard] object defining the guard (preferred) or a
+    #' function taking the standard route handler arguments (`request`,
+    #' `response`, `keys`, and `...`) and returns `TRUE` if the request is valid
+    #' and `FALSE` if not.
+    #' @param name The name of the guard to be used when defining flow
+    #' for endpoint auth.
     #'
-    add_auth = function(auth, name = NULL) {
-      if (is.function(auth)) {
-        auth <- with_dots(auth)
+    add_guard = function(guard, name = NULL) {
+      if (is.function(guard)) {
+        guard <- with_dots(guard)
         reject <- function(response) {
           if (response$status == 404L) {
             response$status <- 400L
@@ -179,25 +177,25 @@ Fireproof <- R6::R6Class(
           response$status <- 403L
         }
       } else {
-        if (!is_auth(auth)) {
+        if (!is_guard(guard)) {
           cli::cli_abort(
-            "{.arg auth} must be a function or an {.cls Auth} object"
+            "{.arg guard} must be a function or a {.cls Guard} object"
           )
         }
-        reject <- auth$reject_response
-        forbid <- auth$forbid_user
-        name <- name %||% auth$name
-        auth$name <- name
-        auth$register_handler(super$add_handler)
-        auth <- auth$check_request
+        reject <- guard$reject_response
+        forbid <- guard$forbid_user
+        name <- name %||% guard$name
+        guard$name <- name
+        guard$register_handler(super$add_handler)
+        guard <- guard$check_request
       }
       check_string(name)
-      private$AUTHS[[name]] <- auth
+      private$GUARDS[[name]] <- guard
       private$REJECTION[[name]] <- reject
       private$FORBID[[name]] <- forbid
     },
     #' @description Defunct overwrite of the `add_handler()` method to prevent
-    #' this route to be used for anything other than authentication. Will throw
+    #' this route to be used for anything other than auth. Will throw
     #' an error if called.
     #' @param method ignored
     #' @param path ignored
@@ -210,17 +208,17 @@ Fireproof <- R6::R6Class(
       reject_missing_methods = FALSE
     ) {
       cli::cli_abort(c(
-        "{.cls AuthRoute} does not support adding handlers directly",
-        i = "Use the {.fun add_auth_handler} method to add an authentication/authorization handler"
+        "{.cls Fireproof} does not support adding handlers directly",
+        i = "Use the {.fun add_auth} method to add an authentication/authorization handler"
       ))
     },
-    #' @description Turns a parsed flow (as returned by `add_auth_handler()`)
+    #' @description Turns a parsed flow (as returned by `add_auth()`)
     #' into an OpenAPI Security Requirement compliant list. Not all flows can be
     #' represented by the OpenAPI spec and the method will return `NULL` with a
     #' warning if so. Scope is added to all schemes, even if not applicable, so
     #' the final OpenAPI doc should be run through `prune_openapi()` before
     #' serving it.
-    #' @param flow A parsed flow as returned by `add_auth_handler()`
+    #' @param flow A parsed flow as returned by `add_auth()`
     #' @param scope A character vector of scopes required for this particular
     #' flow
     #'
@@ -228,7 +226,7 @@ Fireproof <- R6::R6Class(
       flow <- or(flow) # Force outmost to be ||
       if (!is_flow_valid_openapi(flow)) {
         cli::cli_warn(
-          "Authentication flow `{format(flow)}` cannot be represented by the OpenAPI syntax"
+          "Auth flow `{format(flow)}` cannot be represented by the OpenAPI syntax"
         )
         return(NULL)
       }
@@ -269,35 +267,34 @@ Fireproof <- R6::R6Class(
     require = function() {
       "firesale"
     },
-    #' @field auths The name of all the authentication schemes currently added
-    #' to the plugin
-    auths = function() {
-      names(private$AUTHS)
+    #' @field guards The name of all the guards currently added to the plugin
+    guards = function() {
+      names(private$GUARDS)
     }
   ),
   private = list(
-    AUTHS = list(),
+    GUARDS = list(),
     REJECTION = list(),
     FORBID = list(),
     STORE_NAME = NULL,
 
-    eval_auths = function(
-      .authenticators,
+    eval_guards = function(
+      .guards,
       request,
       response,
       keys,
       ...,
       .session = session
     ) {
-      auths <- private$AUTHS[.authenticators]
-      missing <- lengths(auths) == 0
+      guards <- private$GUARDS[.guards]
+      missing <- lengths(guards) == 0
       if (any(missing)) {
         cli::cli_warn(
-          "Ignoring unknown authenticator{?s} {.authenticators[missing]}"
+          "Ignoring unknown guard{?s} {.guards[missing]}"
         )
-        auths[missing] <- true_fun
+        guards[missing] <- true_fun
       }
-      lapply(auths, function(x) {
+      lapply(guards, function(x) {
         x(
           request = request,
           response = response,
@@ -322,7 +319,7 @@ parse_auth_flow <- function(expr) {
     op <- expr_name(flow[[1]])
     if (!op %in% c("||", "&&")) {
       cli::cli_abort(
-        "Unknown operator for authentication flow. Only `||` and `&&` allowed"
+        "Unknown operator for auth flow. Only `||` and `&&` allowed"
       )
     }
     lhs <- parse_auth_flow(!!flow[[2]])

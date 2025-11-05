@@ -22,8 +22,6 @@ knitr::opts_chunk$set(
 
 fireproof is a plugin for [fiery](https://fiery.data-imaginist.com/) based servers. It provides a unified framework for adding authentication to your server backend. 
 
-There is currently support for Basic and Bearer authentication as well as Key based authentication.
-
 fireproof supports multiple authentication routes for each endpoint so that you can specify that access to a certain endpoint requires either passing this and/or this challenges. The logic can be arbitrarily complex though for your own sanity it probably shouldn't.
 
 ## Installation
@@ -45,26 +43,26 @@ library(fireproof)
 # Create the plugin
 proof <- Fireproof$new()
 
-# Create two different authenticators
-key_auth <- auth_key(
+# Create two different guards
+key_auth <- guard_key(
   key = "FireproofKey",
   secret = "VerySecretString",
   cookie = FALSE
 )
-basic_auth <- auth_basic(
+basic_auth <- guard_basic(
   authenticator = function(user, password, ...) {
     user == "thomas" && password == "1234"
   }
 )
 
 # Add them to the plugin
-proof$add_auth(key_auth, "key")
-proof$add_auth(basic_auth, "basic")
+proof$add_guard(key_auth, "key")
+proof$add_guard(basic_auth, "basic")
 
 # Add authentication to some endpoints with varying combinations of requirements
-proof$add_auth_handler("get", "/user/settings", basic) # must pass basic auth
-proof$add_auth_handler("get", "/api/predict", key || basic) # must pass either
-proof$add_auth_handler("get", "/strong/auth", key && basic) # must pass both
+proof$add_auth("get", "/user/settings", basic) # must pass basic auth
+proof$add_auth("get", "/api/predict", key || basic) # must pass either
+proof$add_auth("get", "/strong/auth", key && basic) # must pass both
 
 # If you have even more authenticators you can group conditions with () as well
 

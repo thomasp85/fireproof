@@ -1,7 +1,7 @@
-#' Authentication based on OpenID Connect
+#' Guard based on OpenID Connect
 #'
 #' OpenID Connect is an authentication standard build on top of
-#' [OAuth 2.0][auth_oauth2]. OAuth 2.0 at its core is only about authorization
+#' [OAuth 2.0][guard_oauth2]. OAuth 2.0 at its core is only about authorization
 #' and doesn't provide a standardized approach to extracting user information
 #' that can be used for authentication. OpenID Connect fills this gap in a
 #' number of ways. First, the token returned is a JSON Web Token (JWT) that
@@ -10,7 +10,7 @@
 #' points making rotation of credentials etc easier. Third, the claims about
 #' users are standardized so authentication services are easily interchangable.
 #' Not all OAuth 2.0 authorization services provide an OpenID Connect layer, but
-#' if they do, it is generally preferable to use that. The `auth_oidc()`
+#' if they do, it is generally preferable to use that. The `guard_oidc()`
 #' function is the base constructor which can be used to create authenticators
 #' with any provider. For ease of use `fireproof` comes with a range of
 #' predefined constructors for popular services such as Google etc. Central for
@@ -19,7 +19,7 @@
 #' logging users in.
 #'
 #' # User information
-#' `auth_oidc()` automatically adds [user information][user_info] after
+#' `guard_oidc()` automatically adds [user information][user_info] after
 #' authentication, based on the standardized user claims provided in the
 #' `id_token` as well as any additional user information provided at the
 #' `userinfo_endpoint` of the service if `request_user_info = TRUE`. You can see
@@ -37,14 +37,14 @@
 #'
 #' Further, it will set the `scopes` field to any scopes returned by the provider
 #' during authorization, the `provider` field to `service_name`, the `token`
-#' field to the token information as described in [auth_oauth2()], and `.raw` to
+#' field to the token information as described in [guard_oauth2()], and `.raw` to
 #' the full list of user information as provided unaltered by the service. Be
 #' aware that the information reported by the service depends on the scopes
 #' requested by fireproof and granted by the user. You can therefore never
 #' assume the existence of any information besides `id`, `provider` and `token`.
 #'
 #' @param service_url The url to the authentication service
-#' @inheritParams auth_oauth2
+#' @inheritParams guard_oauth2
 #' @param request_user_info Logical. Should the userinfo endpoint be followed to
 #' add information about the user not present in the JWT token. Setting this to
 #' `TRUE` will add an additional API call to your authentication flow but
@@ -52,14 +52,14 @@
 #' @param service_name The name of the service provider. Will be passed on to
 #' the `provider` slot in the user info list
 #'
-#' @return An [AuthOIDC] object
+#' @return An [GuardOIDC] object
 #'
 #' @export
 #' @importFrom jose jwt_split
 #'
 #' @examples
-#' # Example using Google endpoint (use `auth_google()` in real code)
-#' google <- auth_oidc(
+#' # Example using Google endpoint (use `guard_google()` in real code)
+#' google <- guard_oidc(
 #'   service_url = "https://accounts.google.com/",
 #'   redirect_url = "https://example.com/auth",
 #'   client_id = "MY_APP_ID",
@@ -68,12 +68,12 @@
 #'
 #' # Add it to a fireproof plugin
 #' fp <- Fireproof$new()
-#' fp$add_auth(google, "google_auth")
+#' fp$add_guard(google, "google_auth")
 #'
 #' # Use it in an endpoint
-#' fp$add_auth_handler("get", "/*", google_auth)
+#' fp$add_auth("get", "/*", google_auth)
 #'
-auth_oidc <- function(
+guard_oidc <- function(
   service_url,
   redirect_url,
   client_id,
@@ -87,7 +87,7 @@ auth_oidc <- function(
   service_params = list(),
   name = "OIDCAuth"
 ) {
-  AuthOIDC$new(
+  GuardOIDC$new(
     service_url = service_url,
     redirect_url = redirect_url,
     client_id = client_id,
@@ -103,26 +103,26 @@ auth_oidc <- function(
   )
 }
 
-#' R6 class for the OpenID Connect authentication scheme
+#' R6 class for the OpenID Connect guard
 #'
 #' @description
 #' This class encapsulates the logic of the OpenID Connect based authentication
-#' scheme. See [auth_oidc()] for more information
+#' scheme. See [guard_oidc()] for more information
 #'
 #' @export
 #'
 #' @examples
-#' # Example using Google endpoint (use `auth_google()` in real code)
-#' google <- AuthOIDC$new(
+#' # Example using Google endpoint (use `guard_google()` in real code)
+#' google <- GuardOIDC$new(
 #'   service_url = "https://accounts.google.com/",
 #'   redirect_url = "https://example.com/auth",
 #'   client_id = "MY_APP_ID",
 #'   client_secret = "SUCHASECRET"
 #' )
 #'
-AuthOIDC <- R6::R6Class(
-  "AuthOIDC",
-  inherit = AuthOAuth2,
+GuardOIDC <- R6::R6Class(
+  "GuardOIDC",
+  inherit = GuardOAuth2,
   public = list(
     #' @description Constructor for the class
     #' @param service_url The url to the authentication service

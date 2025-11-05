@@ -59,12 +59,12 @@ constructor. This function will, among other information be provided with a
 \code{setter()} function which takes the same arguments as described above and
 automatically assigns the result to the correct part of the session data
 store. In some cases one or more of the arguments will have a default value
-assigned (e.g. for \code{\link[=auth_basic]{auth_basic()}}, the \code{setter()} will have \code{id} default to
+assigned (e.g. for \code{\link[=guard_basic]{guard_basic()}}, the \code{setter()} will have \code{id} default to
 the username). Further, the setter will also set the \code{scopes} field to the
 \code{scopes} reported for the user, the \code{token} field with information about the
-token (for \code{\link[=auth_bearer]{auth_bearer()}}, \code{\link[=auth_oauth2]{auth_oauth2()}} and \code{\link[=auth_oidc]{auth_oidc()}}), and the
+token (for \code{\link[=guard_bearer]{guard_bearer()}}, \code{\link[=guard_oauth2]{guard_oauth2()}} and \code{\link[=guard_oidc]{guard_oidc()}}), and the
 \code{.raw} field with the raw user info value returned by the service (for
-\code{\link[=auth_oidc]{auth_oidc()}} and some predefined OAuth2 providers such as \code{\link[=auth_github]{auth_github()}})
+\code{\link[=guard_oidc]{guard_oidc()}} and some predefined OAuth2 providers such as \code{\link[=guard_github]{guard_github()}})
 }
 
 \examples{

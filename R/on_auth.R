@@ -47,7 +47,7 @@
 #' # argument in OAuth 2.0 and OpenID Connect authentication flows
 #'
 #' # Default
-#' google <- auth_google(
+#' google <- guard_google(
 #'   redirect_url = "https://example.com/auth",
 #'   client_id = "MY_APP_ID",
 #'   client_secret = "SUCHASECRET",
@@ -55,7 +55,7 @@
 #' )
 #'
 #' # Alternative
-#' google <- auth_google(
+#' google <- guard_google(
 #'   redirect_url = "https://example.com/auth",
 #'   client_id = "MY_APP_ID",
 #'   client_secret = "SUCHASECRET",

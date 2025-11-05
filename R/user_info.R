@@ -16,12 +16,12 @@
 #' `setter()` function which takes the same arguments as described above and
 #' automatically assigns the result to the correct part of the session data
 #' store. In some cases one or more of the arguments will have a default value
-#' assigned (e.g. for [auth_basic()], the `setter()` will have `id` default to
+#' assigned (e.g. for [guard_basic()], the `setter()` will have `id` default to
 #' the username). Further, the setter will also set the `scopes` field to the
 #' `scopes` reported for the user, the `token` field with information about the
-#' token (for [auth_bearer()], [auth_oauth2()] and [auth_oidc()]), and the
+#' token (for [guard_bearer()], [guard_oauth2()] and [guard_oidc()]), and the
 #' `.raw` field with the raw user info value returned by the service (for
-#' [auth_oidc()] and some predefined OAuth2 providers such as [auth_github()])
+#' [guard_oidc()] and some predefined OAuth2 providers such as [guard_github()])
 #'
 #' @param provider A string naming the provider of the user information
 #' @param id A unique identifier of this user

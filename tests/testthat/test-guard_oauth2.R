@@ -1,5 +1,5 @@
-test_that("auth_oauth2 can be constructed with authorization_code grant", {
-  auth <- auth_oauth2(
+test_that("guard_oauth2 can be constructed with authorization_code grant", {
+  auth <- guard_oauth2(
     token_url = "https://example.com/oauth/token",
     redirect_url = "https://myapp.com/auth/callback",
     client_id = "my_client_id",
@@ -32,8 +32,8 @@ test_that("auth_oauth2 can be constructed with authorization_code grant", {
   )
 })
 
-test_that("auth_oauth2 can be constructed with password grant", {
-  auth <- auth_oauth2(
+test_that("guard_oauth2 can be constructed with password grant", {
+  auth <- guard_oauth2(
     token_url = "https://example.com/oauth/token",
     redirect_url = "https://myapp.com/auth/callback",
     client_id = "my_client_id",
@@ -58,8 +58,8 @@ test_that("auth_oauth2 can be constructed with password grant", {
   )
 })
 
-test_that("auth_oauth2 check_request validates session info", {
-  auth <- auth_oauth2(
+test_that("guard_oauth2 check_request validates session info", {
+  auth <- guard_oauth2(
     token_url = "https://example.com/oauth/token",
     redirect_url = "https://myapp.com/auth/callback",
     client_id = "my_client_id",
@@ -97,8 +97,8 @@ test_that("auth_oauth2 check_request validates session info", {
   expect_true(pass)
 })
 
-test_that("auth_oauth2 check_request uses custom validate function", {
-  auth <- auth_oauth2(
+test_that("guard_oauth2 check_request uses custom validate function", {
+  auth <- guard_oauth2(
     token_url = "https://example.com/oauth/token",
     redirect_url = "https://myapp.com/auth/callback",
     client_id = "my_client_id",
@@ -145,8 +145,8 @@ test_that("auth_oauth2 check_request uses custom validate function", {
   expect_true(pass)
 })
 
-test_that("auth_oauth2 reject_response clears failed session", {
-  auth <- auth_oauth2(
+test_that("guard_oauth2 reject_response clears failed session", {
+  auth <- guard_oauth2(
     token_url = "https://example.com/oauth/token",
     redirect_url = "https://myapp.com/auth/callback",
     client_id = "my_client_id",
@@ -166,8 +166,8 @@ test_that("auth_oauth2 reject_response clears failed session", {
   expect_null(session$test)
 })
 
-test_that("auth_oauth2 reject_response initiates authorization for authorization_code", {
-  auth <- auth_oauth2(
+test_that("guard_oauth2 reject_response initiates authorization for authorization_code", {
+  auth <- guard_oauth2(
     token_url = "https://example.com/oauth/token",
     redirect_url = "https://myapp.com/auth/callback",
     client_id = "my_client_id",
@@ -198,8 +198,8 @@ test_that("auth_oauth2 reject_response initiates authorization for authorization
   expect_true(grepl("code_challenge_method=S256", location))
 })
 
-test_that("auth_oauth2 custom redirect_path can be set", {
-  auth <- auth_oauth2(
+test_that("guard_oauth2 custom redirect_path can be set", {
+  auth <- guard_oauth2(
     token_url = "https://example.com/oauth/token",
     redirect_url = "https://myapp.com/auth/callback",
     client_id = "my_client_id",
@@ -213,8 +213,8 @@ test_that("auth_oauth2 custom redirect_path can be set", {
   expect_equal("/custom/oauth/path", auth$.__enclos_env__$private$REDIRECT_PATH)
 })
 
-test_that("auth_oauth2 service_params are included in auth URL", {
-  auth <- auth_oauth2(
+test_that("guard_oauth2 service_params are included in auth URL", {
+  auth <- guard_oauth2(
     token_url = "https://example.com/oauth/token",
     redirect_url = "https://myapp.com/auth/callback",
     client_id = "my_client_id",
@@ -237,9 +237,9 @@ test_that("auth_oauth2 service_params are included in auth URL", {
   expect_true(grepl("access_type=offline", location))
 })
 
-test_that("auth_oauth2 requires auth_url for authorization_code grant", {
+test_that("guard_oauth2 requires auth_url for authorization_code grant", {
   expect_error(
-    auth_oauth2(
+    guard_oauth2(
       token_url = "https://example.com/oauth/token",
       redirect_url = "https://myapp.com/auth/callback",
       client_id = "my_client_id",
@@ -251,9 +251,9 @@ test_that("auth_oauth2 requires auth_url for authorization_code grant", {
   )
 })
 
-test_that("auth_oauth2 does not require auth_url for password grant", {
+test_that("guard_oauth2 does not require auth_url for password grant", {
   expect_no_error(
-    auth_oauth2(
+    guard_oauth2(
       token_url = "https://example.com/oauth/token",
       redirect_url = "https://myapp.com/auth/callback",
       client_id = "my_client_id",
@@ -264,8 +264,8 @@ test_that("auth_oauth2 does not require auth_url for password grant", {
   )
 })
 
-test_that("auth_oauth2 reject_response for password grant requests basic auth", {
-  auth <- auth_oauth2(
+test_that("guard_oauth2 reject_response for password grant requests basic auth", {
+  auth <- guard_oauth2(
     token_url = "https://example.com/oauth/token",
     redirect_url = "https://myapp.com/auth/callback",
     client_id = "my_client_id",
@@ -283,8 +283,8 @@ test_that("auth_oauth2 reject_response for password grant requests basic auth", 
   )
 })
 
-test_that("auth_oauth2 respects existing response status on rejection", {
-  auth <- auth_oauth2(
+test_that("guard_oauth2 respects existing response status on rejection", {
+  auth <- guard_oauth2(
     token_url = "https://example.com/oauth/token",
     redirect_url = "https://myapp.com/auth/callback",
     client_id = "my_client_id",
@@ -306,8 +306,8 @@ test_that("auth_oauth2 respects existing response status on rejection", {
   expect_null(session$test)
 })
 
-test_that("auth_oauth2 register_handler adds redirect endpoint", {
-  auth <- auth_oauth2(
+test_that("guard_oauth2 register_handler adds redirect endpoint", {
+  auth <- guard_oauth2(
     token_url = "https://example.com/oauth/token",
     redirect_url = "https://myapp.com/auth/callback",
     client_id = "my_client_id",
@@ -335,8 +335,8 @@ test_that("auth_oauth2 register_handler adds redirect endpoint", {
   expect_type(handlers_added[[1]]$handler, "closure")
 })
 
-test_that("auth_oauth2 with NULL scopes works", {
-  auth <- auth_oauth2(
+test_that("guard_oauth2 with NULL scopes works", {
+  auth <- guard_oauth2(
     token_url = "https://example.com/oauth/token",
     redirect_url = "https://myapp.com/auth/callback",
     client_id = "my_client_id",
@@ -353,8 +353,8 @@ test_that("auth_oauth2 with NULL scopes works", {
   )
 })
 
-test_that("auth_oauth2 forbid_user clears session", {
-  auth <- auth_oauth2(
+test_that("guard_oauth2 forbid_user clears session", {
+  auth <- guard_oauth2(
     token_url = "https://example.com/oauth/token",
     redirect_url = "https://myapp.com/auth/callback",
     client_id = "my_client_id",
@@ -377,8 +377,8 @@ test_that("auth_oauth2 forbid_user clears session", {
   expect_null(session$test)
 })
 
-test_that("auth_oauth2 passes if session already has valid user info", {
-  auth <- auth_oauth2(
+test_that("guard_oauth2 passes if session already has valid user info", {
+  auth <- guard_oauth2(
     token_url = "https://example.com/oauth/token",
     redirect_url = "https://myapp.com/auth/callback",
     client_id = "my_client_id",
@@ -426,7 +426,7 @@ test_that("auth_oauth2 passes if session already has valid user info", {
 
 # Tests yet to be implemented
 
-test_that("auth_oauth2 handles successful code exchange", {
+test_that("guard_oauth2 handles successful code exchange", {
   skip_on_cran()
   skip_on_ci()
 
@@ -453,7 +453,7 @@ test_that("auth_oauth2 handles successful code exchange", {
     function(port, auth_url, token_url, redirect_url, registration) {
       app <- fiery::Fire$new(port = port)
 
-      auth <- fireproof::auth_oauth2(
+      auth <- fireproof::guard_oauth2(
         token_url = token_url,
         redirect_url = redirect_url,
         client_id = registration$client_id,
@@ -461,8 +461,8 @@ test_that("auth_oauth2 handles successful code exchange", {
         auth_url = auth_url
       )
       fp <- fireproof::Fireproof$new()
-      fp$add_auth(auth, "mock")
-      fp$add_auth_handler("all", "/*", mock)
+      fp$add_guard(auth, "mock")
+      fp$add_auth("all", "/*", mock)
 
       fs <- firesale::FireSale$new(storr::driver_environment(new.env()))
 

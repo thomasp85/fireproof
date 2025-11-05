@@ -1,4 +1,4 @@
-#' Basic authentication plugin
+#' Basic authentication guard
 #'
 #' Basic authentication is a HTTP scheme that sends username and password as a
 #' `:` separated, base64 encoded string in the authorization header. Because it
@@ -7,18 +7,15 @@
 #' https/ssl to avoid username and passwords being snooped from the request.
 #'
 #' @details
-#' This authenticator will use a user provided function to test a
+#' This guard will use a user provided function to test a
 #' username/password pair. It is up to the user to handle the storage and
 #' testing of the passwords in a sensible and responsible way. See
 #' [sodium::password_store()] for a good first step towards responsible design.
 #'
-#' If the authentication passes, the username from the authorization header is
-#' written to the `username` data slot in the request
-#'
 #' # User information
-#' `auth_basic()` automatically adds [user information][user_info] after
+#' `guard_basic()` automatically adds [user information][user_info] after
 #' authentication. By default it will set the `provider` field to `"local"` and
-#' the `id` field to the username of used for logging in. Further, it will set
+#' the `id` field to the username used for logging in. Further, it will set
 #' the `scopes` field to any scopes returned by the `authenticator` function.
 #'
 #' @param authenticator A function that will be called with the arguments
@@ -26,7 +23,7 @@
 #' if the user is valid, and `FALSE` otherwise. If the function returns a
 #' character vector it is considered to be authenticated and the return value
 #' will be understood as scopes the user is granted.
-#' @param name The name of the authentication
+#' @param name The name of the guard
 #' @param user_info A function to extract user information from the
 #' username. It is called with two arguments: `user` and `setter`,
 #' the first being the username used for the successful authentication, the
@@ -36,14 +33,14 @@
 #' to the client on a failed authentication attempt to inform them of the
 #' credentials required, though most often these days it is kept from the user.
 #'
-#' @return An [AuthBasic] R6 object
+#' @return A [GuardBasic] R6 object
 #'
 #' @export
 #' @importFrom base64enc base64decode
 #'
 #' @examples
-#' # Create an authenticator of dubious quality
-#' basic <- auth_basic(
+#' # Create a guard of dubious quality
+#' basic <- guard_basic(
 #'   authenticator = function(user, password) {
 #'     user == "thomas" && password == "pedersen"
 #'   },
@@ -58,18 +55,18 @@
 #'
 #' # Add it to a fireproof plugin
 #' fp <- Fireproof$new()
-#' fp$add_auth(basic, "basic_auth")
+#' fp$add_guard(basic, "basic_auth")
 #'
 #' # Use it in an endpoint
-#' fp$add_auth_handler("get", "/*", basic_auth)
+#' fp$add_auth("get", "/*", basic_auth)
 #'
-auth_basic <- function(
+guard_basic <- function(
   authenticator,
   user_info = NULL,
   realm = "private",
   name = "BasicAuth"
 ) {
-  AuthBasic$new(
+  GuardBasic$new(
     authenticator = authenticator,
     user_info = user_info,
     realm = realm,
@@ -101,18 +98,18 @@ dplyr_authenticator <- function(
   }
 }
 
-#' R6 class for the Basic authentication scheme
+#' R6 class for the Basic authentication guard
 #'
 #' @description
 #' This class encapsulates the logic of the
 #' [Basic authentication scheme](https://datatracker.ietf.org/doc/html/rfc7617).
-#' See [auth_basic()] for more information.
+#' See [guard_basic()] for more information.
 #'
 #' @export
 #'
 #' @examples
-#' # Create an authenticator of dubious quality
-#' basic <- AuthBasic$new(
+#' # Create a guard of dubious quality
+#' basic <- GuardBasic$new(
 #'   authenticator = function(user, password) {
 #'     user == "thomas" && password == "pedersen"
 #'   },
@@ -125,9 +122,9 @@ dplyr_authenticator <- function(
 #'   }
 #' )
 #'
-AuthBasic <- R6::R6Class(
-  "AuthBasic",
-  inherit = Auth,
+GuardBasic <- R6::R6Class(
+  "GuardBasic",
+  inherit = Guard,
   public = list(
     #' @description Constructor for the class
     #' @param authenticator A function that will be called with the arguments

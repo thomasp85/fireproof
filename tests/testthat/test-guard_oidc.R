@@ -1,5 +1,5 @@
-test_that("auth_oidc gets constructed correctly", {
-  auth <- auth_oidc(
+test_that("guard_oidc gets constructed correctly", {
+  auth <- guard_oidc(
     service_url = "https://accounts.google.com",
     redirect_url = "https://myapp.com/auth/callback",
     client_id = "my_client_id",
@@ -14,7 +14,7 @@ test_that("auth_oidc gets constructed correctly", {
     c("openid", "profile", "email")
   )
 
-  auth <- auth_oidc(
+  auth <- guard_oidc(
     service_url = "https://accounts.google.com",
     redirect_url = "https://myapp.com/auth/callback",
     client_id = "my_client_id",
@@ -36,8 +36,8 @@ test_that("auth_oidc gets constructed correctly", {
   ))
 })
 
-test_that("auth_oidc constructs correct OpenAPI definition", {
-  auth <- auth_oidc(
+test_that("guard_oidc constructs correct OpenAPI definition", {
+  auth <- guard_oidc(
     service_url = "https://accounts.google.com",
     redirect_url = "https://myapp.com/auth/callback",
     client_id = "my_client_id",
@@ -55,8 +55,8 @@ test_that("auth_oidc constructs correct OpenAPI definition", {
   )
 })
 
-test_that("auth_oidc inherits session-based authentication from OAuth2", {
-  auth <- auth_oidc(
+test_that("guard_oidc inherits session-based authentication from OAuth2", {
+  auth <- guard_oidc(
     service_url = "https://accounts.example.com",
     redirect_url = "https://myapp.com/auth/callback",
     client_id = "my_client_id",
@@ -93,8 +93,8 @@ test_that("auth_oidc inherits session-based authentication from OAuth2", {
   expect_true(pass)
 })
 
-test_that("auth_oidc validates with custom validate function", {
-  auth <- auth_oidc(
+test_that("guard_oidc validates with custom validate function", {
+  auth <- guard_oidc(
     service_url = "https://accounts.example.com",
     redirect_url = "https://myapp.com/auth/callback",
     client_id = "my_client_id",
@@ -137,7 +137,7 @@ test_that("auth_oidc validates with custom validate function", {
   expect_true(pass)
 })
 
-test_that("auth_oidc well-known URL handles multiple slashes correctly", {
+test_that("guard_oidc well-known URL handles multiple slashes correctly", {
   test_cases <- list(
     list(
       input = "https://example.com",
@@ -162,7 +162,7 @@ test_that("auth_oidc well-known URL handles multiple slashes correctly", {
   )
 
   for (test_case in test_cases) {
-    auth <- auth_oidc(
+    auth <- guard_oidc(
       service_url = test_case$input,
       redirect_url = "https://myapp.com/auth/callback",
       client_id = "my_client_id",

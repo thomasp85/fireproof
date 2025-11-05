@@ -1,6 +1,6 @@
 # For OAuth2: https://developers.google.com/identity/protocols/oauth2/web-server
 # For OIDC: https://developers.google.com/identity/openid-connect/openid-connect
-#' Authenticate with Google using OpenID Connect
+#' Guard for Authenticating with the Google OpenID Connect server
 #'
 #' This authentication requests you to log in with google and authenticates you
 #' through their service. Your server must be registered and have a valid client
@@ -10,18 +10,18 @@
 #' a `validation` function that checks the userinfo against a whitelist.
 #'
 #' # User information
-#' `auth_google()` automatically adds user information according to the
-#' description in [auth_oidc()]. It sets the `provider` field to `"google"`.
+#' `guard_google()` automatically adds user information according to the
+#' description in [guard_oidc()]. It sets the `provider` field to `"google"`.
 #'
-#' @inheritParams auth_oidc
-#' @inheritDotParams auth_oidc -service_url -service_name
+#' @inheritParams guard_oidc
+#' @inheritDotParams guard_oidc -service_url -service_name
 #'
-#' @return An [AuthOIDC] object
+#' @return An [GuardOIDC] object
 #'
 #' @export
 #'
 #' @examples
-#' google <- auth_google(
+#' google <- guard_google(
 #'   redirect_url = "https://example.com/auth",
 #'   client_id = "MY_APP_ID",
 #'   client_secret = "SUCHASECRET"
@@ -29,12 +29,12 @@
 #'
 #' # Add it to a fireproof plugin
 #' fp <- Fireproof$new()
-#' fp$add_auth(google, "google_auth")
+#' fp$add_guard(google, "google_auth")
 #'
 #' # Use it in an endpoint
-#' fp$add_auth_handler("get", "/*", google_auth)
+#' fp$add_auth("get", "/*", google_auth)
 #'
-auth_google <- function(
+guard_google <- function(
   redirect_url,
   client_id,
   client_secret,
@@ -46,7 +46,7 @@ auth_google <- function(
   ...,
   name = "google"
 ) {
-  auth_oidc(
+  guard_oidc(
     service_url = "https://accounts.google.com/",
     redirect_url = redirect_url,
     client_id = client_id,

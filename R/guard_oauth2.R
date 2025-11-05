@@ -1,4 +1,4 @@
-#' Authentication based on OAuth 2.0
+#' Guard based on OAuth 2.0
 #'
 #' OAuth 2.0 is an authorization scheme that is powering much of the modern
 #' internet and is behind things like "log in with GitHub" etc. It separates the
@@ -7,15 +7,15 @@
 #' allows a server to make request on the users behalf the main purpose in the
 #' context of `fireproof` is to validate that the user can perform a successful
 #' login and potentially extract basic information about the user. The
-#' `auth_oauth2()` function is the base constructor which can be used to create
-#' authenticators with any provider. For ease of use `fireproof` comes with a
+#' `guard_oauth2()` function is the base constructor which can be used to create
+#' guards with any provider. For ease of use `fireproof` comes with a
 #' range of predefined constructors for popular services such as GitHub etc.
 #' Central for all of these is the need for your server to register itself
 #' with the provider and get a client id and a client secret which must be used
 #' when logging users in.
 #'
 #' # User information
-#' `auth_oauth2()` automatically adds some [user information][user_info] after
+#' `guard_oauth2()` automatically adds some [user information][user_info] after
 #' authentication, but it is advised to consult the service provider for more
 #' information (this is done automatically for the provider specific
 #' constructors. See their documentation for details about what information is
@@ -82,14 +82,14 @@
 #' @param name The name of the scheme instance. This will also be the name
 #' under which token info and user info is saved in the session store
 #'
-#' @return An [AuthOAuth2] object
+#' @return An [GuardOAuth2] object
 #'
 #' @export
 #' @importFrom urltools url_encode
 #'
 #' @examples
-#' # Example using GitHub endpoints (use `auth_github()` in real code)
-#' github <- auth_oauth2(
+#' # Example using GitHub endpoints (use `guard_github()` in real code)
+#' github <- guard_oauth2(
 #'   token_url = "https://github.com/login/oauth/access_token",
 #'   redirect_url = "https://example.com/auth",
 #'   client_id = "MY_APP_ID",
@@ -100,12 +100,12 @@
 #'
 #' # Add it to a fireproof plugin
 #' fp <- Fireproof$new()
-#' fp$add_auth(github, "github_auth")
+#' fp$add_guard(github, "github_auth")
 #'
 #' # Use it in an endpoint
-#' fp$add_auth_handler("get", "/*", github_auth)
+#' fp$add_auth("get", "/*", github_auth)
 #'
-auth_oauth2 <- function(
+guard_oauth2 <- function(
   token_url,
   redirect_url,
   client_id,
@@ -120,7 +120,7 @@ auth_oauth2 <- function(
   service_params = list(),
   name = "OAuth2Auth"
 ) {
-  AuthOAuth2$new(
+  GuardOAuth2$new(
     token_url = token_url,
     redirect_url = redirect_url,
     client_id = client_id,
@@ -137,17 +137,17 @@ auth_oauth2 <- function(
   )
 }
 
-#' R6 class for the OAuth 2.0 authentication scheme
+#' R6 class for the OAuth 2.0 Guard
 #'
 #' @description
 #' This class encapsulates the logic of the oauth 2.0 based authentication
-#' scheme. See [auth_oauth2()] for more information
+#' scheme. See [guard_oauth2()] for more information
 #'
 #' @export
 #'
 #' @examples
-#' # Example using GitHub endpoints (use `auth_github()` in real code)
-#' github <- AuthOAuth2$new(
+#' # Example using GitHub endpoints (use `guard_github()` in real code)
+#' github <- GuardOAuth2$new(
 #'   token_url = "https://github.com/login/oauth/access_token",
 #'   redirect_url = "https://example.com/auth",
 #'   client_id = "MY_APP_ID",
@@ -156,9 +156,9 @@ auth_oauth2 <- function(
 #'   grant_type = "authorization_code"
 #' )
 #'
-AuthOAuth2 <- R6::R6Class(
-  "AuthOAuth2",
-  inherit = Auth,
+GuardOAuth2 <- R6::R6Class(
+  "GuardOAuth2",
+  inherit = Guard,
   public = list(
     #' @description Constructor for the class
     #' @param token_url The URL to the authorization servers token endpoint
@@ -497,7 +497,7 @@ AuthOAuth2 <- R6::R6Class(
       }
       error <- request$query$error
       if (!is.null(error)) {
-        abort_authorization_error(
+        abort_oauth_error(
           error,
           request$query$error_description,
           request$query$error_uri
@@ -619,73 +619,6 @@ oauth_user_info_setter <- function(session, name, token, scopes) {
       ...
     )
   }
-}
-
-abort_authorization_error <- function(error, detail, uri, call = caller_env()) {
-  switch(
-    error,
-    invalid_request = reqres::abort_http_problem(
-      400L,
-      detail %||%
-        "The request is missing a required parameter, includes an invalid parameter value, includes a parameter more than once, or is otherwise malformed",
-      title = error,
-      type = uri,
-      call = call
-    ),
-    unauthorized_client = reqres::abort_http_problem(
-      400L,
-      detail %||%
-        "The client is not authorized to request an authorization code using this method",
-      title = error,
-      type = uri,
-      call = call
-    ),
-    access_denied = reqres::abort_http_problem(
-      403L,
-      detail %||%
-        "The resource owner or authorization server denied the request",
-      title = error,
-      type = uri,
-      call = call
-    ),
-    unsupported_response_type = reqres::abort_http_problem(
-      400L,
-      detail %||%
-        "The authorization server does not support obtaining an authorization code using this method",
-      title = error,
-      type = uri,
-      call = call
-    ),
-    invalid_scope = reqres::abort_http_problem(
-      400L,
-      detail %||% "The requested scope is invalid, unknown, or malformed",
-      title = error,
-      type = uri,
-      call = call
-    ),
-    server_error = reqres::abort_http_problem(
-      503L,
-      detail %||%
-        "The authorization server encountered an unexpected condition that prevented it from fulfilling the request",
-      title = error,
-      type = uri,
-      call = call
-    ),
-    temporarily_unavailable = reqres::abort_http_problem(
-      503L,
-      detail %||%
-        "The authorization server is currently unable to handle the request due to a temporary overloading or maintenance of the server",
-      title = error,
-      type = uri,
-      call = call
-    ),
-    reqres::abort_bad_request(
-      detail %||% "Unknown error",
-      title = error,
-      type = uri,
-      call = call
-    )
-  )
 }
 
 format_queryform <- function(data) {

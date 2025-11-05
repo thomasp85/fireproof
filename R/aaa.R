@@ -44,6 +44,73 @@ abort_auth <- function(internal_msg, call = caller_env(), ...) {
   )
 }
 
+abort_oauth_error <- function(error, detail, uri, call = caller_env()) {
+  switch(
+    error,
+    invalid_request = reqres::abort_http_problem(
+      400L,
+      detail %||%
+        "The request is missing a required parameter, includes an invalid parameter value, includes a parameter more than once, or is otherwise malformed",
+      title = error,
+      type = uri,
+      call = call
+    ),
+    unauthorized_client = reqres::abort_http_problem(
+      400L,
+      detail %||%
+        "The client is not authorized to request an authorization code using this method",
+      title = error,
+      type = uri,
+      call = call
+    ),
+    access_denied = reqres::abort_http_problem(
+      403L,
+      detail %||%
+        "The resource owner or authorization server denied the request",
+      title = error,
+      type = uri,
+      call = call
+    ),
+    unsupported_response_type = reqres::abort_http_problem(
+      400L,
+      detail %||%
+        "The authorization server does not support obtaining an authorization code using this method",
+      title = error,
+      type = uri,
+      call = call
+    ),
+    invalid_scope = reqres::abort_http_problem(
+      400L,
+      detail %||% "The requested scope is invalid, unknown, or malformed",
+      title = error,
+      type = uri,
+      call = call
+    ),
+    server_error = reqres::abort_http_problem(
+      503L,
+      detail %||%
+        "The authorization server encountered an unexpected condition that prevented it from fulfilling the request",
+      title = error,
+      type = uri,
+      call = call
+    ),
+    temporarily_unavailable = reqres::abort_http_problem(
+      503L,
+      detail %||%
+        "The authorization server is currently unable to handle the request due to a temporary overloading or maintenance of the server",
+      title = error,
+      type = uri,
+      call = call
+    ),
+    reqres::abort_bad_request(
+      detail %||% "Unknown error",
+      title = error,
+      type = uri,
+      call = call
+    )
+  )
+}
+
 with_dots <- function(fun) {
   if (!"..." %in% fn_fmls_names(fun)) {
     fn_fmls(fun) <- c(fn_fmls(fun), "..." = missing_arg())

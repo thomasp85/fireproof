@@ -2,29 +2,27 @@
 % Please edit documentation in R/Fireproof.R
 \name{Fireproof}
 \alias{Fireproof}
-\title{A plugin that handles authentication}
+\title{A plugin that handles authentication and/or authorization}
 \description{
-This plugin orchestrates all authentication for your fiery app. It is a
-special \link[routr:Route-class]{Route} that manages all the different authentication
-scheme instances you have defined as well as testing all the endpoints that
-have authentication requirements.
+This plugin orchestrates all guards for your fiery app. It is a
+special \link[routr:Route-class]{Route} that manages all the different guards you have
+defined as well as testing all the endpoints that have auth requirements.
 }
 \details{
-An authentication scheme instance is an object deriving from the \link{Auth} class
-which is usually created with one of the \verb{auth_*()} constructors. You can
-provide it with a name as you register it and can thus have multiple
-instances of the same scheme (e.g. two \code{auth_basic()} with different user
-lists)
+A guard is an object deriving from the \link{Guard} class which is usually created
+with one of the \verb{guard_*()} constructors. You can provide it with a name as
+you register it and can thus have multiple instances of the same scheme (e.g.
+two \code{guard_basic()} with different user lists)
 
-An authentication handler is a handler that consists of a method, path, and
-flow. The flow is a logical expression of the various instances the request
+An auth handler is a handler that consists of a method, path, and
+flow. The flow is a logical expression of the various guards the request
 must pass to get access to that endpoint. For example, if you have two
-instances named \code{auth1} and \code{auth2}, a flow could be \code{auth1 || auth2} to allow
-a request if it passes either of the instances. Given an additional instance,
+guards named \code{auth1} and \code{auth2}, a flow could be \code{auth1 || auth2} to allow
+a request if it passes either of the guards. Given an additional guard,
 \code{auth3}, it could also be something like \code{auth1 || (auth2 && auth3)}. The
 flow is given as a bare expression, not as a string. In addition to the three
 required arguments you can also supply a character vector of scopes that are
-required to be had to access the endpoint. If your scheme has scope support
+required to be had to access the endpoint. If your guard has scope support
 then the request will be tested against these to see if the (otherwise valid)
 user has permission to the resource.
 }
@@ -33,7 +31,7 @@ user has permission to the resource.
 fp <- Fireproof$new()
 
 # Create some authentication schemes and add them
-basic <- auth_basic(
+basic <- guard_basic(
   authenticator = function(user, password) {
     user == "thomas" && password == "pedersen"
   },
@@ -45,27 +43,27 @@ basic <- auth_basic(
     )
   }
 )
-fp$add_auth(basic, "basic_auth")
+fp$add_guard(basic, "basic_auth")
 
-key <- auth_key(
+key <- guard_key(
   key = "my-key-location",
   secret = "SHHH!!DONT_TELL_ANYONE"
 )
-fp$add_auth(key, "key_auth")
+fp$add_guard(key, "key_auth")
 
-google <- auth_google(
+google <- guard_google(
   redirect_url = "https://example.com/auth",
   client_id = "MY_APP_ID",
   client_secret = "SUCHASECRET",
 )
-fp$add_auth(google, "google_auth")
+fp$add_guard(google, "google_auth")
 
 # Add authentication to different paths
-fp$add_auth_handler("get", "/require_basic", basic_auth)
+fp$add_auth("get", "/require_basic", basic_auth)
 
-fp$add_auth_handler("get", "/require_basic_and_key", basic_auth && key_auth)
+fp$add_auth("get", "/require_basic_and_key", basic_auth && key_auth)
 
-fp$add_auth_handler(
+fp$add_auth(
   "get",
   "/require_google_or_the_others",
   google_auth || (basic_auth && key_auth)
@@ -93,16 +91,15 @@ app$attach(fp)
 
 \item{\code{require}}{Required plugins for Fireproof}
 
-\item{\code{auths}}{The name of all the authentication schemes currently added
-to the plugin}
+\item{\code{guards}}{The name of all the guards currently added to the plugin}
 }
 \if{html}{\out{</div>}}
 }
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-Fireproof-add_auth_handler}{\code{Fireproof$add_auth_handler()}}
 \item \href{#method-Fireproof-add_auth}{\code{Fireproof$add_auth()}}
+\item \href{#method-Fireproof-add_guard}{\code{Fireproof$add_guard()}}
 \item \href{#method-Fireproof-add_handler}{\code{Fireproof$add_handler()}}
 \item \href{#method-Fireproof-flow_to_openapi}{\code{Fireproof$flow_to_openapi()}}
 \item \href{#method-Fireproof-on_attach}{\code{Fireproof$on_attach()}}
@@ -123,13 +120,13 @@ to the plugin}
 </details>
 }}
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Fireproof-add_auth_handler"></a>}}
-\if{latex}{\out{\hypertarget{method-Fireproof-add_auth_handler}{}}}
-\subsection{Method \code{add_auth_handler()}}{
+\if{html}{\out{<a id="method-Fireproof-add_auth"></a>}}
+\if{latex}{\out{\hypertarget{method-Fireproof-add_auth}{}}}
+\subsection{Method \code{add_auth()}}{
 Add a new authentication handler. It invisibly returns the
 parsed flow so it can be used for generating OpenAPI specs with.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Fireproof$add_auth_handler(method, path, flow, scope = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Fireproof$add_auth(method, path, flow, scope = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -149,24 +146,24 @@ have permission for to access the resource}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Fireproof-add_auth"></a>}}
-\if{latex}{\out{\hypertarget{method-Fireproof-add_auth}{}}}
-\subsection{Method \code{add_auth()}}{
-Add an authentication scheme instance to the plugin
+\if{html}{\out{<a id="method-Fireproof-add_guard"></a>}}
+\if{latex}{\out{\hypertarget{method-Fireproof-add_guard}{}}}
+\subsection{Method \code{add_guard()}}{
+Add a guard to the plugin
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Fireproof$add_auth(auth, name = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Fireproof$add_guard(guard, name = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{auth}}{Either an \link{Auth} object defining the scheme instance
-(preferred) or a function taking the standard route handler arguments
-(\code{request}, \code{response}, \code{keys}, and \code{...}) and returns \code{TRUE} if the
-request is valid and \code{FALSE} if not.}
+\item{\code{guard}}{Either a \link{Guard} object defining the guard (preferred) or a
+function taking the standard route handler arguments (\code{request},
+\code{response}, \code{keys}, and \code{...}) and returns \code{TRUE} if the request is valid
+and \code{FALSE} if not.}
 
-\item{\code{name}}{The name of the scheme instance to be used when defining flow
-for endpoint authentication.}
+\item{\code{name}}{The name of the guard to be used when defining flow
+for endpoint auth.}
 }
 \if{html}{\out{</div>}}
 }
@@ -176,7 +173,7 @@ for endpoint authentication.}
 \if{latex}{\out{\hypertarget{method-Fireproof-add_handler}{}}}
 \subsection{Method \code{add_handler()}}{
 Defunct overwrite of the \code{add_handler()} method to prevent
-this route to be used for anything other than authentication. Will throw
+this route to be used for anything other than auth. Will throw
 an error if called.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Fireproof$add_handler(method, path, handler, reject_missing_methods = FALSE)}\if{html}{\out{</div>}}
@@ -200,7 +197,7 @@ an error if called.
 \if{html}{\out{<a id="method-Fireproof-flow_to_openapi"></a>}}
 \if{latex}{\out{\hypertarget{method-Fireproof-flow_to_openapi}{}}}
 \subsection{Method \code{flow_to_openapi()}}{
-Turns a parsed flow (as returned by \code{add_auth_handler()})
+Turns a parsed flow (as returned by \code{add_auth()})
 into an OpenAPI Security Requirement compliant list. Not all flows can be
 represented by the OpenAPI spec and the method will return \code{NULL} with a
 warning if so. Scope is added to all schemes, even if not applicable, so
@@ -213,7 +210,7 @@ serving it.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{flow}}{A parsed flow as returned by \code{add_auth_handler()}}
+\item{\code{flow}}{A parsed flow as returned by \code{add_auth()}}
 
 \item{\code{scope}}{A character vector of scopes required for this particular
 flow}
