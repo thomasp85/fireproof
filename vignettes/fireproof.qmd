@@ -8,7 +8,7 @@ description: |
   An overview of authorization and authentication using the fireproof package
 vignette: >
   %\VignetteIndexEntry{Introduction to auth with fireproof}
-  %\VignetteEngine{quarto}
+  %\VignetteEngine{quarto::html}
   %\VignetteEncoding{UTF-8}
 ---
 
@@ -19,4 +19,16 @@ library(fireproof)
 fireproof is a plugin for [fiery-based](http://fiery.data-imaginist.com) webservers (that includes [plumber2](http://plumber2.posit.co)), which adds an authorization and authentication framework to the server for you to take advantage of. The package supports a range of different auth schemes and allows you to specify the requirements of each endpoint very flexibly. However, before we dive into how it works, we'll give a brief overview of what we mean when we talk about authorization and authentication.
 
 ## Auth(orization/entication)
+The use of authentication and authorization has been part of the internet since its beginning and over the years a number of different schemas have been developed for it. While both words (authentication and authorization) are used (sometimes haphazardly) and often combined into a single "auth" they have different meaning which is beneficial to establish before we move further:
+
+### Authentication
+The act of authenticating someone is to establish their identity. In terms of webservers it is a challenge to the user to prove who they are. Proof of identity is not simple, even without the added layer of distance the internet offers. The standard approach has been to provide the user with some type of secret (often a password) that only they *should* know and challenge them to provide the secret to prove who they are. While that sounds quite sensible, it raises another concern: How do you send a secret to the server without anyone reading it? The first schema to come out (called *Basic auth*) closed it's eyes on this and simply transmitted username and password in plain text with the request. Subsequent schemas created more and more elaborate handshakes to avoid the transmission of sensible information while still allowing the server to ensure that the user was in possession of the password (e.g. Digest, HOBA, and SCRAM to name a few). However, with the advent of https-everywhere all of these complications are now moot, and the basic schema is just as secure (provided you are using https which you should anyway when handling authentication).
+
+You might think this was the end of the story — the user transmits a username and password in an encrypted request and everyone's happy — but you'd be wrong. The danger of this approach is that every server with authentication needs to handle a database of usernames and passwords in a secure way, and if history has taught us anything it is that users *love* to reuse their passwords, and that servers *love* to store them insecurely. This has led to a range of new schemas that outsources the authentication to a third (trusted) party and allows the server to forget about storing sensible information (for the most part). The pinnacle of this is the OAuth 2.0 framework which superseded OAuth and SAML and in one way or another powers all of these "Sign in with <xyz>" buttons we see on the internet today.
+
+## Authorization
+If authentication is all of the above, then what is left for authorization? Authorization usually comes after authentication and is the establishment of which privileges the user has. An obvious example is that even if you have successfully logged into a server you probably shouldn't be allowed to change the password of some other user — you are only *authorized* to change settings for yourself. Authorization could also be whether you have access to a certain resource, e.g. a financial report, a database, or the offices secret santa pairing. In authorization terms we often use the word *scope* to mean a specific privilege or action a user is allowed to perform.
+
+Above we said that authorization *usually* comes after authentication — when does it stand on its own? In some circumstances you don't care who the user is, you just have a secret string and anyone in possession of that should have access to your service. You expect that everyone you share it with have the decency to not share it with others to avoid the whole thing falling apart. In such a case where the secret is not bound to a single user there is no way of authenticating the user, however you'd still use it to provide authorization. There are many issues with this approach, e.g. if the secret is leaked the only way to recover is to create a new secret and share it with everyone who was using the old secret (except for those it leaked to). The only upside is more or less easy of implementation.
+
 
