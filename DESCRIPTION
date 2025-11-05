@@ -21,7 +21,7 @@ Imports:
     jose,
     jsonlite,
     R6,
-    reqres,
+    reqres (>= 1.0.0.9000),
     rlang,
     routr,
     sodium,
@@ -37,3 +37,5 @@ Suggests:
     xml2
 Config/testthat/edition: 3
 VignetteBuilder: quarto
+Remotes:  
+    thomasp85/reqres
