@@ -10,7 +10,7 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
-URL: https://github.com/thomasp85/fireproof
+URL: https://github.com/thomasp85/fireproof, https://thomasp85.github.io/fireproof/
 BugReports: https://github.com/thomasp85/fireproof/issues
 Imports:
     base64enc,
@@ -37,5 +37,5 @@ Suggests:
     xml2
 Config/testthat/edition: 3
 VignetteBuilder: quarto
-Remotes:  
+Remotes: 
     thomasp85/reqres

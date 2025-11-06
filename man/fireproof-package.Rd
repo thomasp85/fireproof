@@ -12,6 +12,7 @@ Provides a set of plugins for 'fiery' that supports various forms of authorizati
 Useful links:
 \itemize{
   \item \url{https://github.com/thomasp85/fireproof}
+  \item \url{https://thomasp85.github.io/fireproof/}
   \item Report bugs at \url{https://github.com/thomasp85/fireproof/issues}
 }
 
