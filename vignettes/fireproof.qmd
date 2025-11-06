@@ -26,7 +26,7 @@ The act of authenticating someone is to establish their identity. In terms of we
 
 You might think this was the end of the story — the user transmits a username and password in an encrypted request and everyone's happy — but you'd be wrong. The danger of this approach is that every server with authentication needs to handle a database of usernames and passwords in a secure way, and if history has taught us anything it is that users *love* to reuse their passwords, and that servers *love* to store them insecurely. This has led to a range of new schemas that outsources the authentication to a third (trusted) party and allows the server to forget about storing sensible information (for the most part). The pinnacle of this is the OAuth 2.0 framework which superseded OAuth and SAML and in one way or another powers all of these "Sign in with <xyz>" buttons we see on the internet today.
 
-## Authorization
+### Authorization
 If authentication is all of the above, then what is left for authorization? Authorization usually comes after authentication and is the establishment of which privileges the user has. An obvious example is that even if you have successfully logged into a server you probably shouldn't be allowed to change the password of some other user — you are only *authorized* to change settings for yourself. Authorization could also be whether you have access to a certain resource, e.g. a financial report, a database, or the offices secret santa pairing. In authorization terms we often use the word *scope* to mean a specific privilege or action a user is allowed to perform.
 
 Above we said that authorization *usually* comes after authentication — when does it stand on its own? In some circumstances you don't care who the user is, you just have a secret string and anyone in possession of that should have access to your service. You expect that everyone you share it with have the decency to not share it with others to avoid the whole thing falling apart. In such a case where the secret is not bound to a single user there is no way of authenticating the user, however you'd still use it to provide authorization. There are many issues with this approach, e.g. if the secret is leaked the only way to recover is to create a new secret and share it with everyone who was using the old secret (except for those it leaked to). The only upside is more or less easy of implementation.
@@ -34,4 +34,210 @@ Above we said that authorization *usually* comes after authentication — when d
 OAuth 2.0, which we discussed under authentication, is actually an authorization framework. It is a way for a user to authorize a third party (your server) to access resources from another provider (e.g. GitHub). However, it is being used for authentication by taking the granted authorization and asking for resources that identify the user (e.g. name, email, unique id). This use of OAuth 2.0 (which is somewhat different than its core purpose) was then formalized into the OpenID Connect authentication schema which is build on top of OAuth 2.0. Some providers, e.g. Google, offers both OAuth 2.0 and OpenID Connect, and others, e.g. GitHub, only offers OAuth 2.0 and you then use their own homegrown authentication endpoint.
 
 ## The fireproof auth flow
-With a firm grasp of the nomenclature of auth we can proceed to discuss how it is implemented in fireproof.
+With a firm grasp of the nomenclature of auth we can proceed to discuss how it is implemented in fireproof. Below we will go through the various key concepts of fireproof along with code examples showing you how to tie it all together.
+
+### Guards
+Central to fireproof is the concept of *guards*. These are the modules that defines a specific approach to auth, such as e.g. Basic auth or OAuth 2.0. Guards are all subclasses of the `Guard` class and are constructed using `guard_*` prefixed functions. If we wanted to define a guard using Basic auth we
+would reach for the `guard_basic()` constructor:
+
+```{r}
+basic <- guard_basic(
+  validate = function(username, password) {
+    username == "thomasp85" && password == "noonewillguessthis"
+  }
+)
+```
+
+The basic guard only needs a single input: A function that checks the username and password pair and returns `TRUE` if it's valid. The above is off course a useless demonstration — in reality you'd compare the pair against a database with properly stored passwords (salted and hashed). So, while the basic guard seems very simple it merely shifts the complexity towards properly handling a password database.
+
+We might reach for another simple guard based on a simple key (read above for the drawbacks of this)
+
+```{r}
+key <- guard_key(
+  key_name = "my-key",
+  validate = Sys.getenv("FIREPROOF_SECRET")
+)
+```
+
+The above will look for a cookie in the request called `my-key` and compare its value with the value of the `FIREPROOF_SECRET` environment variable.
+
+You may think that these guards are deceptively simple and that a more complicated one, such as an OAuth 2 based guard, would require much more to set up. However, all of the intricacies are taken care of for you so you shouldn't steer away from these out of fear of complexity
+
+```{r}
+google <- guard_google(
+  redirect_url = "https://my-app.com/auth",
+  client_id = "MY_APP",
+  client_secret = Sys.getenv("MY_APP_SECRET")
+)
+```
+
+As you can see it doesn't require much. You have to specify a URL that google will redirect the user to after authorization, but the guard takes care of setting up the route handler Then you need to register your server with Google upon which you'll receive a client id and a client secret which are to be used as part of the authorization flow — that's it.
+
+### The plugin
+Guards doesn't do anything by themselves, but are rather encapsulations of auth challenges to be used by your server (you could use it directly inside a handler but that is not the intention nor the focus of this vignette). To collect all the various guards that your server uses (it could be a single guard but there might be more) you must reach for the `Fireproof` plugin:
+
+```{r}
+fp <- Fireproof$new()
+
+fp$add_guard(basic, name = "basic_auth")
+fp$add_guard(key, name = "key_auth")
+fp$add_guard(google, name = "google_auth")
+
+fp
+```
+
+The plugin doesn't do anything right now. First, it needs to be attached to a fiery server, and next it needs to have some auth handlers attached. Attaching it works in the same way as for other fiery plugins. The only addition is that it relies on persistent session storage using the firesale plugin and that must be attached prior to attaching the fireproof plugin:
+
+```{r}
+app <- fiery::Fire$new()
+
+fs <- firesale::FireSale$new(storr::driver_environment())
+app$attach(fs)
+
+# The app is now ready to use the fireproof plugin
+app$attach(fp)
+```
+
+For adding auth to an endpoint, read on below...
+
+### Auth endpoints
+A fireproof plugin consists of two main parts: guards (as covered above) and the use of these guards in auth handlers. Chances are that not all parts of your server requires authentication, and some parts perhaps even require different authentication challenges. *If* your server only requires a single authentication challenge for every endpoint then activating this surmounts to
+
+```{r}
+fp$add_auth(
+  method = "all", 
+  path = "/*",
+  flow = basic_auth # Assuming you are using the basic guard we defined above
+)
+```
+
+That's it! You are free to spend development time elsewhere on your project now.
+
+If you are still reading my guess is you may require slightly more elaborate (there is nothing wrong with the above if it suits your needs btw). If you need more differentiated auth in your server read on.
+
+The first way we might differentiate our authentication is to turn it off for some paths by setting flow to `NULL`
+
+```{r}
+fp$add_auth(
+  method = "get",
+  path = "/public/*",
+  flow = NULL
+)
+```
+
+Now, despite `basic_auth` being used for everything via the `/*` path, the more specific `/public/*` path will ensure that subpaths of `/public` will not require authentication.
+
+We might want to accept that either the basic guard or the key guard will pass for some endpoints. If so, we just modify the flow expression:
+
+```{r}
+fp$add_auth(
+  method = "get",
+  path = "/basic_or_key",
+  flow = basic_auth || key_auth
+)
+```
+
+At this point you might be thinking to yourself: "What is that flow argument even? Come to think of it, I never defined a `basic_auth` variable anywhere... What's going on!?".
+
+The flow argument takes a logical expression referencing the guards by name (the name you provided when you added them). Upon evaluation the value of these names will be substituted for a boolean indicating if the guard was passed or not. Any expression consisting of `||`, `&&`, and `(`/`)` are valid, though for your own sanity you should probably not make the logic too complex. You may even reference guards you haven't added yet. Let's wrap this up be adding a more complex flow to an endpoint
+
+```{r}
+fp$add_auth(
+  method = "get",
+  path = "/sensitive/*",
+  flow = google_auth || (basic_auth && key_auth)
+)
+```
+
+## Scopes
+One thing we haven't touched on in the above is the notion of scopes. As you may recall, there is a difference between authentication and authorization and just because a user is able to login doesn't mean they have the privilege to perform all actions. Scopes are something that a guard can grant and an endpoint can require. Granted scopes stack, meaning that if one guard grants the `read` scope and another grants the `write` scope the user will have both `read` and `write` scope permissions (provided that both guards are passed). Only scopes from guards in the flow are considered.
+
+How does a guard grant a flow? All of the guards have a `validate` argument that can take a function. The standard use is to have the function return `TRUE` if the user is authorized and `FALSE` if not. However, it can also return a character vector in which case the user is authorized and the return value are considered scopes granted by the guard.
+
+We can update our basic guard to grant `read` and `write` scopes like so
+
+```{r}
+basic <- guard_basic(
+  validate = function(username, password) {
+    if (username == "thomasp85" && password == "noonewillguessthis") {
+      c("read", "write")
+    } else {
+      FALSE
+    }
+  }
+)
+# Replace old guard
+fp$add_guard(basic, name = "basic_auth")
+```
+
+For the other side of the coin, the endpoint requirements, the scope requirement is provided when you add an auth handler.
+
+```{r}
+fp$add_auth(
+  method = "post",
+  path = "/settings",
+  flow = basic_auth,
+  scope = "write"
+)
+```
+
+Scopes are not always required, but is a great way to add fine grained authorization to your server in the cases where its needed.
+
+## Persistent login
+When a user authenticates with fireproof using any of the guards, that authentication persists as long as the users session. Any new visits to the same endpoint or to another endpoint using the same guard for authentication will not result in a new authentication challenge but be considered passed right away. fireproof relies on the firesale plugin for keeping persistent session storage that can be shared between server instances running in parallel. Each guard will write to the `fireproof` field of the session storage under a field given by its name. For example, the basic guard we defined above will write to a `fireproof$basic_auth` element in the session storage. What gets written depends on the guards `user_info` function. This is a user provided function that is presented with different user information (for `guard_basic()` it will be presented with the username, for `guard_bearer()` it is presented with the token, etc) and returns user information as constructed by `new_user_info()`. We can update our basic guard to use this:
+
+```{r}
+basic <- guard_basic(
+  validate = function(username, password) {
+    if (username == "thomasp85" && password == "noonewillguessthis") {
+      c("read", "write")
+    } else {
+      FALSE
+    }
+  },
+  user_info = function(user) {
+    # You'd probably have a database lookup here
+    new_user_info(
+      id = user,
+      name_given = "Thomas",
+      name_family = "Pedersen",
+      favourite_color = "pink"
+    )
+  }
+)
+# Replace old guard
+fp$add_guard(basic, name = "basic_auth")
+```
+
+In a route handler you could then access this information like this
+
+```{r}
+route <- routr::Route$new()
+route$add_handler(
+  method = "get", 
+  path = "/hello",
+  handler = function(request, response, arg_list, ...) {
+    user_info <- arg_list$datastore$session$fireproof$basic_auth
+    response$body <- paste0("Hi ", user_info$name$given)
+    response$status <- 200L
+    response$type <- "text/plain"
+    TRUE
+  }
+)
+```
+
+For OAuth 2 and OpenID Connect guards the user info is filled out automatically. It will also contain a `token` field that contains information about the token issued by the authorization server which can be used to access resources on the users behalf if you should need it.
+
+The persistent storage serves two purposes. First, as shown above, it allows endpoint handlers to get access to information about the authenticated user in a standardized format. Second, the mere existence of it is the sign to fireproof that the guard has authenticated the user and thus powers the persistent session authentication. This means that in order to force a logout (and thus require authentication upon the next visit) all you have to do is clear the session storage for that guard:
+
+```{r}
+route$add_handler(
+  method = "post", 
+  path = "/logout",
+  handler = function(request, response, arg_list, ...) {
+    arg_list$datastore$session$fireproof$basic_auth <- NULL
+    response$status_with_text(200L)
+    TRUE
+  }
+)
+```
