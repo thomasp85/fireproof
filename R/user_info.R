@@ -72,7 +72,7 @@ new_user_info <- function(
       photos = photos,
       ...
     ),
-    class = "firesale_user_info"
+    class = "fireproof_user_info"
   )
 }
 
@@ -83,7 +83,15 @@ print.firesale_user_info <- function(x, ...) {
   }
 }
 
-combine_info <- function(default, new) {
+is_user_info <- function(x) inherits(x, "fireproof_user_info")
+
+combine_info <- function(default, new, call = caller_env()) {
+  if (!is_user_info(new)) {
+    reqres::abort_status(
+      500L,
+      "The {.arg user_info} function must return a {.cls fireproof_user_info} object"
+    )
+  }
   carry_over <- setdiff(
     names(default)[!vapply(default, is.null, logical(1))],
     names(new)[!vapply(new, is.null, logical(1))]

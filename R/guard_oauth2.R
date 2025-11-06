@@ -280,7 +280,7 @@ GuardOAuth2 <- R6::R6Class(
     #' @param .session The session storage for the current session
     #'
     check_request = function(request, response, keys, ..., .session) {
-      length(.session[[private$NAME]]) != 0
+      is_user_info(.session[[private$NAME]])
     },
     #' @description Upon rejection this scheme sets the response status to `400`
     #' if it has not already been set by others. In contrast to the other

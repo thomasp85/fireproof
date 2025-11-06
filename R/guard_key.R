@@ -152,7 +152,7 @@ GuardKey <- R6::R6Class(
     #'
     check_request = function(request, response, keys, ..., .session) {
       info <- .session[[private$NAME]]
-      authenticated <- length(info) != 0
+      authenticated <- is_user_info(info)
       if (!authenticated) {
         key <- if (private$COOKIE) {
           request$cookies[[private$KEY]]

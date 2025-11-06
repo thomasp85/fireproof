@@ -4,7 +4,7 @@ test_that("new_user_info creates basic user info structure", {
     id = "user123"
   )
 
-  expect_s3_class(info, "firesale_user_info")
+  expect_s3_class(info, "fireproof_user_info")
   expect_type(info, "list")
   expect_equal(info$provider, "local")
   expect_equal(info$id, "user123")
@@ -66,7 +66,7 @@ test_that("new_user_info handles additional fields via ...", {
 test_that("new_user_info works with all NULL values", {
   info <- new_user_info()
 
-  expect_s3_class(info, "firesale_user_info")
+  expect_s3_class(info, "fireproof_user_info")
   expect_null(info$provider)
   expect_null(info$id)
   expect_null(info$name)

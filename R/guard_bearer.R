@@ -201,8 +201,9 @@ GuardBearer <- R6::R6Class(
     #'
     check_request = function(request, response, keys, ..., .session) {
       info <- .session[[private$NAME]]
+      authenticated <- is_user_info(info)
 
-      if (length(info) == 0) {
+      if (!authenticated) {
         token <- list()
         auth_header <- request$headers$authorization
         if (
@@ -269,10 +270,8 @@ GuardBearer <- R6::R6Class(
             private$USER_INFO(token)
           )
         }
-        authenticated
-      } else {
-        TRUE
       }
+      authenticated
     },
     #' @description Upon rejection this scheme sets the response status to `401`
     #' and sets the `WWW-Authenticate` header to `Bearer realm="<realm>"`. If

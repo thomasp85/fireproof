@@ -176,7 +176,7 @@ GuardBasic <- R6::R6Class(
     #'
     check_request = function(request, response, keys, ..., .session) {
       info <- .session[[private$NAME]]
-      authenticated <- length(info) != 0
+      authenticated <- is_user_info(info)
 
       auth <- request$headers$authorization
       if (!authenticated && !is.null(auth) && grepl("^Basic ", auth)) {
