@@ -169,8 +169,7 @@ Fireproof <- R6::R6Class(
             }
           }
           TRUE
-        },
-        reject_missing_methods = FALSE
+        }
       )
       invisible(flow)
     },
