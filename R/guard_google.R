@@ -38,7 +38,7 @@ guard_google <- function(
   redirect_url,
   client_id,
   client_secret,
-  scopes = "profile",
+  oauth_scopes = "profile",
   service_params = list(
     access_type = "offline",
     include_granted_scopes = "true"
@@ -51,6 +51,7 @@ guard_google <- function(
     redirect_url = redirect_url,
     client_id = client_id,
     client_secret = client_secret,
+    oauth_scopes = oauth_scopes,
     service_name = "google",
     service_params = service_params,
     ...,
