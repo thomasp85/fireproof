@@ -25,11 +25,6 @@ registering your application}
 \item{client_secret}{The secret issued by the authorization server when
 registering your application. Do NOT store this in plain text}
 
-\item{scopes}{Optional character vector of scopes to request the user to
-grant you during authorization. If named, the names are taken as scopes and
-the elements as descriptions of the scopes, e.g. given a scope, \code{read}, it
-can either be provided as \code{c("read")} or \code{c(read = "Grant read access")}}
-
 \item{service_params}{A named list of additional query params to add to
 the url when constructing the authorization url in the
 \code{"authorization_code"} grant type}
@@ -41,6 +36,14 @@ the url when constructing the authorization url in the
 add information about the user not present in the JWT token. Setting this to
 \code{TRUE} will add an additional API call to your authentication flow but
 potentially provide richer information about the user.}
+    \item{\code{grant_type}}{The type of authorization scheme to use, either
+\code{"authorization_code"} or \code{"password"}}
+    \item{\code{oauth_scopes}}{Optional character vector of scopes to request the
+user to grant you during authorization. These will \emph{not} influence the
+scopes granted by the \code{validate} function and fireproof scoping. If named,
+the names are taken as scopes and the elements as descriptions of the scopes,
+e.g. given a scope, \code{read}, it can either be provided as \code{c("read")} or
+\code{c(read = "Grant read access")}}
     \item{\code{validate}}{Function to validate the user once logged in. It will be
 called with a single argument \code{info}, which gets the information of the user
 as provided by the \code{user_info} function in the. By default it returns \code{TRUE}
@@ -65,19 +68,18 @@ with information from the original request). By default it will use
 the response.}
   }}
 
-\item{name}{The name of the scheme instance. This will also be the name
-under which token info and user info is saved in the session store}
+\item{name}{The name of the guard}
 }
 \value{
-An \link{GuardOIDC} object
+A \link{GuardOIDC} object
 }
 \description{
-This authentication requests you to log in with google and authenticates you
+This guard requests you to log in with google and authenticates you
 through their service. Your server must be registered and have a valid client
 ID and client secret for this to work. Read more about registering an
 application at \url{https://developers.google.com/identity/protocols/oauth2}. If
 you want to limit access to only select users you should make sure to provide
-a \code{validation} function that checks the userinfo against a whitelist.
+a \code{validate} function that checks the userinfo against a whitelist.
 }
 \section{User information}{
 \code{guard_google()} automatically adds user information according to the
@@ -98,4 +100,7 @@ fp$add_guard(google, "google_auth")
 # Use it in an endpoint
 fp$add_auth("get", "/*", google_auth)
 
+}
+\references{
+\href{https://developers.google.com/identity/openid-connect/openid-connect}{Documentation for Googles OpenID Connect flow}
 }

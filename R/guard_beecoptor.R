@@ -1,8 +1,8 @@
 #' Guard using the mock OAuth servers provided by Beeceptor
 #'
-#' These two functions sets up mock OAuth 2.0 authentication based on tools
+#' These two functions sets up mock OAuth 2.0 guards based on tools
 #' provided by
-#' [Beeceptor](https://app.beeceptor.com/mock-server/oauth-mock). These should
+#' [Beeceptor](https://app.beeceptor.com/mock-server/oauth-mock). They should
 #' obviously not be used for production because they allow anyone to be
 #' authenticated, but they can be used while testing your authentication setup.
 #'

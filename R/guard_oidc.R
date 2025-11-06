@@ -35,11 +35,11 @@
 #' - `email` -> `emails`
 #' - `picture` -> `photos`
 #'
-#' Further, it will set the `scopes` field to any scopes returned by the provider
-#' during authorization, the `provider` field to `service_name`, the `token`
+#' Further, it will set the `scopes` field to any scopes returned by the
+#' `validate` function, the `provider` field to `service_name`, the `token`
 #' field to the token information as described in [guard_oauth2()], and `.raw` to
 #' the full list of user information as provided unaltered by the service. Be
-#' aware that the information reported by the service depends on the scopes
+#' aware that the information reported by the service depends on the `oauth_scopes`
 #' requested by fireproof and granted by the user. You can therefore never
 #' assume the existence of any information besides `id`, `provider` and `token`.
 #'
@@ -78,7 +78,8 @@ guard_oidc <- function(
   redirect_url,
   client_id,
   client_secret,
-  scopes = c("profile"),
+  grant_type = c("authorization_code", "password"),
+  oauth_scopes = c("profile"),
   request_user_info = FALSE,
   validate = function(info) TRUE,
   redirect_path = get_path(redirect_url),
@@ -92,7 +93,8 @@ guard_oidc <- function(
     redirect_url = redirect_url,
     client_id = client_id,
     client_secret = client_secret,
-    scopes = scopes,
+    grant_type = grant_type,
+    oauth_scopes = oauth_scopes,
     request_user_info = request_user_info,
     validate = validate,
     redirect_path = redirect_path,
@@ -133,8 +135,14 @@ GuardOIDC <- R6::R6Class(
     #' registering your application
     #' @param client_secret The secret issued by the authorization server when
     #' registering your application. Do NOT store this in plain text
-    #' @param scopes Optional character vector of scopes to request the user to
-    #' grant you during authorization
+    #' @param grant_type The type of authorization scheme to use, either
+    #' `"authorization_code"` or `"password"`
+    #' @param oauth_scopes Optional character vector of scopes to request the
+    #' user to grant you during authorization. These will *not* influence the
+    #' scopes granted by the `validate` function and fireproof scoping. If named,
+    #' the names are taken as scopes and the elements as descriptions of the scopes,
+    #' e.g. given a scope, `read`, it can either be provided as `c("read")` or
+    #' `c(read = "Grant read access")`
     #' @param request_user_info Logical. Should the userinfo endpoint be followed to
     #' add information about the user not present in the JWT token. Setting this to
     #' `TRUE` will add an additional API call to your authentication flow but
@@ -171,7 +179,8 @@ GuardOIDC <- R6::R6Class(
       redirect_url,
       client_id,
       client_secret,
-      scopes = c("profile"),
+      grant_type = c("authorization_code", "password"),
+      oauth_scopes = c("profile"),
       request_user_info = FALSE,
       validate = function(info) TRUE,
       redirect_path = get_path(redirect_url),
@@ -186,8 +195,8 @@ GuardOIDC <- R6::R6Class(
         client_id = client_id,
         client_secret = client_secret,
         auth_url = "",
-        grant_type = "authorization_code",
-        scopes = unique(c("openid", scopes)),
+        grant_type = grant_type,
+        oauth_scopes = unique(c("openid", oauth_scopes)),
         validate = validate,
         redirect_path = redirect_path,
         on_auth = on_auth,

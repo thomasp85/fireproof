@@ -1,11 +1,10 @@
-# Some docs: https://docs.github.com/en/apps/creating-github-apps/writing-code-for-a-github-app/building-a-login-with-github-button-with-a-github-app#introduction
 #' Guard for authenticating with the GitHub OAuth 2.0 server
 #'
-#' This authentication requests you to log in with GitHub and authenticates yourself
+#' This guard requests you to log in with GitHub and authenticates yourself
 #' through their service. Your server must be registered and have a valid client
 #' ID and client secret for this to work. Register an application at
 #' <https://github.com/settings/applications/new>. If you want to limit access
-#' to only select users you should make sure to provide a `validation` function
+#' to only select users you should make sure to provide a `validate` function
 #' that checks the userinfo against a whitelist.
 #'
 #' # User information
@@ -26,7 +25,9 @@
 #' @inheritParams guard_oauth2
 #' @inheritDotParams guard_oauth2 -token_url -auth_url -user_info
 #'
-#' @return An [GuardOAuth2] object
+#' @return A [GuardOAuth2] object
+#'
+#' @references [Documentation for GitHub's OAuth 2 flow](https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/generating-a-user-access-token-for-a-github-app)
 #'
 #' @export
 #'

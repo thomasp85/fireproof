@@ -4,7 +4,7 @@ test_that("guard_oidc gets constructed correctly", {
     redirect_url = "https://myapp.com/auth/callback",
     client_id = "my_client_id",
     client_secret = "my_client_secret",
-    scopes = c("profile", "email"),
+    oauth_scopes = c("profile", "email"),
     name = "oidc_test"
   )
 
@@ -19,7 +19,7 @@ test_that("guard_oidc gets constructed correctly", {
     redirect_url = "https://myapp.com/auth/callback",
     client_id = "my_client_id",
     client_secret = "my_client_secret",
-    scopes = c("profile", "email", "openid"),
+    oauth_scopes = c("profile", "email", "openid"),
     name = "oidc_test"
   )
 
@@ -42,7 +42,7 @@ test_that("guard_oidc constructs correct OpenAPI definition", {
     redirect_url = "https://myapp.com/auth/callback",
     client_id = "my_client_id",
     client_secret = "my_client_secret",
-    scopes = c("profile", "email"),
+    oauth_scopes = c("profile", "email"),
     name = "oidc_test"
   )
 

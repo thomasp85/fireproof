@@ -3,6 +3,6 @@
     Code
       auth$reject_response(no_auth$respond(), scope = NULL, .session = session)
     Condition
-      Error in `private$request_authorization()`:
+      Error in `private$request_password_authorization()`:
       ! Unauthorized
 

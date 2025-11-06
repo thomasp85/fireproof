@@ -35,9 +35,9 @@ this should only ever be used along with other security measures such as
 https/ssl to avoid username and passwords being snooped from the request.
 }
 \details{
-This guard will use a user provided function to test a
-username/password pair. It is up to the user to handle the storage and
-testing of the passwords in a sensible and responsible way. See
+This guard will use a user-provided function to test a
+username/password pair. It is up to the server implementation to handle the
+storage and testing of the passwords in a sensible and responsible way. See
 \code{\link[sodium:password]{sodium::password_store()}} for a good first step towards responsible design.
 }
 \section{User information}{
@@ -69,4 +69,7 @@ fp$add_guard(basic, "basic_auth")
 # Use it in an endpoint
 fp$add_auth("get", "/*", basic_auth)
 
+}
+\references{
+\href{https://datatracker.ietf.org/doc/html/rfc7617}{Basic authentication RFC}
 }

@@ -11,7 +11,7 @@ guard_oauth2(
   client_secret,
   auth_url = NULL,
   grant_type = c("authorization_code", "password"),
-  scopes = NULL,
+  oauth_scopes = NULL,
   validate = function(info) TRUE,
   redirect_path = get_path(redirect_url),
   on_auth = replay_request,
@@ -39,10 +39,12 @@ authorization (only needed for \code{grant_type = "authorization_code"})}
 \item{grant_type}{The type of authorization scheme to use, either
 \code{"authorization_code"} or \code{"password"}}
 
-\item{scopes}{Optional character vector of scopes to request the user to
-grant you during authorization. If named, the names are taken as scopes and
-the elements as descriptions of the scopes, e.g. given a scope, \code{read}, it
-can either be provided as \code{c("read")} or \code{c(read = "Grant read access")}}
+\item{oauth_scopes}{Optional character vector of scopes to request the
+user to grant you during authorization. These will \emph{not} influence the
+scopes granted by the \code{validate} function and fireproof scoping. If named,
+the names are taken as scopes and the elements as descriptions of the scopes,
+e.g. given a scope, \code{read}, it can either be provided as \code{c("read")} or
+\code{c(read = "Grant read access")}}
 
 \item{validate}{Function to validate the user once logged in. It will be
 called with a single argument \code{info}, which gets the information of the user
@@ -79,11 +81,10 @@ list.}
 the url when constructing the authorization url in the
 \code{"authorization_code"} grant type}
 
-\item{name}{The name of the scheme instance. This will also be the name
-under which token info and user info is saved in the session store}
+\item{name}{The name of the guard}
 }
 \value{
-An \link{GuardOAuth2} object
+A \link{GuardOAuth2} object
 }
 \description{
 OAuth 2.0 is an authorization scheme that is powering much of the modern
@@ -104,9 +105,9 @@ when logging users in.
 \code{guard_oauth2()} automatically adds some \link[=new_user_info]{user information} after
 authentication, but it is advised to consult the service provider for more
 information (this is done automatically for the provider specific
-constructors. See their documentation for details about what information is
+guards. See their documentation for details about what information is
 assigned to which field). The base constructor will set the \code{scopes} field to
-any scopes returned by the provider during authorization. It will also set
+any scopes returned by the \code{validate} function. It will also set
 the \code{token} field to a list with the token data provided by the service
 during authorization. Some standard fields in the list are:
 \itemize{
@@ -116,9 +117,10 @@ during authorization. Some standard fields in the list are:
 \item \code{refresh_token}: A long-lived token that can be used to issue a new
 access token if the current becomes stale
 \item \code{timestamp}: The time the token was received
+\item \code{scopes}: The scopes granted by the user for this token
 }
 
-But OAuth 2.0 providers may choose to supply more. Consult the documentation
+But OAuth 2.0 providers may choose to supply others. Consult the documentation
 for the provider to learn of additional fields it may provide.
 }
 
@@ -140,4 +142,7 @@ fp$add_guard(github, "github_auth")
 # Use it in an endpoint
 fp$add_auth("get", "/*", github_auth)
 
+}
+\references{
+\href{https://datatracker.ietf.org/doc/html/rfc6749}{The OAuth 2.0 RFC}
 }

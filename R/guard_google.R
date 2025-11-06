@@ -1,13 +1,11 @@
-# For OAuth2: https://developers.google.com/identity/protocols/oauth2/web-server
-# For OIDC: https://developers.google.com/identity/openid-connect/openid-connect
 #' Guard for Authenticating with the Google OpenID Connect server
 #'
-#' This authentication requests you to log in with google and authenticates you
+#' This guard requests you to log in with google and authenticates you
 #' through their service. Your server must be registered and have a valid client
 #' ID and client secret for this to work. Read more about registering an
 #' application at <https://developers.google.com/identity/protocols/oauth2>. If
 #' you want to limit access to only select users you should make sure to provide
-#' a `validation` function that checks the userinfo against a whitelist.
+#' a `validate` function that checks the userinfo against a whitelist.
 #'
 #' # User information
 #' `guard_google()` automatically adds user information according to the
@@ -16,7 +14,9 @@
 #' @inheritParams guard_oidc
 #' @inheritDotParams guard_oidc -service_url -service_name
 #'
-#' @return An [GuardOIDC] object
+#' @return A [GuardOIDC] object
+#'
+#' @references [Documentation for Googles OpenID Connect flow](https://developers.google.com/identity/openid-connect/openid-connect)
 #'
 #' @export
 #'

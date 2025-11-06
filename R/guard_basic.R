@@ -7,9 +7,9 @@
 #' https/ssl to avoid username and passwords being snooped from the request.
 #'
 #' @details
-#' This guard will use a user provided function to test a
-#' username/password pair. It is up to the user to handle the storage and
-#' testing of the passwords in a sensible and responsible way. See
+#' This guard will use a user-provided function to test a
+#' username/password pair. It is up to the server implementation to handle the
+#' storage and testing of the passwords in a sensible and responsible way. See
 #' [sodium::password_store()] for a good first step towards responsible design.
 #'
 #' # User information
@@ -33,6 +33,8 @@
 #' credentials required, though most often these days it is kept from the user.
 #'
 #' @return A [GuardBasic] R6 object
+#'
+#' @references [Basic authentication RFC](https://datatracker.ietf.org/doc/html/rfc7617)
 #'
 #' @export
 #' @importFrom base64enc base64decode
@@ -194,7 +196,7 @@ GuardBasic <- R6::R6Class(
           request = request,
           response = response
         )
-        scopes <- private$SCOPES %||% character()
+        scopes <- character()
         if (is.character(authenticated)) {
           scopes <- authenticated
           authenticated <- TRUE

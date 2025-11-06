@@ -19,7 +19,7 @@
 #' `auth3`, it could also be something like `auth1 || (auth2 && auth3)`. The
 #' flow is given as a bare expression, not as a string. In addition to the three
 #' required arguments you can also supply a character vector of scopes that are
-#' required to be had to access the endpoint. If your guard has scope support
+#' required to have access to the endpoint. If your guard has scope support
 #' then the request will be tested against these to see if the (otherwise valid)
 #' user has permission to the resource.
 #'
@@ -233,7 +233,7 @@ Fireproof <- R6::R6Class(
     #' into an OpenAPI Security Requirement compliant list. Not all flows can be
     #' represented by the OpenAPI spec and the method will return `NULL` with a
     #' warning if so. Scope is added to all schemes, even if not applicable, so
-    #' the final OpenAPI doc should be run through `prune_openapi()` before
+    #' the final OpenAPI doc should be run through [prune_openapi()] before
     #' serving it.
     #' @param flow A parsed flow as returned by `add_auth()`
     #' @param scope A character vector of scopes required for this particular

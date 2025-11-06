@@ -9,7 +9,8 @@ guard_oidc(
   redirect_url,
   client_id,
   client_secret,
-  scopes = c("profile"),
+  grant_type = c("authorization_code", "password"),
+  oauth_scopes = c("profile"),
   request_user_info = FALSE,
   validate = function(info) TRUE,
   redirect_path = get_path(redirect_url),
@@ -32,10 +33,15 @@ registering your application}
 \item{client_secret}{The secret issued by the authorization server when
 registering your application. Do NOT store this in plain text}
 
-\item{scopes}{Optional character vector of scopes to request the user to
-grant you during authorization. If named, the names are taken as scopes and
-the elements as descriptions of the scopes, e.g. given a scope, \code{read}, it
-can either be provided as \code{c("read")} or \code{c(read = "Grant read access")}}
+\item{grant_type}{The type of authorization scheme to use, either
+\code{"authorization_code"} or \code{"password"}}
+
+\item{oauth_scopes}{Optional character vector of scopes to request the
+user to grant you during authorization. These will \emph{not} influence the
+scopes granted by the \code{validate} function and fireproof scoping. If named,
+the names are taken as scopes and the elements as descriptions of the scopes,
+e.g. given a scope, \code{read}, it can either be provided as \code{c("read")} or
+\code{c(read = "Grant read access")}}
 
 \item{request_user_info}{Logical. Should the userinfo endpoint be followed to
 add information about the user not present in the JWT token. Setting this to
@@ -74,8 +80,7 @@ the \code{provider} slot in the user info list}
 the url when constructing the authorization url in the
 \code{"authorization_code"} grant type}
 
-\item{name}{The name of the scheme instance. This will also be the name
-under which token info and user info is saved in the session store}
+\item{name}{The name of the guard}
 }
 \value{
 An \link{GuardOIDC} object
@@ -117,11 +122,11 @@ The mapping of these to \code{\link[=new_user_info]{new_user_info()}} is as foll
 \item \code{picture} -> \code{photos}
 }
 
-Further, it will set the \code{scopes} field to any scopes returned by the provider
-during authorization, the \code{provider} field to \code{service_name}, the \code{token}
+Further, it will set the \code{scopes} field to any scopes returned by the
+\code{validate} function, the \code{provider} field to \code{service_name}, the \code{token}
 field to the token information as described in \code{\link[=guard_oauth2]{guard_oauth2()}}, and \code{.raw} to
 the full list of user information as provided unaltered by the service. Be
-aware that the information reported by the service depends on the scopes
+aware that the information reported by the service depends on the \code{oauth_scopes}
 requested by fireproof and granted by the user. You can therefore never
 assume the existence of any information besides \code{id}, \code{provider} and \code{token}.
 }

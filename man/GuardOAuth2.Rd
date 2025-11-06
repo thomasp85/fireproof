@@ -60,7 +60,7 @@ Constructor for the class
   client_secret,
   auth_url = NULL,
   grant_type = c("authorization_code", "password"),
-  scopes = NULL,
+  oauth_scopes = NULL,
   validate = function(info) TRUE,
   redirect_path = get_path(redirect_url),
   on_auth = replay_request,
@@ -91,8 +91,12 @@ authorization (only needed for \code{grant_type = "authorization_code"})}
 \item{\code{grant_type}}{The type of authorization scheme to use, either
 \code{"authorization_code"} or \code{"password"}}
 
-\item{\code{scopes}}{Optional character vector of scopes to request the user to
-grant you during authorization}
+\item{\code{oauth_scopes}}{Optional character vector of scopes to request the
+user to grant you during authorization. These will \emph{not} influence the
+scopes granted by the \code{validate} function and fireproof scoping. If named,
+the names are taken as scopes and the elements as descriptions of the scopes,
+e.g. given a scope, \code{read}, it can either be provided as \code{c("read")} or
+\code{c(read = "Grant read access")}}
 
 \item{\code{validate}}{Function to validate the user once logged in. It will be
 called with a single argument \code{info}, which gets the information of the user
@@ -129,8 +133,7 @@ list.}
 the url when constructing the authorization url in the
 \code{"authorization_code"} grant type}
 
-\item{\code{name}}{The name of the scheme instance. This will also be the name
-under which token info and user info is saved in the session store}
+\item{\code{name}}{The name of the guard.}
 }
 \if{html}{\out{</div>}}
 }
@@ -172,10 +175,9 @@ object}
 \if{html}{\out{<a id="method-GuardOAuth2-reject_response"></a>}}
 \if{latex}{\out{\hypertarget{method-GuardOAuth2-reject_response}{}}}
 \subsection{Method \code{reject_response()}}{
-Upon rejection this scheme sets the response status to \code{400}
-if it has not already been set by others. In contrast to the other
-schemes that are proper HTTP schemes, this one doesn't set a
-\code{WWW-Authenticate} header.
+Upon rejection this guard initiates the grant flow to obtain
+authorization. This can sound a bit backwards, but we don't want to
+initiate authorization if the authorization flow doesn't need it
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{GuardOAuth2$reject_response(response, scope, ..., .session)}\if{html}{\out{</div>}}
 }

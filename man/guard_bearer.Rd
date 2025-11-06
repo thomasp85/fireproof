@@ -39,16 +39,16 @@ string of the url with the \code{access_token} name. Default to \code{FALSE} due
 severe security implications but can be turned on if you have very
 well-thought-out reasons to do so.}
 
-\item{name}{The name of the authentication}
+\item{name}{The name of the guard}
 }
 \value{
-An \link{GuardBearer} R6 object
+A \link{GuardBearer} R6 object
 }
 \description{
 Bearer authentication is a HTTP scheme based on tokens. It is used
 in a lot of places as it is often used for transmitting the tokens issued as
-part of OAuth 2.0 and OpenID. It is a
-quite simple scheme that is based on the concept of time and scope limited
+part of OAuth 2.0 and OpenID Connect authentication. It is a
+quite simple scheme that is based on the concept of time- and scope-limited
 bearer tokens. Whoever has a valid token gains access to the resources the
 token unlocks. This prevents the leaking of passwords as well as makes it easy
 to rotate tokens etc. While the time-limited aspect of tokens means that an
@@ -57,25 +57,23 @@ token during transmission, it is still highly recommended to only transmit
 tokens over HTTPS
 }
 \details{
-This authenticator will use a user provided function to test a token. The
-complexity of the test fully depends on the issuer of the token. At it's
-simplest the token is opaque and the function test it against a database.
-However, it is more common to use a JSON web token to encode various
+This \code{validate} function is provided by the user and is used to test the
+provided token. The complexity of the test fully depends on the issuer of the
+token. At it's simplest the token is opaque and the function test it against
+a database. However, it is more common to use a JSON web token to encode various
 information into the token itself that can help in determining scoped access
 etc.
 
-The authenticator should in general not test the scope of the token, but
+The \code{validate} function should not test the scope of the token, but
 rather return a vector of scopes (which implicitly means that the token is
 valid). The scope requirement of the exact endpoint will then be tested
-automatically. Further, the authenticator should write any additional user
-information that gets fetched during the validation to relevant fields in the
-response data
+automatically.
 }
 \section{User information}{
 \code{guard_bearer()} automatically adds \link[=new_user_info]{user information} after
 authentication. By default it will set the \code{provider} field to \code{"local"}.
 Further, it will set the \code{scopes} field to any scopes returned by the
-\code{authenticator} function and the \code{token} field to a list with the following
+\code{validate} function and the \code{token} field to a list with the following
 elements:
 \itemize{
 \item \code{access_token}: The provided token
@@ -110,4 +108,7 @@ fp$add_guard(bearer, "bearer_auth")
 # Use it in an endpoint
 fp$add_auth("get", "/*", bearer_auth)
 
+}
+\references{
+\href{https://datatracker.ietf.org/doc/html/rfc6750}{Bearer authentication RFC}
 }

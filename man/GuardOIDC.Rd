@@ -56,7 +56,8 @@ Constructor for the class
   redirect_url,
   client_id,
   client_secret,
-  scopes = c("profile"),
+  grant_type = c("authorization_code", "password"),
+  oauth_scopes = c("profile"),
   request_user_info = FALSE,
   validate = function(info) TRUE,
   redirect_path = get_path(redirect_url),
@@ -82,8 +83,15 @@ registering your application}
 \item{\code{client_secret}}{The secret issued by the authorization server when
 registering your application. Do NOT store this in plain text}
 
-\item{\code{scopes}}{Optional character vector of scopes to request the user to
-grant you during authorization}
+\item{\code{grant_type}}{The type of authorization scheme to use, either
+\code{"authorization_code"} or \code{"password"}}
+
+\item{\code{oauth_scopes}}{Optional character vector of scopes to request the
+user to grant you during authorization. These will \emph{not} influence the
+scopes granted by the \code{validate} function and fireproof scoping. If named,
+the names are taken as scopes and the elements as descriptions of the scopes,
+e.g. given a scope, \code{read}, it can either be provided as \code{c("read")} or
+\code{c(read = "Grant read access")}}
 
 \item{\code{request_user_info}}{Logical. Should the userinfo endpoint be followed to
 add information about the user not present in the JWT token. Setting this to

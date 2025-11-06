@@ -2,8 +2,8 @@
 #'
 #' Bearer authentication is a HTTP scheme based on tokens. It is used
 #' in a lot of places as it is often used for transmitting the tokens issued as
-#' part of OAuth 2.0 and OpenID. It is a
-#' quite simple scheme that is based on the concept of time and scope limited
+#' part of OAuth 2.0 and OpenID Connect authentication. It is a
+#' quite simple scheme that is based on the concept of time- and scope-limited
 #' bearer tokens. Whoever has a valid token gains access to the resources the
 #' token unlocks. This prevents the leaking of passwords as well as makes it easy
 #' to rotate tokens etc. While the time-limited aspect of tokens means that an
@@ -12,25 +12,23 @@
 #' tokens over HTTPS
 #'
 #' @details
-#' This authenticator will use a user provided function to test a token. The
-#' complexity of the test fully depends on the issuer of the token. At it's
-#' simplest the token is opaque and the function test it against a database.
-#' However, it is more common to use a JSON web token to encode various
+#' This `validate` function is provided by the user and is used to test the
+#' provided token. The complexity of the test fully depends on the issuer of the
+#' token. At it's simplest the token is opaque and the function test it against
+#' a database. However, it is more common to use a JSON web token to encode various
 #' information into the token itself that can help in determining scoped access
 #' etc.
 #'
-#' The authenticator should in general not test the scope of the token, but
+#' The `validate` function should not test the scope of the token, but
 #' rather return a vector of scopes (which implicitly means that the token is
 #' valid). The scope requirement of the exact endpoint will then be tested
-#' automatically. Further, the authenticator should write any additional user
-#' information that gets fetched during the validation to relevant fields in the
-#' response data
+#' automatically.
 #'
 #' # User information
 #' `guard_bearer()` automatically adds [user information][new_user_info] after
 #' authentication. By default it will set the `provider` field to `"local"`.
 #' Further, it will set the `scopes` field to any scopes returned by the
-#' `authenticator` function and the `token` field to a list with the following
+#' `validate` function and the `token` field to a list with the following
 #' elements:
 #'
 #' - `access_token`: The provided token
@@ -45,7 +43,7 @@
 #' is valid, and `FALSE` otherwise. If the function returns a character vector
 #' it is considered to be authenticated and the return value will be understood
 #' as scopes the user is granted.
-#' @param name The name of the authentication
+#' @param name The name of the guard
 #' @param user_info A function to extract user information from the
 #' token. It is called with a single argument: `token` which is the token
 #' used for the successful authentication. The function should return a new
@@ -62,7 +60,9 @@
 #' severe security implications but can be turned on if you have very
 #' well-thought-out reasons to do so.
 #'
-#' @return An [GuardBearer] R6 object
+#' @return A [GuardBearer] R6 object
+#'
+#' @references [Bearer authentication RFC](https://datatracker.ietf.org/doc/html/rfc6750)
 #'
 #' @export
 #'
@@ -240,7 +240,7 @@ GuardBearer <- R6::R6Class(
             type = "https://datatracker.ietf.org/doc/html/rfc6750#section-2"
           )
         }
-        scopes <- private$SCOPES %||% character()
+        scopes <- character()
         if (length(token) == 1) {
           .session$fireproof[[private$NAME]] <- list()
           authenticated <- private$VALIDATE(

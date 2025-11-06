@@ -37,8 +37,8 @@ used for the successful authentication. The function should return a new
 A \link{GuardKey} object
 }
 \description{
-This authentication scheme is based on a mutually shared secret between the
-server and the client. The client provides this secret either as a header or
+This guard is based on a mutually shared secret between the
+server and the client. The client provides the secret either as a header or
 in a cookie, and the server verifies the authenticity of the secret. Like
 with \link[=guard_basic]{basic authentication}, this scheme relies on additional
 technology like HTTPS/SSL to make it secure since the secret can otherwise
@@ -56,7 +56,7 @@ authentication. By default it will set the \code{provider} field to \code{"local
 Further, it will set the \code{scopes} field to any scopes returned by the
 \code{validate} function (provided \code{validate} is passed a function).
 
-Since Key based authentication is seldom used with user specific keys it is
+Since key-based authentication is seldom used with user specific keys it is
 unlikely that it makes sense to populate the information any further.
 }
 

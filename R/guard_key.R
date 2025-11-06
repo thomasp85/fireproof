@@ -1,7 +1,7 @@
 #' Shared secret guard
 #'
-#' This authentication scheme is based on a mutually shared secret between the
-#' server and the client. The client provides this secret either as a header or
+#' This guard is based on a mutually shared secret between the
+#' server and the client. The client provides the secret either as a header or
 #' in a cookie, and the server verifies the authenticity of the secret. Like
 #' with [basic authentication][guard_basic], this scheme relies on additional
 #' technology like HTTPS/SSL to make it secure since the secret can otherwise
@@ -19,7 +19,7 @@
 #' Further, it will set the `scopes` field to any scopes returned by the
 #' `validate` function (provided `validate` is passed a function).
 #'
-#' Since Key based authentication is seldom used with user specific keys it is
+#' Since key-based authentication is seldom used with user specific keys it is
 #' unlikely that it makes sense to populate the information any further.
 #'
 #' @param key_name The name of the header or cookie to store the secret under
@@ -106,7 +106,7 @@ GuardKey <- R6::R6Class(
     #' [user_info][new_user_info] list.
     #' @param cookie Boolean. Should the secret be transmitted as a cookie. If
     #' `FALSE` it is expected to be transmitted as a header.
-    #' @param name The name of the scheme instance
+    #' @param name The name of the guard
     initialize = function(
       key_name,
       validate,
@@ -137,8 +137,8 @@ GuardKey <- R6::R6Class(
     },
     #' @description A function that validates an incoming request, returning
     #' `TRUE` if it is valid and `FALSE` if not. It extracts the secret from
-    #' either the cookie or header based on the provided `key` and test it
-    #' based on `validate`.
+    #' either the cookie or header based on the provided `key_name` and test it
+    #' using the provided `validate` function.
     #' @param request The request to validate as a [Request][reqres::Request]
     #' object
     #' @param response The corresponding response to the request as a
@@ -167,7 +167,7 @@ GuardKey <- R6::R6Class(
           request = request,
           response = response
         )
-        scopes <- private$SCOPES %||% character()
+        scopes <- character()
         if (is.character(authenticated)) {
           scopes <- authenticated
           authenticated <- TRUE
@@ -183,9 +183,9 @@ GuardKey <- R6::R6Class(
       }
       authenticated
     },
-    #' @description Upon rejection this scheme sets the response status to `400`
-    #' if it has not already been set by others. In contrast to the other
-    #' schemes that are proper HTTP schemes, this one doesn't set a
+    #' @description Upon rejection this guard sets the response status to `400`
+    #' if it has not already been set by others. In contrast to some of the other
+    #' guards which implements proper HTTP schemes, this one doesn't set a
     #' `WWW-Authenticate` header.
     #' @param response The response object
     #' @param scope The scope of the endpoint

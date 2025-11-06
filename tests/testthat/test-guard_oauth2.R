@@ -6,7 +6,7 @@ test_that("guard_oauth2 can be constructed with authorization_code grant", {
     client_secret = "my_client_secret",
     auth_url = "https://example.com/oauth/authorize",
     grant_type = "authorization_code",
-    scopes = c("read", "write"),
+    oauth_scopes = c("read", "write"),
     user_info = function(token_info) {
       new_user_info(
         provider = "example",
@@ -39,7 +39,7 @@ test_that("guard_oauth2 can be constructed with password grant", {
     client_id = "my_client_id",
     client_secret = "my_client_secret",
     grant_type = "password",
-    scopes = c("read"),
+    oauth_scopes = c("read"),
     name = "password_test"
   )
 
@@ -126,7 +126,7 @@ test_that("guard_oauth2 reject_response initiates authorization for authorizatio
     client_secret = "my_client_secret",
     auth_url = "https://example.com/oauth/authorize",
     grant_type = "authorization_code",
-    scopes = c("read", "write"),
+    oauth_scopes = c("read", "write"),
     name = "test"
   )
 
@@ -295,7 +295,7 @@ test_that("guard_oauth2 with NULL scopes works", {
     client_secret = "my_client_secret",
     auth_url = "https://example.com/oauth/authorize",
     grant_type = "authorization_code",
-    scopes = NULL,
+    oauth_scopes = NULL,
     name = "test"
   )
 
@@ -347,7 +347,7 @@ test_that("guard_oauth2 passes if session already has valid user info", {
     id = "oauth_user789",
     name_given = "OAuth",
     name_family = "User",
-    scopes = c("read:user", "repo"),
+    oauth_scopes = c("read:user", "repo"),
     token = list(
       access_token = "oauth_access_token_xyz",
       token_type = "bearer",

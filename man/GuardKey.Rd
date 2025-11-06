@@ -75,7 +75,7 @@ used for the successful authentication. The function should return a new
 \item{\code{cookie}}{Boolean. Should the secret be transmitted as a cookie. If
 \code{FALSE} it is expected to be transmitted as a header.}
 
-\item{\code{name}}{The name of the scheme instance}
+\item{\code{name}}{The name of the guard}
 }
 \if{html}{\out{</div>}}
 }
@@ -86,8 +86,8 @@ used for the successful authentication. The function should return a new
 \subsection{Method \code{check_request()}}{
 A function that validates an incoming request, returning
 \code{TRUE} if it is valid and \code{FALSE} if not. It extracts the secret from
-either the cookie or header based on the provided \code{key} and test it
-based on \code{validate}.
+either the cookie or header based on the provided \code{key_name} and test it
+using the provided \code{validate} function.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{GuardKey$check_request(request, response, keys, ..., .session)}\if{html}{\out{</div>}}
 }
@@ -119,9 +119,9 @@ object}
 \if{html}{\out{<a id="method-GuardKey-reject_response"></a>}}
 \if{latex}{\out{\hypertarget{method-GuardKey-reject_response}{}}}
 \subsection{Method \code{reject_response()}}{
-Upon rejection this scheme sets the response status to \code{400}
-if it has not already been set by others. In contrast to the other
-schemes that are proper HTTP schemes, this one doesn't set a
+Upon rejection this guard sets the response status to \code{400}
+if it has not already been set by others. In contrast to some of the other
+guards which implements proper HTTP schemes, this one doesn't set a
 \code{WWW-Authenticate} header.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{GuardKey$reject_response(response, scope, ..., .session)}\if{html}{\out{</div>}}

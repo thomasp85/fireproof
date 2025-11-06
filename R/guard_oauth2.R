@@ -18,9 +18,9 @@
 #' `guard_oauth2()` automatically adds some [user information][new_user_info] after
 #' authentication, but it is advised to consult the service provider for more
 #' information (this is done automatically for the provider specific
-#' constructors. See their documentation for details about what information is
+#' guards. See their documentation for details about what information is
 #' assigned to which field). The base constructor will set the `scopes` field to
-#' any scopes returned by the provider during authorization. It will also set
+#' any scopes returned by the `validate` function. It will also set
 #' the `token` field to a list with the token data provided by the service
 #' during authorization. Some standard fields in the list are:
 #'
@@ -30,8 +30,9 @@
 #' - `refresh_token`: A long-lived token that can be used to issue a new
 #'   access token if the current becomes stale
 #' - `timestamp`: The time the token was received
+#' - `scopes`: The scopes granted by the user for this token
 #'
-#' But OAuth 2.0 providers may choose to supply more. Consult the documentation
+#' But OAuth 2.0 providers may choose to supply others. Consult the documentation
 #' for the provider to learn of additional fields it may provide.
 #'
 #' @param token_url The URL to the authorization servers token endpoint
@@ -46,10 +47,12 @@
 #' authorization (only needed for `grant_type = "authorization_code"`)
 #' @param grant_type The type of authorization scheme to use, either
 #' `"authorization_code"` or `"password"`
-#' @param scopes Optional character vector of scopes to request the user to
-#' grant you during authorization. If named, the names are taken as scopes and
-#' the elements as descriptions of the scopes, e.g. given a scope, `read`, it
-#' can either be provided as `c("read")` or `c(read = "Grant read access")`
+#' @param oauth_scopes Optional character vector of scopes to request the
+#' user to grant you during authorization. These will *not* influence the
+#' scopes granted by the `validate` function and fireproof scoping. If named,
+#' the names are taken as scopes and the elements as descriptions of the scopes,
+#' e.g. given a scope, `read`, it can either be provided as `c("read")` or
+#' `c(read = "Grant read access")`
 #' @param validate Function to validate the user once logged in. It will be
 #' called with a single argument `info`, which gets the information of the user
 #' as provided by the `user_info` function in the. By default it returns `TRUE`
@@ -80,10 +83,11 @@
 #' @param service_params A named list of additional query params to add to
 #' the url when constructing the authorization url in the
 #' `"authorization_code"` grant type
-#' @param name The name of the scheme instance. This will also be the name
-#' under which token info and user info is saved in the session store
+#' @inheritParams guard_basic
 #'
-#' @return An [GuardOAuth2] object
+#' @return A [GuardOAuth2] object
+#'
+#' @references [The OAuth 2.0 RFC](https://datatracker.ietf.org/doc/html/rfc6749)
 #'
 #' @export
 #' @importFrom urltools url_encode
@@ -113,7 +117,7 @@ guard_oauth2 <- function(
   client_secret,
   auth_url = NULL,
   grant_type = c("authorization_code", "password"),
-  scopes = NULL,
+  oauth_scopes = NULL,
   validate = function(info) TRUE,
   redirect_path = get_path(redirect_url),
   on_auth = replay_request,
@@ -128,7 +132,7 @@ guard_oauth2 <- function(
     client_secret = client_secret,
     auth_url = auth_url,
     grant_type = grant_type,
-    scopes = scopes,
+    oauth_scopes = oauth_scopes,
     validate = validate,
     redirect_path = redirect_path,
     on_auth = on_auth,
@@ -174,8 +178,12 @@ GuardOAuth2 <- R6::R6Class(
     #' authorization (only needed for `grant_type = "authorization_code"`)
     #' @param grant_type The type of authorization scheme to use, either
     #' `"authorization_code"` or `"password"`
-    #' @param scopes Optional character vector of scopes to request the user to
-    #' grant you during authorization
+    #' @param oauth_scopes Optional character vector of scopes to request the
+    #' user to grant you during authorization. These will *not* influence the
+    #' scopes granted by the `validate` function and fireproof scoping. If named,
+    #' the names are taken as scopes and the elements as descriptions of the scopes,
+    #' e.g. given a scope, `read`, it can either be provided as `c("read")` or
+    #' `c(read = "Grant read access")`
     #' @param validate Function to validate the user once logged in. It will be
     #' called with a single argument `info`, which gets the information of the user
     #' as provided by the `user_info` function. By default it returns `TRUE`
@@ -206,8 +214,7 @@ GuardOAuth2 <- R6::R6Class(
     #' @param service_params A named list of additional query params to add to
     #' the url when constructing the authorization url in the
     #' `"authorization_code"` grant type
-    #' @param name The name of the scheme instance. This will also be the name
-    #' under which token info and user info is saved in the session store
+    #' @param name The name of the guard.
     initialize = function(
       token_url,
       redirect_url,
@@ -215,7 +222,7 @@ GuardOAuth2 <- R6::R6Class(
       client_secret,
       auth_url = NULL,
       grant_type = c("authorization_code", "password"),
-      scopes = NULL,
+      oauth_scopes = NULL,
       validate = function(info) TRUE,
       redirect_path = get_path(redirect_url),
       on_auth = replay_request,
@@ -241,13 +248,13 @@ GuardOAuth2 <- R6::R6Class(
       private$REDIRECT_URL <- redirect_url
       check_string(redirect_path)
       private$REDIRECT_PATH <- redirect_path
-      check_character(scopes, allow_null = TRUE)
-      if (is_named(scopes)) {
-        private$SCOPES <- names(scopes)
-        private$SCOPE_DESC <- unname(scopes)
+      check_character(oauth_scopes, allow_null = TRUE)
+      if (is_named(oauth_scopes)) {
+        private$SCOPES <- names(oauth_scopes)
+        private$SCOPE_DESC <- unname(oauth_scopes)
       } else {
-        private$SCOPES <- scopes
-        private$SCOPE_DESC <- rep_along(scopes, "")
+        private$SCOPES <- oauth_scopes
+        private$SCOPE_DESC <- rep_along(oauth_scopes, "")
       }
 
       check_function(validate)
@@ -282,10 +289,9 @@ GuardOAuth2 <- R6::R6Class(
     check_request = function(request, response, keys, ..., .session) {
       is_user_info(.session$fireproof[[private$NAME]])
     },
-    #' @description Upon rejection this scheme sets the response status to `400`
-    #' if it has not already been set by others. In contrast to the other
-    #' schemes that are proper HTTP schemes, this one doesn't set a
-    #' `WWW-Authenticate` header.
+    #' @description Upon rejection this guard initiates the grant flow to obtain
+    #' authorization. This can sound a bit backwards, but we don't want to
+    #' initiate authorization if the authorization flow doesn't need it
     #' @param response The response object
     #' @param scope The scope of the endpoint
     #' @param ... Ignored
@@ -445,55 +451,64 @@ GuardOAuth2 <- R6::R6Class(
       )
     },
     request_authorization = function(request, response, session) {
-      if (private$GRANT_TYPE == "authorization_code") {
-        # Logic for authorization code type
-        state <- create_session_state(request, session)
-        auth_url <- private$construct_auth_url(request, state)
-        response$status <- 303L # Force client to use GET
-        response$set_header("location", auth_url)
-      } else if (private$GRANT_TYPE == "password") {
-        # Logic for password type
-        auth <- request$headers$authorization
-        if (!is.null(auth) && grepl("^Basic ", auth)) {
-          auth <- sub("^Basic ", "", auth)
-          auth <- base64decode(auth)
-          auth <- strsplit(auth, ":", fixed = TRUE)[[1]]
-          if (length(auth) != 2) {
-            reqres::abort_bad_request("Malformed Authorization header")
-          }
-        } else {
-          response$append_header(
-            "WWW-Authenticate",
-            paste0('Basic realm="oauth2", charset=UTF-8')
-          )
-          reqres::abort_status(401L)
-        }
-        token_par <- list(
-          grant_type = "password",
-          username = auth[[1]],
-          password = auth[[2]],
-          scope = paste0(private$SCOPES, collapse = " "),
-          client_id = private$CLIENT_ID,
-          client_secret = private$CLIENT_SECRET
+      switch(
+        private$GRANT_TYPE,
+        authorization_code = private$request_code_authorization(
+          request,
+          response,
+          session
+        ),
+        password = private$request_password_authorization(
+          request,
+          response,
+          session
         )
-        private$request_token(token_par, session)
-        authorized <- private$VALIDATE(info = session$fireproof[[private$NAME]])
-        scopes <- private$SCOPES %||% character()
-        if (is.character(authorized)) {
-          scopes <- authorized
-          authorized <- TRUE
+      )
+    },
+    request_password_authorization = function(request, response, session) {
+      auth <- request$headers$authorization
+      if (!is.null(auth) && grepl("^Basic ", auth)) {
+        auth <- sub("^Basic ", "", auth)
+        auth <- base64decode(auth)
+        auth <- strsplit(auth, ":", fixed = TRUE)[[1]]
+        if (length(auth) != 2) {
+          reqres::abort_bad_request("Malformed Authorization header")
         }
-        if (!authorized) {
-          session$fireproof[[private$NAME]] <- list()
-          self$reject_response(response, .session = session)
-        } else {
-          session$fireproof[[private$NAME]]$scopes <- unique(
-            scopes,
-            session$fireproof[[private$NAME]]$scopes
-          )
-          response$status <- 200L
-        }
+      } else {
+        response$append_header(
+          "WWW-Authenticate",
+          paste0('Basic realm="oauth2", charset=UTF-8')
+        )
+        reqres::abort_status(401L)
       }
+      token_par <- list(
+        grant_type = "password",
+        username = auth[[1]],
+        password = auth[[2]],
+        scope = paste0(private$SCOPES, collapse = "%20"),
+        client_id = private$CLIENT_ID,
+        client_secret = private$CLIENT_SECRET
+      )
+      private$request_token(token_par, session)
+      authorized <- private$VALIDATE(info = session$fireproof[[private$NAME]])
+      scopes <- character()
+      if (is.character(authorized)) {
+        scopes <- authorized
+        authorized <- TRUE
+      }
+      if (!authorized) {
+        session$fireproof[[private$NAME]] <- list()
+        self$reject_response(response, .session = session)
+      } else {
+        session$fireproof[[private$NAME]]$scopes <- scopes
+        response$status <- 200L
+      }
+    },
+    request_code_authorization = function(request, response, session) {
+      state <- create_session_state(request, session)
+      auth_url <- private$construct_auth_url(request, state)
+      response$status <- 303L # Force client to use GET
+      response$set_header("location", auth_url)
     },
     exchange_code_to_token = function(request, response, session, server) {
       session_state <- session$fireproof$oauth_state
@@ -534,10 +549,7 @@ GuardOAuth2 <- R6::R6Class(
         session$fireproof[[private$NAME]] <- list()
         self$reject_response(response, .session = session)
       } else {
-        session$fireproof[[private$NAME]]$scopes <- unique(
-          scopes,
-          session$fireproof[[private$NAME]]$scopes
-        )
+        session$fireproof[[private$NAME]]$scopes <- scopes
         private$ON_AUTH(
           request = request,
           response = response,
@@ -581,7 +593,6 @@ GuardOAuth2 <- R6::R6Class(
       session$fireproof[[private$NAME]] <- combine_info(
         new_user_info(
           provider = private$TOKEN_URL,
-          scopes = content$scope %||% private$SCOPES %||% character(),
           token = content
         ),
         private$USER_INFO(content)
