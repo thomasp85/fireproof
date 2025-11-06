@@ -280,7 +280,7 @@ GuardOAuth2 <- R6::R6Class(
     #' @param .session The session storage for the current session
     #'
     check_request = function(request, response, keys, ..., .session) {
-      is_user_info(.session[[private$NAME]])
+      is_user_info(.session$fireproof[[private$NAME]])
     },
     #' @description Upon rejection this scheme sets the response status to `400`
     #' if it has not already been set by others. In contrast to the other
@@ -291,8 +291,8 @@ GuardOAuth2 <- R6::R6Class(
     #' @param ... Ignored
     #' @param .session The session storage for the current session
     reject_response = function(response, scope, ..., .session) {
-      if (!is.null(.session[[private$NAME]])) {
-        .session[[private$NAME]] <- NULL
+      if (!is.null(.session$fireproof[[private$NAME]])) {
+        .session$fireproof[[private$NAME]] <- NULL
         response$status_with_text(403L)
       } else {
         private$request_authorization(response$request, response, .session)
@@ -329,7 +329,7 @@ GuardOAuth2 <- R6::R6Class(
     #' @param force Boolean. Should the token be refreshed even if it hasn't
     #' expired yet
     refresh_token = function(session, force = FALSE) {
-      token <- session[[private$NAME]]$token
+      token <- session$fireproof[[private$NAME]]$token
       if (is.null(token$refresh_token)) {
         return(
           !force &&
@@ -357,8 +357,8 @@ GuardOAuth2 <- R6::R6Class(
         }
         content <- jsonlite::parse_json(rawToChar(res$content))
         content$timestamp <- Sys.time()
-        session[[private$NAME]]$token <- modifyList(
-          session[[private$NAME]]$token,
+        session$fireproof[[private$NAME]]$token <- modifyList(
+          session$fireproof[[private$NAME]]$token,
           content
         )
         TRUE
@@ -477,27 +477,27 @@ GuardOAuth2 <- R6::R6Class(
           client_secret = private$CLIENT_SECRET
         )
         private$request_token(token_par, session)
-        authorized <- private$VALIDATE(info = session[[private$NAME]])
+        authorized <- private$VALIDATE(info = session$fireproof[[private$NAME]])
         scopes <- private$SCOPES %||% character()
         if (is.character(authorized)) {
           scopes <- authorized
           authorized <- TRUE
         }
         if (!authorized) {
-          session[[private$NAME]] <- list()
+          session$fireproof[[private$NAME]] <- list()
           self$reject_response(response, .session = session)
         } else {
-          session[[private$NAME]]$scopes <- unique(
+          session$fireproof[[private$NAME]]$scopes <- unique(
             scopes,
-            session[[private$NAME]]$scopes
+            session$fireproof[[private$NAME]]$scopes
           )
           response$status <- 200L
         }
       }
     },
     exchange_code_to_token = function(request, response, session, server) {
-      session_state <- session$oauth_state
-      session$oauth_state <- NULL
+      session_state <- session$fireproof$oauth_state
+      session$fireproof$oauth_state <- NULL
       state <- request$query$state
       if (
         state != session_state$state ||
@@ -524,19 +524,19 @@ GuardOAuth2 <- R6::R6Class(
         token_par$redirect_uri <- private$REDIRECT_URL
       }
       private$request_token(token_par, session, session_state)
-      authorized <- private$VALIDATE(info = session[[private$NAME]])
+      authorized <- private$VALIDATE(info = session$fireproof[[private$NAME]])
       scopes <- private$SCOPES %||% character()
       if (is.character(authorized)) {
         scopes <- authorized
         authorized <- TRUE
       }
       if (!authorized) {
-        session[[private$NAME]] <- list()
+        session$fireproof[[private$NAME]] <- list()
         self$reject_response(response, .session = session)
       } else {
-        session[[private$NAME]]$scopes <- unique(
+        session$fireproof[[private$NAME]]$scopes <- unique(
           scopes,
-          session[[private$NAME]]$scopes
+          session$fireproof[[private$NAME]]$scopes
         )
         private$ON_AUTH(
           request = request,
@@ -578,7 +578,7 @@ GuardOAuth2 <- R6::R6Class(
       if (!is.null(content$scope)) {
         content$scope <- strsplit(content$scope, " ", fixed = TRUE)[[1]]
       }
-      session[[private$NAME]] <- combine_info(
+      session$fireproof[[private$NAME]] <- combine_info(
         new_user_info(
           provider = private$TOKEN_URL,
           scopes = content$scope %||% private$SCOPES %||% character(),
@@ -602,7 +602,7 @@ create_session_state = function(request, session) {
     body = request$body_raw,
     from = request$ip
   )
-  session$oauth_state <- request_state
+  session$fireproof$oauth_state <- request_state
   request_state
 }
 

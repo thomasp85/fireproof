@@ -29,7 +29,7 @@ test_that("guard_key can be constructed and verify", {
     .session = session
   )
   expect_false(pass)
-  expect_null(session$test2)
+  expect_null(session$fireproof$test2)
 
   auth$reject_response(no_auth$respond(), .session = session)
   expect_equal(no_auth$response$status, 400L)
@@ -49,11 +49,11 @@ test_that("guard_key can be constructed and verify", {
     .session = session
   )
   expect_false(pass)
-  expect_equal(session$test2, list())
+  expect_equal(session$fireproof$test2, list())
 
   auth$reject_response(wrong_auth$respond(), .session = session)
   expect_equal(wrong_auth$response$status, 403L)
-  expect_null(session$test2)
+  expect_null(session$fireproof$test2)
 
   session <- new.env()
   good_auth <- reqres::Request$new(fiery::fake_request(
@@ -71,12 +71,12 @@ test_that("guard_key can be constructed and verify", {
   )
   expect_true(pass)
   expect_equal(
-    session$test2,
+    session$fireproof$test2,
     new_user_info(id = NULL, provider = "local", name_given = "API User", scopes = "scope1")
   )
   auth$forbid_user(good_auth$respond(), .session = session)
   expect_equal(good_auth$response$status, 403L)
-  expect_null(session$test2)
+  expect_null(session$fireproof$test2)
 })
 
 test_that("guard_key works with cookie-based authentication", {
@@ -106,7 +106,7 @@ test_that("guard_key works with cookie-based authentication", {
   )
   expect_true(pass)
   expect_equal(
-    session$cookie_test,
+    session$fireproof$cookie_test,
     new_user_info(provider = "local", scopes = character(0))
   )
 })
@@ -180,7 +180,7 @@ test_that("guard_key passes if session already has valid user info", {
 
   session <- new.env()
   # Pre-populate session with user info from previous authentication
-  session$session_test <- new_user_info(
+  session$fireproof$session_test <- new_user_info(
     provider = "local",
     id = "user123",
     name_given = "Existing User",
@@ -199,5 +199,5 @@ test_that("guard_key passes if session already has valid user info", {
   # Should pass because session already has valid info
   expect_true(pass)
   # Session should remain unchanged
-  expect_equal(session$session_test$name, c(given = "Existing User"))
+  expect_equal(session$fireproof$session_test$name, c(given = "Existing User"))
 })

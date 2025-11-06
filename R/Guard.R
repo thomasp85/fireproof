@@ -43,7 +43,7 @@ Guard <- R6::R6Class(
     #' @param ... Ignored
     #' @param .session The session storage for the current session
     reject_response = function(response, scope, ..., .session) {
-      .session[[private$NAME]] <- NULL
+      .session$fireproof[[private$NAME]] <- NULL
       response$status_with_text(400L)
     },
     #' @description Action to perform on the response in case the request does
@@ -56,7 +56,7 @@ Guard <- R6::R6Class(
     #' @param ... Ignored
     #' @param .session The session storage for the current session
     forbid_user = function(response, scope, ..., .session) {
-      .session[[private$NAME]] <- NULL
+      .session$fireproof[[private$NAME]] <- NULL
       response$status_with_text(403L)
     },
     #' @description Hook for registering endpoint handlers needed for this

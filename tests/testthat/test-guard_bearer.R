@@ -26,7 +26,7 @@ test_that("guard_bearer can be constructed and verify", {
     .session = session
   )
   expect_false(pass)
-  expect_null(session$test2)
+  expect_null(session$fireproof$test2)
 
   auth$reject_response(no_auth$respond(), scope = NULL, .session = session)
   expect_equal(no_auth$response$status, 401L)
@@ -50,7 +50,7 @@ test_that("guard_bearer can be constructed and verify", {
     .session = session
   )
   expect_false(pass)
-  expect_null(session$test2)
+  expect_null(session$fireproof$test2)
 
   auth$reject_response(wrong_auth$respond(), scope = NULL, .session = session)
   expect_equal(wrong_auth$response$status, 401L)
@@ -74,11 +74,11 @@ test_that("guard_bearer can be constructed and verify", {
     .session = session
   )
   expect_false(pass)
-  expect_equal(session$test2, list())
+  expect_equal(session$fireproof$test2, list())
 
   auth$reject_response(bad_auth$respond(), .session = session)
   expect_equal(bad_auth$response$status, 403L)
-  expect_null(session$test2)
+  expect_null(session$fireproof$test2)
 
   session <- new.env()
   good_auth <- reqres::Request$new(fiery::fake_request(
@@ -96,7 +96,7 @@ test_that("guard_bearer can be constructed and verify", {
   )
   expect_true(pass)
   expect_equal(
-    session$test2,
+    session$fireproof$test2,
     new_user_info(
       id = NULL,
       provider = "local",
@@ -111,7 +111,7 @@ test_that("guard_bearer can be constructed and verify", {
   )
   auth$forbid_user(good_auth$respond(), .session = session)
   expect_equal(good_auth$response$status, 403L)
-  expect_null(session$test2)
+  expect_null(session$fireproof$test2)
 })
 
 test_that("guard_bearer works with custom realm", {
@@ -198,7 +198,7 @@ test_that("guard_bearer handles body token transmission", {
     .session = session
   )
   expect_true(pass)
-  expect_equal(session$body_test$scopes, "scope1")
+  expect_equal(session$fireproof$body_test$scopes, "scope1")
 })
 
 test_that("guard_bearer rejects body token when disabled", {
@@ -333,7 +333,7 @@ test_that("guard_bearer authenticator can return TRUE for simple validation", {
     .session = session
   )
   expect_true(pass)
-  expect_equal(session$simple_test$scopes, character(0))
+  expect_equal(session$fireproof$simple_test$scopes, character(0))
 })
 
 test_that("guard_bearer respects existing response status on rejection", {
@@ -360,7 +360,7 @@ test_that("guard_bearer passes if session already has valid user info", {
 
   session <- new.env()
   # Pre-populate session with user info from previous authentication
-  session$session_test <- new_user_info(
+  session$fireproof$session_test <- new_user_info(
     provider = "local",
     id = "user456",
     name_given = "Bearer User",
@@ -384,6 +384,6 @@ test_that("guard_bearer passes if session already has valid user info", {
   # Should pass because session already has valid info
   expect_true(pass)
   # Session should remain unchanged
-  expect_equal(session$session_test$name, c(given = "Bearer User"))
-  expect_equal(session$session_test$token$access_token, "previous_token")
+  expect_equal(session$fireproof$session_test$name, c(given = "Bearer User"))
+  expect_equal(session$fireproof$session_test$token$access_token, "previous_token")
 })

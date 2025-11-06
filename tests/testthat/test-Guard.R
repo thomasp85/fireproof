@@ -43,27 +43,27 @@ test_that("Guard check_request returns TRUE by default", {
 test_that("Guard reject_response clears session and sets 400 status", {
   auth <- Guard$new(name = "test")
   session <- new.env()
-  session$test <- list(user = "data")
+  session$fireproof$test <- list(user = "data")
 
   request <- reqres::Request$new(fiery::fake_request("http://example.com"))
   response <- request$respond()
 
   auth$reject_response(response, scope = NULL, .session = session)
   expect_equal(response$status, 400L)
-  expect_null(session$test)
+  expect_null(session$fireproof$test)
 })
 
 test_that("Guard forbid_user clears session and sets 403 status", {
   auth <- Guard$new(name = "test")
   session <- new.env()
-  session$test <- list(user = "authenticated")
+  session$fireproof$test <- list(user = "authenticated")
 
   request <- reqres::Request$new(fiery::fake_request("http://example.com"))
   response <- request$respond()
 
   auth$forbid_user(response, scope = NULL, .session = session)
   expect_equal(response$status, 403L)
-  expect_null(session$test)
+  expect_null(session$fireproof$test)
 })
 
 test_that("Guard register_handler does nothing by default", {
@@ -153,15 +153,15 @@ test_that("Guard methods accept additional arguments via ...", {
 test_that("Guard clears only its own session data", {
   auth <- Guard$new(name = "test_auth")
   session <- new.env()
-  session$test_auth <- list(user = "data")
-  session$other_auth <- list(user = "other_data")
-  session$app_data <- "should_remain"
+  session$fireproof$test_auth <- list(user = "data")
+  session$fireproof$other_auth <- list(user = "other_data")
+  session$fireproof$app_data <- "should_remain"
 
   request <- reqres::Request$new(fiery::fake_request("http://example.com"))
 
   auth$reject_response(request$respond(), scope = NULL, .session = session)
 
-  expect_null(session$test_auth)
-  expect_equal(session$other_auth, list(user = "other_data"))
-  expect_equal(session$app_data, "should_remain")
+  expect_null(session$fireproof$test_auth)
+  expect_equal(session$fireproof$other_auth, list(user = "other_data"))
+  expect_equal(session$fireproof$app_data, "should_remain")
 })

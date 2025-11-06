@@ -347,7 +347,7 @@ GuardOIDC <- R6::R6Class(
       scope <- if (!is.null(content$scope)) {
         strsplit(content$scope, " ", fixed = TRUE)[[1]]
       }
-      session[[private$NAME]] <- new_user_info(
+      session$fireproof[[private$NAME]] <- new_user_info(
         provider = private$SERVICE_NAME,
         id = jwt$sub,
         name_display = jwt$name,

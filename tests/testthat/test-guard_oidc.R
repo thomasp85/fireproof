@@ -77,7 +77,7 @@ test_that("guard_oidc inherits session-based authentication from OAuth2", {
   expect_false(pass)
 
   # With valid session - should pass
-  session$session_test <- new_user_info(
+  session$fireproof$session_test <- new_user_info(
     provider = "example",
     id = "sub_123",
     name_display = "John Doe",

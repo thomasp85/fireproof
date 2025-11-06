@@ -79,10 +79,10 @@ test_that("guard_oauth2 check_request validates session info", {
     .session = session
   )
   expect_false(pass)
-  expect_null(session$test)
+  expect_null(session$fireproof$test)
 
   # Simulate authenticated session
-  session$test <- new_user_info(
+  session$fireproof$test <- new_user_info(
     provider = "example",
     id = "user123",
     scopes = c("read")
@@ -109,13 +109,13 @@ test_that("guard_oauth2 reject_response clears failed session", {
   )
 
   session <- new.env()
-  session$test <- new_user_info(provider = "example", id = "user123")
+  session$fireproof$test <- new_user_info(provider = "example", id = "user123")
 
   no_auth <- reqres::Request$new(fiery::fake_request("http://example.com"))
 
   auth$reject_response(no_auth$respond(), scope = NULL, .session = session)
   expect_equal(no_auth$response$status, 403L)
-  expect_null(session$test)
+  expect_null(session$fireproof$test)
 })
 
 test_that("guard_oauth2 reject_response initiates authorization for authorization_code", {
@@ -141,7 +141,7 @@ test_that("guard_oauth2 reject_response initiates authorization for authorizatio
   expect_true(grepl("^https://example.com/oauth/authorize", location))
   expect_true(grepl("client_id=my_client_id", location))
   expect_true(grepl(
-    paste0("state=", session$oauth_state$state),
+    paste0("state=", session$fireproof$oauth_state$state),
     location,
     fixed = TRUE
   ))
@@ -247,7 +247,7 @@ test_that("guard_oauth2 respects existing response status on rejection", {
   )
 
   session <- new.env()
-  session$test <- new_user_info(provider = "example")
+  session$fireproof$test <- new_user_info(provider = "example")
 
   no_auth <- reqres::Request$new(fiery::fake_request("http://example.com"))
   response <- no_auth$respond()
@@ -255,7 +255,7 @@ test_that("guard_oauth2 respects existing response status on rejection", {
 
   auth$reject_response(response, scope = NULL, .session = session)
   # Should still process rejection even with non-default status
-  expect_null(session$test)
+  expect_null(session$fireproof$test)
 })
 
 test_that("guard_oauth2 register_handler adds redirect endpoint", {
@@ -317,7 +317,7 @@ test_that("guard_oauth2 forbid_user clears session", {
   )
 
   session <- new.env()
-  session$test <- new_user_info(
+  session$fireproof$test <- new_user_info(
     provider = "example",
     id = "user123",
     scopes = c("read")
@@ -326,7 +326,7 @@ test_that("guard_oauth2 forbid_user clears session", {
   good_auth <- reqres::Request$new(fiery::fake_request("http://example.com"))
   auth$forbid_user(good_auth$respond(), .session = session)
   expect_equal(good_auth$response$status, 403L)
-  expect_null(session$test)
+  expect_null(session$fireproof$test)
 })
 
 test_that("guard_oauth2 passes if session already has valid user info", {
@@ -342,7 +342,7 @@ test_that("guard_oauth2 passes if session already has valid user info", {
 
   session <- new.env()
   # Pre-populate session with user info from previous OAuth authentication
-  session$session_test <- new_user_info(
+  session$fireproof$session_test <- new_user_info(
     provider = "github",
     id = "oauth_user789",
     name_given = "OAuth",
@@ -369,14 +369,12 @@ test_that("guard_oauth2 passes if session already has valid user info", {
   # Should pass because session already has valid OAuth info
   expect_true(pass)
   # Session should remain unchanged
-  expect_equal(session$session_test$provider, "github")
+  expect_equal(session$fireproof$session_test$provider, "github")
   expect_equal(
-    session$session_test$token$access_token,
+    session$fireproof$session_test$token$access_token,
     "oauth_access_token_xyz"
   )
 })
-
-# Tests yet to be implemented
 
 test_that("guard_oauth2 handles successful code exchange", {
   skip_on_cran()

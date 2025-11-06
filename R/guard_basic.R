@@ -175,7 +175,7 @@ GuardBasic <- R6::R6Class(
     #' @param .session The session storage for the current session
     #'
     check_request = function(request, response, keys, ..., .session) {
-      info <- .session[[private$NAME]]
+      info <- .session$fireproof[[private$NAME]]
       authenticated <- is_user_info(info)
 
       auth <- request$headers$authorization
@@ -200,12 +200,12 @@ GuardBasic <- R6::R6Class(
           authenticated <- TRUE
         }
         if (authenticated) {
-          .session[[private$NAME]] <- combine_info(
+          .session$fireproof[[private$NAME]] <- combine_info(
             new_user_info(provider = "local", id = auth[1], scopes = scopes),
             private$USER_INFO(auth[1])
           )
         } else {
-          .session[[private$NAME]] <- list()
+          .session$fireproof[[private$NAME]] <- list()
         }
       }
       authenticated
@@ -219,8 +219,8 @@ GuardBasic <- R6::R6Class(
     #' @param .session The session storage for the current session
     reject_response = function(response, scope, ..., .session) {
       if (response$status %in% c(400L, 404L)) {
-        if (!is.null(.session[[private$NAME]])) {
-          .session[[private$NAME]] <- NULL
+        if (!is.null(.session$fireproof[[private$NAME]])) {
+          .session$fireproof[[private$NAME]] <- NULL
           response$status_with_text(403L)
         } else {
           response$append_header(
