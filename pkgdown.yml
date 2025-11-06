@@ -3,7 +3,7 @@ pkgdown: 2.1.3
 pkgdown_sha: ~
 articles:
   fireproof: fireproof.html
-last_built: 2025-11-06T09:56Z
+last_built: 2025-11-06T10:06Z
 urls:
   reference: https://thomasp85.github.io/fireproof/reference
   article: https://thomasp85.github.io/fireproof/articles
