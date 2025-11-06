@@ -14,7 +14,7 @@
 #' response status to something else.
 #'
 #' # User information
-#' `guard_key()` automatically adds [user information][user_info] after
+#' `guard_key()` automatically adds [user information][new_user_info] after
 #' authentication. By default it will set the `provider` field to `"local"`.
 #' Further, it will set the `scopes` field to any scopes returned by the
 #' `validate` function (provided `validate` is passed a function).

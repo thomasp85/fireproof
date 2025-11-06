@@ -72,7 +72,7 @@ information that gets fetched during the validation to relevant fields in the
 response data
 }
 \section{User information}{
-\code{guard_bearer()} automatically adds \link[=user_info]{user information} after
+\code{guard_bearer()} automatically adds \link[=new_user_info]{user information} after
 authentication. By default it will set the \code{provider} field to \code{"local"}.
 Further, it will set the \code{scopes} field to any scopes returned by the
 \code{authenticator} function and the \code{token} field to a list with the following

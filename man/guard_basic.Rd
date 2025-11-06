@@ -41,7 +41,7 @@ testing of the passwords in a sensible and responsible way. See
 \code{\link[sodium:password]{sodium::password_store()}} for a good first step towards responsible design.
 }
 \section{User information}{
-\code{guard_basic()} automatically adds \link[=user_info]{user information} after
+\code{guard_basic()} automatically adds \link[=new_user_info]{user information} after
 authentication. By default it will set the \code{provider} field to \code{"local"} and
 the \code{id} field to the username used for logging in. Further, it will set
 the \code{scopes} field to any scopes returned by the \code{authenticator} function.

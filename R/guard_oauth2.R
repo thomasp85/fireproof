@@ -15,7 +15,7 @@
 #' when logging users in.
 #'
 #' # User information
-#' `guard_oauth2()` automatically adds some [user information][user_info] after
+#' `guard_oauth2()` automatically adds some [user information][new_user_info] after
 #' authentication, but it is advised to consult the service provider for more
 #' information (this is done automatically for the provider specific
 #' constructors. See their documentation for details about what information is

@@ -51,7 +51,7 @@ returns a \code{400} response unless another guard has already set the
 response status to something else.
 }
 \section{User information}{
-\code{guard_key()} automatically adds \link[=user_info]{user information} after
+\code{guard_key()} automatically adds \link[=new_user_info]{user information} after
 authentication. By default it will set the \code{provider} field to \code{"local"}.
 Further, it will set the \code{scopes} field to any scopes returned by the
 \code{validate} function (provided \code{validate} is passed a function).

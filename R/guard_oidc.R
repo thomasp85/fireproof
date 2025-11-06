@@ -19,7 +19,7 @@
 #' logging users in.
 #'
 #' # User information
-#' `guard_oidc()` automatically adds [user information][user_info] after
+#' `guard_oidc()` automatically adds [user information][new_user_info] after
 #' authentication, based on the standardized user claims provided in the
 #' `id_token` as well as any additional user information provided at the
 #' `userinfo_endpoint` of the service if `request_user_info = TRUE`. You can see

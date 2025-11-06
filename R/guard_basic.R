@@ -13,7 +13,7 @@
 #' [sodium::password_store()] for a good first step towards responsible design.
 #'
 #' # User information
-#' `guard_basic()` automatically adds [user information][user_info] after
+#' `guard_basic()` automatically adds [user information][new_user_info] after
 #' authentication. By default it will set the `provider` field to `"local"` and
 #' the `id` field to the username used for logging in. Further, it will set
 #' the `scopes` field to any scopes returned by the `authenticator` function.

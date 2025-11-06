@@ -100,7 +100,7 @@ provider and get a client id and a client secret which must be used when
 logging users in.
 }
 \section{User information}{
-\code{guard_oidc()} automatically adds \link[=user_info]{user information} after
+\code{guard_oidc()} automatically adds \link[=new_user_info]{user information} after
 authentication, based on the standardized user claims provided in the
 \code{id_token} as well as any additional user information provided at the
 \code{userinfo_endpoint} of the service if \code{request_user_info = TRUE}. You can see

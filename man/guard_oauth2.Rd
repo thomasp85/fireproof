@@ -101,7 +101,7 @@ with the provider and get a client id and a client secret which must be used
 when logging users in.
 }
 \section{User information}{
-\code{guard_oauth2()} automatically adds some \link[=user_info]{user information} after
+\code{guard_oauth2()} automatically adds some \link[=new_user_info]{user information} after
 authentication, but it is advised to consult the service provider for more
 information (this is done automatically for the provider specific
 constructors. See their documentation for details about what information is

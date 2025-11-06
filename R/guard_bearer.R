@@ -27,7 +27,7 @@
 #' response data
 #'
 #' # User information
-#' `guard_bearer()` automatically adds [user information][user_info] after
+#' `guard_bearer()` automatically adds [user information][new_user_info] after
 #' authentication. By default it will set the `provider` field to `"local"`.
 #' Further, it will set the `scopes` field to any scopes returned by the
 #' `authenticator` function and the `token` field to a list with the following
