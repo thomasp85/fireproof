@@ -47,7 +47,9 @@ called with a single argument \code{info}, which gets the information of the use
 as provided by the \code{user_info} function in the. By default it returns \code{TRUE}
 on everything meaning that anyone who can log in with the provider will
 be accepted, but you can provide a different function to e.g. restrict
-access to certain user names etc.}
+access to certain user names etc. If the function returns a
+character vector it is considered to be authenticated and the return value
+will be understood as scopes the user is granted.}
     \item{\code{redirect_path}}{The path that should capture redirects after
 successful authorization. By default this is derived from \code{redirect_url}
 by removing the domain part of the url, but if for some reason this
@@ -63,11 +65,10 @@ with information from the original request). By default it will use
 \link{replay_request} to internally replay the original request and send back
 the response.}
     \item{\code{user_info}}{A function to extract user information from the
-username. It is called with two arguments: \code{token_info} and \code{setter},
-the first being the token information returned from the provider as a list
-(notably with a \code{token} field for the actual token), the second being a
-function that must be called in the end with the relevant information (see
-\code{\link[=user_info]{user_info()}}).}
+access token. It is called with a single argument: \code{token_info} which is the
+access token information returned by the OAuth 2 server after a successful
+authentication. The function should return a new \link[=new_user_info]{user_info}
+list.}
     \item{\code{service_params}}{A named list of additional query params to add to
 the url when constructing the authorization url in the
 \code{"authorization_code"} grant type}

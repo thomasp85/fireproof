@@ -1,5 +1,5 @@
-test_that("user_info creates basic user info structure", {
-  info <- user_info(
+test_that("new_user_info creates basic user info structure", {
+  info <- new_user_info(
     provider = "local",
     id = "user123"
   )
@@ -10,8 +10,8 @@ test_that("user_info creates basic user info structure", {
   expect_equal(info$id, "user123")
 })
 
-test_that("user_info combines name fields correctly", {
-  info <- user_info(
+test_that("new_user_info combines name fields correctly", {
+  info <- new_user_info(
     provider = "local",
     id = "user123",
     name_given = "Thomas",
@@ -33,8 +33,8 @@ test_that("user_info combines name fields correctly", {
   )
 })
 
-test_that("user_info handles partial name information", {
-  info <- user_info(
+test_that("new_user_info handles partial name information", {
+  info <- new_user_info(
     provider = "local",
     id = "user123",
     name_given = "Thomas",
@@ -49,8 +49,8 @@ test_that("user_info handles partial name information", {
   expect_true(is.na(info$name["user"]))
 })
 
-test_that("user_info handles additional fields via ...", {
-  info <- user_info(
+test_that("new_user_info handles additional fields via ...", {
+  info <- new_user_info(
     provider = "local",
     id = "user123",
     scopes = c("read", "write"),
@@ -63,8 +63,8 @@ test_that("user_info handles additional fields via ...", {
   expect_equal(info$custom_field, "custom_value")
 })
 
-test_that("user_info works with all NULL values", {
-  info <- user_info()
+test_that("new_user_info works with all NULL values", {
+  info <- new_user_info()
 
   expect_s3_class(info, "firesale_user_info")
   expect_null(info$provider)

@@ -47,7 +47,9 @@ called with a single argument \code{info}, which gets the information of the use
 as provided by the \code{user_info} function in the. By default it returns \code{TRUE}
 on everything meaning that anyone who can log in with the provider will
 be accepted, but you can provide a different function to e.g. restrict
-access to certain user names etc.}
+access to certain user names etc. If the function returns a
+character vector it is considered to be authenticated and the return value
+will be understood as scopes the user is granted.}
 
 \item{redirect_path}{The path that should capture redirects after
 successful authorization. By default this is derived from \code{redirect_url}
@@ -104,7 +106,7 @@ authentication, based on the standardized user claims provided in the
 \code{userinfo_endpoint} of the service if \code{request_user_info = TRUE}. You can see
 a list of standard user information defined by OpenID Connect at the
 \href{https://openid.net/specs/openid-connect-core-1_0.html#StandardClaims}{OpenID website}.
-The mapping of these to \code{\link[=user_info]{user_info()}} is as follows:
+The mapping of these to \code{\link[=new_user_info]{new_user_info()}} is as follows:
 \itemize{
 \item \code{sub} -> \code{id}
 \item \code{name} -> \code{name_display}

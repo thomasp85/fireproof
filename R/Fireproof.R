@@ -34,11 +34,11 @@
 #'
 #' # Create some authentication schemes and add them
 #' basic <- guard_basic(
-#'   authenticator = function(user, password) {
+#'   validate = function(user, password) {
 #'     user == "thomas" && password == "pedersen"
 #'   },
-#'   user_info = function(user, setter) {
-#'     setter(
+#'   user_info = function(user) {
+#'     new_user_info(
 #'       name_given = "Thomas",
 #'       name_middle = "Lin",
 #'       name_family = "Pedersen"
@@ -48,8 +48,8 @@
 #' fp$add_guard(basic, "basic_auth")
 #'
 #' key <- guard_key(
-#'   key = "my-key-location",
-#'   secret = "SHHH!!DONT_TELL_ANYONE"
+#'   key_name = "my-key-location",
+#'   validate = "SHHH!!DONT_TELL_ANYONE"
 #' )
 #' fp$add_guard(key, "key_auth")
 #'
@@ -86,12 +86,25 @@ Fireproof <- R6::R6Class(
   "Fireproof",
   inherit = Route,
   public = list(
+    #' @description Print method for the class
+    #' @param ... Ignored
+    print = function(...) {
+      cat(
+        "A fireproof plugin with ",
+        length(private$GUARDS),
+        " guards and ",
+        sum(lengths(private$handlerMap)),
+        " handlers",
+        sep = ""
+      )
+    },
     #' @description Add a new authentication handler. It invisibly returns the
     #' parsed flow so it can be used for generating OpenAPI specs with.
     #' @param method The http method to match the handler to
     #' @param path The URL path to match to
     #' @param flow The authentication flow the request must pass to be valid.
-    #' See *Details*
+    #' See *Details*. If `NULL` then authentication is turned off for the
+    #' endpoint.
     #' @param scope An optional character vector of scopes that the request must
     #' have permission for to access the resource
     #'
@@ -102,6 +115,13 @@ Fireproof <- R6::R6Class(
       scope = NULL
     ) {
       flow <- parse_auth_flow({{ flow }})
+
+      # If flow is NULL, turn off auth for the endpoint
+      if (is.null(flow)) {
+        super$add_handler(method, path, function(...) TRUE)
+        invisible(NULL)
+      }
+
       guards <- unique(unlist(flow))
       check_character(scope, allow_na = FALSE, allow_null = TRUE)
 
@@ -133,13 +153,10 @@ Fireproof <- R6::R6Class(
             return(response$status < 300)
           }
           if (!is.null(scope)) {
-            has_sufficient_scope <- lapply(guards, function(auth) {
-              all(scope %in% session[[auth]]$scopes)
-            })
-            success <- eval_op(
-              flow,
-              set_names(has_sufficient_scope, guards)
-            )
+            provided_scopes <- uniqie(unlist(lapply(guards, function(auth) {
+              session[[auth]]$scopes
+            })))
+            success <- all(scope %in% provided_scopes)
             if (!success) {
               succeeded <- names(pass)[vapply(pass, isTRUE, logical(1))]
               lapply(private$FORBID[succeeded], function(fun) {
@@ -310,6 +327,9 @@ Fireproof <- R6::R6Class(
 true_fun <- function(...) TRUE
 parse_auth_flow <- function(expr) {
   flow <- quo_squash(enexpr(expr))
+  if (is.null(flow)) {
+    return(NULL)
+  }
   if (is_call(flow) && is_symbol(flow[[1]], "(")) {
     flow <- flow[[2]]
   }

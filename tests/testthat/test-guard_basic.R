@@ -1,13 +1,13 @@
 test_that("guard_basic can be constructed and verify", {
   auth <- guard_basic(
-    authenticator = function(username, password) {
+    validate = function(username, password) {
       if (username == "thomas" && password == "pedersen") {
         return("scope1")
       }
       FALSE
     },
-    user_info = function(user, setter) {
-      setter(
+    user_info = function(user) {
+      new_user_info(
         name_given = "Thomas"
       )
     },
@@ -102,7 +102,12 @@ test_that("guard_basic can be constructed and verify", {
   expect_true(pass)
   expect_equal(
     session$test2,
-    user_info(id = "thomas", name_given = "Thomas", scopes = "scope1")
+    new_user_info(
+      provider = "local",
+      id = "thomas",
+      name_given = "Thomas",
+      scopes = "scope1"
+    )
   )
   auth$forbid_user(good_auth$respond(), .session = session)
   expect_equal(good_auth$response$status, 403L)
@@ -111,7 +116,7 @@ test_that("guard_basic can be constructed and verify", {
 
 test_that("guard_basic passes if session already has valid user info", {
   auth <- guard_basic(
-    authenticator = function(username, password) {
+    validate = function(username, password) {
       if (username == "thomas" && password == "pedersen") {
         return("scope1")
       }
@@ -122,7 +127,7 @@ test_that("guard_basic passes if session already has valid user info", {
 
   session <- new.env()
   # Pre-populate session with user info from previous authentication
-  session$session_test <- user_info(
+  session$session_test <- new_user_info(
     provider = "local",
     id = "thomas",
     name_given = "Thomas",
@@ -143,5 +148,8 @@ test_that("guard_basic passes if session already has valid user info", {
   expect_true(pass)
   # Session should remain unchanged
   expect_equal(session$session_test$id, "thomas")
-  expect_equal(session$session_test$name, c(given = "Thomas", family = "Pedersen"))
+  expect_equal(
+    session$session_test$name,
+    c(given = "Thomas", family = "Pedersen")
+  )
 })

@@ -25,7 +25,7 @@
 #' `userinfo_endpoint` of the service if `request_user_info = TRUE`. You can see
 #' a list of standard user information defined by OpenID Connect at the
 #' [OpenID website](https://openid.net/specs/openid-connect-core-1_0.html#StandardClaims).
-#' The mapping of these to [user_info()] is as follows:
+#' The mapping of these to [new_user_info()] is as follows:
 #'
 #' - `sub` -> `id`
 #' - `name` -> `name_display`
@@ -347,13 +347,7 @@ GuardOIDC <- R6::R6Class(
       scope <- if (!is.null(content$scope)) {
         strsplit(content$scope, " ", fixed = TRUE)[[1]]
       }
-      setter <- oauth_user_info_setter(
-        session,
-        private$NAME,
-        content,
-        scope %||% private$SCOPES %||% character()
-      )
-      setter(
+      session[[private$NAME]] <- new_user_info(
         provider = private$SERVICE_NAME,
         id = jwt$sub,
         name_display = jwt$name,
@@ -362,6 +356,8 @@ GuardOIDC <- R6::R6Class(
         name_family = jwt$family_name,
         emails = jwt$email,
         photos = jwt$picture,
+        token = content,
+        scopes = scope %||% private$SCOPES %||% character(),
         .raw = jwt
       )
     },

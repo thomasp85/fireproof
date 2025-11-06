@@ -41,12 +41,12 @@ proof <- Fireproof$new()
 
 # Create two different guards
 key_auth <- guard_key(
-  key = "FireproofKey",
-  secret = "VerySecretString",
+  key_name = "FireproofKey",
+  validate = "VerySecretString",
   cookie = FALSE
 )
 basic_auth <- guard_basic(
-  authenticator = function(user, password, ...) {
+  validate = function(user, password, ...) {
     user == "thomas" && password == "1234"
   }
 )

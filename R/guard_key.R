@@ -17,13 +17,13 @@
 #' `guard_key()` automatically adds [user information][user_info] after
 #' authentication. By default it will set the `provider` field to `"local"`.
 #' Further, it will set the `scopes` field to any scopes returned by the
-#' `authenticator` function.
+#' `validate` function (provided `validate` is passed a function).
 #'
 #' Since Key based authentication is seldom used with user specific keys it is
 #' unlikely that it makes sense to populate the information any further.
 #'
-#' @param key The name of the header or cookie to store the secret under
-#' @param secret The secret to check for. Either a single string with the secret
+#' @param key_name The name of the header or cookie to store the secret under
+#' @param validate Either a single string with the secret
 #' or a function that will be called with the arguments `key`, `request`, and
 #' `response` and returns `TRUE` if its a valid secret (useful if you have
 #' multiple or rotating secrets). If the function returns a character vector it
@@ -31,10 +31,9 @@
 #' scopes the user is granted. Make sure never to store secrets in plain text
 #' and avoid checking them into version control.
 #' @param user_info A function to extract user information from the
-#' username. It is called with two arguments: `key` and `setter`,
-#' the first being the key used for the successful authentication, the
-#' second being a function that must be called in the end with the relevant
-#' information (see [user_info()]).
+#' key. It is called with a single argument: `key` which is the key
+#' used for the successful authentication. The function should return a new
+#' [user_info][new_user_info] list.
 #' @param cookie Boolean. Should the secret be transmitted as a cookie. If
 #' `FALSE` it is expected to be transmitted as a header.
 #' @inheritParams guard_basic
@@ -46,8 +45,8 @@
 #' @examples
 #' # Create a guard of dubious quality
 #' key <- guard_key(
-#'   key = "my-key-location",
-#'   secret = "SHHH!!DONT_TELL_ANYONE"
+#'   key_name = "my-key-location",
+#'   validate = "SHHH!!DONT_TELL_ANYONE"
 #' )
 #'
 #' # Add it to a fireproof plugin
@@ -58,15 +57,15 @@
 #' fp$add_auth("get", "/*", key_auth)
 #'
 guard_key <- function(
-  key,
-  secret,
+  key_name,
+  validate,
   user_info = NULL,
   cookie = TRUE,
   name = "KeyAuth"
 ) {
   GuardKey$new(
-    key = key,
-    secret = secret,
+    key_name = key_name,
+    validate = validate,
     user_info = user_info,
     cookie = cookie,
     name = name
@@ -85,7 +84,7 @@ guard_key <- function(
 #' # Create a guard of dubious quality
 #' key <- GuardKey$new(
 #'   key = "my-key-location",
-#'   secret = "SHHH!!DONT_TELL_ANYONE"
+#'   validate = "SHHH!!DONT_TELL_ANYONE"
 #' )
 #'
 GuardKey <- R6::R6Class(
@@ -93,8 +92,8 @@ GuardKey <- R6::R6Class(
   inherit = Guard,
   public = list(
     #' @description Constructor for the class
-    #' @param key The name of the header or cookie to store the secret under
-    #' @param secret The secret to check for. Either a single string with the secret
+    #' @param key_name The name of the header or cookie to store the secret under
+    #' @param validate Either a single string with the secret
     #' or a function that will be called with the arguments `key`, `request`, and
     #' `response` and returns `TRUE` if its a valid secret (useful if you have
     #' multiple or rotating secrets). If the function returns a character vector it
@@ -102,16 +101,15 @@ GuardKey <- R6::R6Class(
     #' scopes the user is granted. Make sure never to store secrets in plain text
     #' and avoid checking them into version control.
     #' @param user_info A function to extract user information from the
-    #' username. It is called with two arguments: `token` and `setter`,
-    #' the first being the key used for the successful authentication, the
-    #' second being a function that must be called in the end with the relevant
-    #' information (see [user_info()]).
+    #' key. It is called with a single argument: `key` which is the key
+    #' used for the successful authentication. The function should return a new
+    #' [user_info][new_user_info] list.
     #' @param cookie Boolean. Should the secret be transmitted as a cookie. If
     #' `FALSE` it is expected to be transmitted as a header.
     #' @param name The name of the scheme instance
     initialize = function(
-      key,
-      secret,
+      key_name,
+      validate,
       user_info = NULL,
       cookie = TRUE,
       name = NULL
@@ -119,20 +117,20 @@ GuardKey <- R6::R6Class(
       super$initialize(
         name = name
       )
-      check_string(key)
-      private$KEY <- key
-      if (is_string(secret)) {
-        secret_string <- secret
-        secret <- function(key, ...) identical(key, secret_string)
+      check_string(key_name)
+      private$KEY <- key_name
+      if (is_string(validate)) {
+        secret_string <- validate
+        validate <- function(key, ...) identical(key, secret_string)
       }
-      check_function(secret)
-      private$SECRET <- with_dots(secret)
+      check_function(validate)
+      private$VALIDATE <- with_dots(validate)
       check_bool(cookie)
       private$COOKIE <- cookie
 
       user_info <- user_info %||%
-        function(key, setter) {
-          setter()
+        function(key) {
+          new_user_info()
         }
       check_function(user_info)
       private$USER_INFO <- with_dots(user_info)
@@ -140,7 +138,7 @@ GuardKey <- R6::R6Class(
     #' @description A function that validates an incoming request, returning
     #' `TRUE` if it is valid and `FALSE` if not. It extracts the secret from
     #' either the cookie or header based on the provided `key` and test it
-    #' against the provided `secret`.
+    #' based on `validate`.
     #' @param request The request to validate as a [Request][reqres::Request]
     #' object
     #' @param response The corresponding response to the request as a
@@ -164,7 +162,7 @@ GuardKey <- R6::R6Class(
         if (is.null(key)) {
           return(FALSE)
         }
-        authenticated <- private$SECRET(
+        authenticated <- private$VALIDATE(
           key = key,
           request = request,
           response = response
@@ -175,9 +173,9 @@ GuardKey <- R6::R6Class(
           authenticated <- TRUE
         }
         if (authenticated) {
-          private$USER_INFO(
-            key = key,
-            setter = key_user_info_setter(.session, private$NAME, scopes)
+          .session[[private$NAME]] <- combine_info(
+            new_user_info(provider = "local", scopes = scopes),
+            private$USER_INFO(key)
           )
         } else {
           .session[[private$NAME]] <- list()
@@ -222,35 +220,8 @@ GuardKey <- R6::R6Class(
   ),
   private = list(
     KEY = "",
-    SECRET = "",
+    VALIDATE = "",
     COOKIE = TRUE,
     USER_INFO = NULL
   )
 )
-
-key_user_info_setter <- function(session, name, scopes) {
-  function(
-    provider = "local",
-    id = NULL,
-    name_display = NULL,
-    name_given = NULL,
-    name_middle = NULL,
-    name_family = NULL,
-    emails = NULL,
-    photos = NULL,
-    ...
-  ) {
-    session[[name]] <- user_info(
-      provider = provider,
-      id = id,
-      name_display = name_display,
-      name_given = name_given,
-      name_middle = name_middle,
-      name_family = name_family,
-      emails = emails,
-      photos = photos,
-      scopes = scopes,
-      ...
-    )
-  }
-}

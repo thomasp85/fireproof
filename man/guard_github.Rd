@@ -31,7 +31,9 @@ called with a single argument \code{info}, which gets the information of the use
 as provided by the \code{user_info} function in the. By default it returns \code{TRUE}
 on everything meaning that anyone who can log in with the provider will
 be accepted, but you can provide a different function to e.g. restrict
-access to certain user names etc.}
+access to certain user names etc. If the function returns a
+character vector it is considered to be authenticated and the return value
+will be understood as scopes the user is granted.}
     \item{\code{redirect_path}}{The path that should capture redirects after
 successful authorization. By default this is derived from \code{redirect_url}
 by removing the domain part of the url, but if for some reason this

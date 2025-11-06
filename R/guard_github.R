@@ -57,7 +57,7 @@ guard_github <- function(
     client_id = client_id,
     client_secret = client_secret,
     auth_url = "https://github.com/login/oauth/authorize",
-    user_info = function(token_info, setter) {
+    user_info = function(token_info) {
       ch <- curl::new_handle()
       curl::handle_setheaders(
         ch,
@@ -67,7 +67,7 @@ guard_github <- function(
         url = "https://api.github.com/user",
       )
       info <- jsonlite::parse_json(rawToChar(info$content))
-      setter(
+      new_user_info(
         provider = "github",
         id = info$id,
         name_display = info$name,

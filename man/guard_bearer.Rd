@@ -5,7 +5,7 @@
 \title{Bearer authentication guard}
 \usage{
 guard_bearer(
-  authenticator,
+  validate,
   user_info = NULL,
   realm = "private",
   allow_body_token = TRUE,
@@ -14,17 +14,16 @@ guard_bearer(
 )
 }
 \arguments{
-\item{authenticator}{A function that will be called with the arguments
+\item{validate}{A function that will be called with the arguments
 \code{token}, \code{realm}, \code{request}, and \code{response} and returns \code{TRUE} if the token
 is valid, and \code{FALSE} otherwise. If the function returns a character vector
 it is considered to be authenticated and the return value will be understood
 as scopes the user is granted.}
 
 \item{user_info}{A function to extract user information from the
-username. It is called with two arguments: \code{token} and \code{setter},
-the first being the token used for the successful authentication, the
-second being a function that must be called in the end with the relevant
-information (see \code{\link[=user_info]{user_info()}}).}
+token. It is called with a single argument: \code{token} which is the token
+used for the successful authentication. The function should return a new
+\link[=new_user_info]{user_info} list.}
 
 \item{realm}{The realm this authentication corresponds to. Will be returned
 to the client on a failed authentication attempt to inform them of the
@@ -38,8 +37,7 @@ header.}
 \item{allow_query_token}{Should it be allowed to pass the token in the query
 string of the url with the \code{access_token} name. Default to \code{FALSE} due to
 severe security implications but can be turned on if you have very
-well-thought-out reasons to do so.
-to the \code{authenticator} function.}
+well-thought-out reasons to do so.}
 
 \item{name}{The name of the authentication}
 }
@@ -92,11 +90,11 @@ OAuth 2.0 and OpenID Connect services.
 \examples{
 # Create a guard of dubious quality
 bearer <- guard_bearer(
-  authenticator = function(token) {
+  validate = function(token) {
     token == "abcd1234"
   },
-  user_info = function(user, setter) {
-    setter(
+  user_info = function(user) {
+    new_user_info(
       name_given = "Thomas",
       name_middle = "Lin",
       name_family = "Pedersen"

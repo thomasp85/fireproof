@@ -3,25 +3,16 @@
 #' Different services and authentication schemes may present user information in
 #' different ways. To ensure ease of interoperability, fireproof will attempt to
 #' standardize the information as it gets extracted by the service. This
-#' function will generally not be called directly but serves to document the
-#' different input that may be available in the `setter()` function that is
-#' passed to the `user_info` arguments function. See the *Value* section for a
-#' description on the structure of the stored information.
+#' function is intended to be called to construct the output of `user_info`
+#' function.
 #'
 #' # Setting user information
 #' Each authentication scheme will write to a field in the session data store
 #' named after its own name. What gets written can sometimes be influenced by
 #' the user by passing in a function to the `user_info` argument of the
-#' constructor. This function will, among other information be provided with a
-#' `setter()` function which takes the same arguments as described above and
-#' automatically assigns the result to the correct part of the session data
-#' store. In some cases one or more of the arguments will have a default value
-#' assigned (e.g. for [guard_basic()], the `setter()` will have `id` default to
-#' the username). Further, the setter will also set the `scopes` field to the
-#' `scopes` reported for the user, the `token` field with information about the
-#' token (for [guard_bearer()], [guard_oauth2()] and [guard_oidc()]), and the
-#' `.raw` field with the raw user info value returned by the service (for
-#' [guard_oidc()] and some predefined OAuth2 providers such as [guard_github()])
+#' constructor. This output of this function will be combined with default
+#' information from the guard before being saved in the session storage (e.g.
+#' the `scopes` field is always created automatically).
 #'
 #' @param provider A string naming the provider of the user information
 #' @param id A unique identifier of this user
@@ -44,7 +35,7 @@
 #' @export
 #'
 #' @examples
-#' user_info(
+#' new_user_info(
 #'   provider = "local",
 #'   id = 1234,
 #'   name_display = "thomasp85",
@@ -54,7 +45,7 @@
 #' )
 #'
 #'
-user_info <- function(
+new_user_info <- function(
   provider = NULL,
   id = NULL,
   name_display = NULL,
@@ -90,4 +81,13 @@ print.firesale_user_info <- function(x, ...) {
   for (name in names(x)) {
     cat(name, ": ", format(x[name]), "\n", sep = "")
   }
+}
+
+combine_info <- function(default, new) {
+  carry_over <- setdiff(
+    names(default)[!vapply(default, is.null, logical(1))],
+    names(new)[!vapply(new, is.null, logical(1))]
+  )
+  new[carry_over] <- default[carry_over]
+  new
 }

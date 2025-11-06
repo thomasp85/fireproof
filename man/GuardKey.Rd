@@ -11,7 +11,7 @@ This class encapsulates the logic of the key based authentication scheme. See
 # Create a guard of dubious quality
 key <- GuardKey$new(
   key = "my-key-location",
-  secret = "SHHH!!DONT_TELL_ANYONE"
+  validate = "SHHH!!DONT_TELL_ANYONE"
 )
 
 }
@@ -51,15 +51,15 @@ key <- GuardKey$new(
 \subsection{Method \code{new()}}{
 Constructor for the class
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{GuardKey$new(key, secret, user_info = NULL, cookie = TRUE, name = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{GuardKey$new(key_name, validate, user_info = NULL, cookie = TRUE, name = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{key}}{The name of the header or cookie to store the secret under}
+\item{\code{key_name}}{The name of the header or cookie to store the secret under}
 
-\item{\code{secret}}{The secret to check for. Either a single string with the secret
+\item{\code{validate}}{Either a single string with the secret
 or a function that will be called with the arguments \code{key}, \code{request}, and
 \code{response} and returns \code{TRUE} if its a valid secret (useful if you have
 multiple or rotating secrets). If the function returns a character vector it
@@ -68,10 +68,9 @@ scopes the user is granted. Make sure never to store secrets in plain text
 and avoid checking them into version control.}
 
 \item{\code{user_info}}{A function to extract user information from the
-username. It is called with two arguments: \code{token} and \code{setter},
-the first being the key used for the successful authentication, the
-second being a function that must be called in the end with the relevant
-information (see \code{\link[=user_info]{user_info()}}).}
+key. It is called with a single argument: \code{key} which is the key
+used for the successful authentication. The function should return a new
+\link[=new_user_info]{user_info} list.}
 
 \item{\code{cookie}}{Boolean. Should the secret be transmitted as a cookie. If
 \code{FALSE} it is expected to be transmitted as a header.}
@@ -88,7 +87,7 @@ information (see \code{\link[=user_info]{user_info()}}).}
 A function that validates an incoming request, returning
 \code{TRUE} if it is valid and \code{FALSE} if not. It extracts the secret from
 either the cookie or header based on the provided \code{key} and test it
-against the provided \code{secret}.
+based on \code{validate}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{GuardKey$check_request(request, response, keys, ..., .session)}\if{html}{\out{</div>}}
 }

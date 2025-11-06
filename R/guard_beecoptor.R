@@ -41,12 +41,12 @@ guard_beeceptor_github <- function(
     client_secret = "ABCD",
     auth_url = "https://oauth-mock.mock.beeceptor.com/oauth/authorize",
     grant_type = "authorization_code",
-    user_info = function(token_info, setter) {
+    user_info = function(token_info) {
       info <- curl::curl_fetch_memory(
         url = "https://oauth-mock.mock.beeceptor.com/userinfo/github",
       )
       info <- jsonlite::parse_json(rawToChar(info$content))
-      setter(
+      new_user_info(
         provider = "beeceptor",
         id = info$id,
         name_display = info$name,
@@ -75,12 +75,12 @@ guard_beeceptor_google <- function(
     client_secret = "ABCD",
     auth_url = "https://oauth-mock.mock.beeceptor.com/oauth/authorize",
     grant_type = "authorization_code",
-    user_info = function(token_info, setter) {
+    user_info = function(token_info) {
       info <- curl::curl_fetch_memory(
         url = "https://oauth-mock.mock.beeceptor.com/userinfo/google",
       )
       info <- jsonlite::parse_json(rawToChar(info$content))
-      setter(
+      new_user_info(
         provider = "beeceptor",
         id = info$sub,
         name_display = info$name,

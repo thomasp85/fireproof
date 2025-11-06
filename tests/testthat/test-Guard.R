@@ -97,16 +97,16 @@ test_that("is_auth identifies Guard objects", {
   expect_false(is_guard(list()))
 })
 
-test_that("is_auth identifies Guard subclasses", {
+test_that("is_guard identifies Guard subclasses", {
   basic <- guard_basic(
-    authenticator = function(username, password) TRUE,
+    validate = function(username, password) TRUE,
     name = "basic_test"
   )
   expect_true(is_guard(basic))
 
   key <- guard_key(
-    key = "api-key",
-    secret = "secret",
+    key_name = "api-key",
+    validate = "secret",
     name = "key_test"
   )
   expect_true(is_guard(key))

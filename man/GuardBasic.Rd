@@ -11,11 +11,11 @@ See \code{\link[=guard_basic]{guard_basic()}} for more information.
 \examples{
 # Create a guard of dubious quality
 basic <- GuardBasic$new(
-  authenticator = function(user, password) {
+  validate = function(user, password) {
     user == "thomas" && password == "pedersen"
   },
-  user_info = function(user, setter) {
-    setter(
+  user_info = function(user) {
+    new_user_info(
       name_given = "Thomas",
       name_middle = "Lin",
       name_family = "Pedersen"
@@ -57,23 +57,22 @@ basic <- GuardBasic$new(
 \subsection{Method \code{new()}}{
 Constructor for the class
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{GuardBasic$new(authenticator, user_info = NULL, realm = "private", name = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{GuardBasic$new(validate, user_info = NULL, realm = "private", name = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{authenticator}}{A function that will be called with the arguments
+\item{\code{validate}}{A function that will be called with the arguments
 \code{username}, \code{password}, \code{realm}, \code{request}, and \code{response} and returns \code{TRUE}
 if the user is valid, and \code{FALSE} otherwise. If the function returns a
 character vector it is considered to be authenticated and the return value
 will be understood as scopes the user is granted.}
 
 \item{\code{user_info}}{A function to extract user information from the
-username. It is called with two arguments: \code{user} and \code{setter},
-the first being the username used for the successful authentication, the
-second being a function that must be called in the end with the relevant
-information (see \code{\link[=user_info]{user_info()}}).}
+username. It is called with a single argument: \code{user} which is the username
+used for the successful authentication. The function should return a new
+\link[=new_user_info]{user_info} list.}
 
 \item{\code{realm}}{The realm this authentication corresponds to. Will be returned
 to the client on a failed authentication attempt to inform them of the
@@ -91,7 +90,7 @@ credentials required, though most often these days it is kept from the user.}
 A function that validates an incoming request, returning
 \code{TRUE} if it is valid and \code{FALSE} if not. It decodes the credentials in
 the \code{Authorization} header, splits it into username and password and then
-calls the authenticator function provided at construction.
+calls the \code{validate} function provided at construction.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{GuardBasic$check_request(request, response, keys, ..., .session)}\if{html}{\out{</div>}}
 }

@@ -18,17 +18,16 @@
 #' the `id` field to the username used for logging in. Further, it will set
 #' the `scopes` field to any scopes returned by the `authenticator` function.
 #'
-#' @param authenticator A function that will be called with the arguments
+#' @param validate A function that will be called with the arguments
 #' `username`, `password`, `realm`, `request`, and `response` and returns `TRUE`
 #' if the user is valid, and `FALSE` otherwise. If the function returns a
 #' character vector it is considered to be authenticated and the return value
 #' will be understood as scopes the user is granted.
 #' @param name The name of the guard
 #' @param user_info A function to extract user information from the
-#' username. It is called with two arguments: `user` and `setter`,
-#' the first being the username used for the successful authentication, the
-#' second being a function that must be called in the end with the relevant
-#' information (see [user_info()]).
+#' username. It is called with a single argument: `user` which is the username
+#' used for the successful authentication. The function should return a new
+#' [user_info][new_user_info] list.
 #' @param realm The realm this authentication corresponds to. Will be returned
 #' to the client on a failed authentication attempt to inform them of the
 #' credentials required, though most often these days it is kept from the user.
@@ -41,11 +40,11 @@
 #' @examples
 #' # Create a guard of dubious quality
 #' basic <- guard_basic(
-#'   authenticator = function(user, password) {
+#'   validate = function(user, password) {
 #'     user == "thomas" && password == "pedersen"
 #'   },
-#'   user_info = function(user, setter) {
-#'     setter(
+#'   user_info = function(user) {
+#'     new_user_info(
 #'       name_given = "Thomas",
 #'       name_middle = "Lin",
 #'       name_family = "Pedersen"
@@ -61,13 +60,13 @@
 #' fp$add_auth("get", "/*", basic_auth)
 #'
 guard_basic <- function(
-  authenticator,
+  validate,
   user_info = NULL,
   realm = "private",
   name = "BasicAuth"
 ) {
   GuardBasic$new(
-    authenticator = authenticator,
+    validate = validate,
     user_info = user_info,
     realm = realm,
     name = name
@@ -110,11 +109,11 @@ dplyr_authenticator <- function(
 #' @examples
 #' # Create a guard of dubious quality
 #' basic <- GuardBasic$new(
-#'   authenticator = function(user, password) {
+#'   validate = function(user, password) {
 #'     user == "thomas" && password == "pedersen"
 #'   },
-#'   user_info = function(user, setter) {
-#'     setter(
+#'   user_info = function(user) {
+#'     new_user_info(
 #'       name_given = "Thomas",
 #'       name_middle = "Lin",
 #'       name_family = "Pedersen"
@@ -127,22 +126,21 @@ GuardBasic <- R6::R6Class(
   inherit = Guard,
   public = list(
     #' @description Constructor for the class
-    #' @param authenticator A function that will be called with the arguments
+    #' @param validate A function that will be called with the arguments
     #' `username`, `password`, `realm`, `request`, and `response` and returns `TRUE`
     #' if the user is valid, and `FALSE` otherwise. If the function returns a
     #' character vector it is considered to be authenticated and the return value
     #' will be understood as scopes the user is granted.
     #' @param user_info A function to extract user information from the
-    #' username. It is called with two arguments: `user` and `setter`,
-    #' the first being the username used for the successful authentication, the
-    #' second being a function that must be called in the end with the relevant
-    #' information (see [user_info()]).
+    #' username. It is called with a single argument: `user` which is the username
+    #' used for the successful authentication. The function should return a new
+    #' [user_info][new_user_info] list.
     #' @param realm The realm this authentication corresponds to. Will be returned
     #' to the client on a failed authentication attempt to inform them of the
     #' credentials required, though most often these days it is kept from the user.
     #' @param name The name of the authentication
     initialize = function(
-      authenticator,
+      validate,
       user_info = NULL,
       realm = "private",
       name = NULL
@@ -150,21 +148,21 @@ GuardBasic <- R6::R6Class(
       super$initialize(
         name = name
       )
-      check_function(authenticator)
-      private$AUTHENTICATOR <- with_dots(authenticator)
+      check_function(validate)
+      private$VALIDATE <- with_dots(validate)
       check_string(realm)
       private$REALM <- realm
 
       user_info <- user_info %||%
-        function(user, setter) {
-          setter(id = user)
+        function(user) {
+          new_user_info()
         }
       private$USER_INFO <- with_dots(user_info)
     },
     #' @description A function that validates an incoming request, returning
     #' `TRUE` if it is valid and `FALSE` if not. It decodes the credentials in
     #' the `Authorization` header, splits it into username and password and then
-    #' calls the authenticator function provided at construction.
+    #' calls the `validate` function provided at construction.
     #' @param request The request to validate as a [Request][reqres::Request]
     #' object
     #' @param response The corresponding response to the request as a
@@ -189,7 +187,7 @@ GuardBasic <- R6::R6Class(
           reqres::abort_bad_request("Malformed Authorization header")
         }
         response$set_data("auth_username", auth[1])
-        authenticated <- private$AUTHENTICATOR(
+        authenticated <- private$VALIDATE(
           username = auth[1],
           password = auth[2],
           realm = private$REALM,
@@ -202,9 +200,9 @@ GuardBasic <- R6::R6Class(
           authenticated <- TRUE
         }
         if (authenticated) {
-          private$USER_INFO(
-            user = auth[1],
-            setter = basic_user_info_setter(.session, private$NAME, auth[1], scopes)
+          .session[[private$NAME]] <- combine_info(
+            new_user_info(provider = "local", id = auth[1], scopes = scopes),
+            private$USER_INFO(auth[1])
           )
         } else {
           .session[[private$NAME]] <- list()
@@ -244,34 +242,8 @@ GuardBasic <- R6::R6Class(
     }
   ),
   private = list(
-    AUTHENTICATOR = NULL,
+    VALIDATE = NULL,
     REALM = "",
     USER_INFO = NULL
   )
 )
-
-basic_user_info_setter <- function(session, name, user, scopes) {
-  function(
-    provider = "local",
-    id = user,
-    name_display = NULL,
-    name_given = NULL,
-    name_middle = NULL,
-    name_family = NULL,
-    emails = NULL,
-    photos = NULL,
-    ...
-  ) {
-    session[[name]] <- user_info(
-      id = id,
-      name_display = name_display,
-      name_given = name_given,
-      name_middle = name_middle,
-      name_family = name_family,
-      emails = emails,
-      photos = photos,
-      scopes = scopes,
-      ...
-    )
-  }
-}

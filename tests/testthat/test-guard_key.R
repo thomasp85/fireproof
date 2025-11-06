@@ -1,14 +1,14 @@
 test_that("guard_key can be constructed and verify", {
   auth <- guard_key(
-    key = "x-api-key",
-    secret = function(key, request, response) {
+    key_name = "x-api-key",
+    validate = function(key, request, response) {
       if (key == "secret123") {
         return("scope1")
       }
       FALSE
     },
-    user_info = function(key, setter) {
-      setter(
+    user_info = function(key) {
+      new_user_info(
         name_given = "API User"
       )
     },
@@ -72,7 +72,7 @@ test_that("guard_key can be constructed and verify", {
   expect_true(pass)
   expect_equal(
     session$test2,
-    user_info(id = NULL, provider = "local", name_given = "API User", scopes = "scope1")
+    new_user_info(id = NULL, provider = "local", name_given = "API User", scopes = "scope1")
   )
   auth$forbid_user(good_auth$respond(), .session = session)
   expect_equal(good_auth$response$status, 403L)
@@ -81,8 +81,8 @@ test_that("guard_key can be constructed and verify", {
 
 test_that("guard_key works with cookie-based authentication", {
   auth <- guard_key(
-    key = "api_token",
-    secret = "my_secret_token",
+    key_name = "api_token",
+    validate = "my_secret_token",
     cookie = TRUE,
     name = "cookie_test"
   )
@@ -107,14 +107,14 @@ test_that("guard_key works with cookie-based authentication", {
   expect_true(pass)
   expect_equal(
     session$cookie_test,
-    user_info(provider = "local", scopes = character(0))
+    new_user_info(provider = "local", scopes = character(0))
   )
 })
 
 test_that("guard_key works with simple string secret", {
   auth <- guard_key(
-    key = "authorization",
-    secret = "simple_secret",
+    key_name = "authorization",
+    validate = "simple_secret",
     cookie = FALSE,
     name = "string_test"
   )
@@ -154,8 +154,8 @@ test_that("guard_key works with simple string secret", {
 
 test_that("guard_key respects existing response status on rejection", {
   auth <- guard_key(
-    key = "x-api-key",
-    secret = "my_secret",
+    key_name = "x-api-key",
+    validate = "my_secret",
     cookie = FALSE,
     name = "status_test"
   )
@@ -172,15 +172,15 @@ test_that("guard_key respects existing response status on rejection", {
 
 test_that("guard_key passes if session already has valid user info", {
   auth <- guard_key(
-    key = "x-api-key",
-    secret = "my_secret",
+    key_name = "x-api-key",
+    validate = "my_secret",
     cookie = FALSE,
     name = "session_test"
   )
 
   session <- new.env()
   # Pre-populate session with user info from previous authentication
-  session$session_test <- user_info(
+  session$session_test <- new_user_info(
     provider = "local",
     id = "user123",
     name_given = "Existing User",

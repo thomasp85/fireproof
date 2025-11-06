@@ -77,55 +77,11 @@ test_that("guard_oidc inherits session-based authentication from OAuth2", {
   expect_false(pass)
 
   # With valid session - should pass
-  session$session_test <- user_info(
+  session$session_test <- new_user_info(
     provider = "example",
     id = "sub_123",
     name_display = "John Doe",
     scopes = c("openid", "profile", "email")
-  )
-
-  pass <- auth$check_request(
-    request = request,
-    response = request$respond(),
-    keys = list(),
-    .session = session
-  )
-  expect_true(pass)
-})
-
-test_that("guard_oidc validates with custom validate function", {
-  auth <- guard_oidc(
-    service_url = "https://accounts.example.com",
-    redirect_url = "https://myapp.com/auth/callback",
-    client_id = "my_client_id",
-    client_secret = "my_client_secret",
-    validate = function(info) {
-      info$provider == "trusted_provider"
-    },
-    name = "validate_test"
-  )
-
-  session <- new.env()
-  request <- reqres::Request$new(fiery::fake_request("http://example.com"))
-
-  # Wrong provider
-  session$validate_test <- user_info(
-    provider = "untrusted",
-    id = "sub_123"
-  )
-
-  pass <- auth$check_request(
-    request = request,
-    response = request$respond(),
-    keys = list(),
-    .session = session
-  )
-  expect_false(pass)
-
-  # Correct provider
-  session$validate_test <- user_info(
-    provider = "trusted_provider",
-    id = "sub_123"
   )
 
   pass <- auth$check_request(

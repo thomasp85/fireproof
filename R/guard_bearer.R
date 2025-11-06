@@ -40,17 +40,16 @@
 #' This structure mimics the structure of the token information returned by
 #' OAuth 2.0 and OpenID Connect services.
 #'
-#' @param authenticator A function that will be called with the arguments
+#' @param validate A function that will be called with the arguments
 #' `token`, `realm`, `request`, and `response` and returns `TRUE` if the token
 #' is valid, and `FALSE` otherwise. If the function returns a character vector
 #' it is considered to be authenticated and the return value will be understood
 #' as scopes the user is granted.
 #' @param name The name of the authentication
 #' @param user_info A function to extract user information from the
-#' username. It is called with two arguments: `token` and `setter`,
-#' the first being the token used for the successful authentication, the
-#' second being a function that must be called in the end with the relevant
-#' information (see [user_info()]).
+#' token. It is called with a single argument: `token` which is the token
+#' used for the successful authentication. The function should return a new
+#' [user_info][new_user_info] list.
 #' @param realm The realm this authentication corresponds to. Will be returned
 #' to the client on a failed authentication attempt to inform them of the
 #' credentials required, though most often these days it is kept from the user.
@@ -62,7 +61,6 @@
 #' string of the url with the `access_token` name. Default to `FALSE` due to
 #' severe security implications but can be turned on if you have very
 #' well-thought-out reasons to do so.
-#' to the `authenticator` function.
 #'
 #' @return An [GuardBearer] R6 object
 #'
@@ -71,11 +69,11 @@
 #' @examples
 #' # Create a guard of dubious quality
 #' bearer <- guard_bearer(
-#'   authenticator = function(token) {
+#'   validate = function(token) {
 #'     token == "abcd1234"
 #'   },
-#'   user_info = function(user, setter) {
-#'     setter(
+#'   user_info = function(user) {
+#'     new_user_info(
 #'       name_given = "Thomas",
 #'       name_middle = "Lin",
 #'       name_family = "Pedersen"
@@ -92,7 +90,7 @@
 #' fp$add_auth("get", "/*", bearer_auth)
 #'
 guard_bearer <- function(
-  authenticator,
+  validate,
   user_info = NULL,
   realm = "private",
   allow_body_token = TRUE,
@@ -100,7 +98,7 @@ guard_bearer <- function(
   name = "BearerAuth"
 ) {
   GuardBearer$new(
-    authenticator = authenticator,
+    validate = validate,
     user_info = user_info,
     realm = realm,
     allow_body_token = allow_body_token,
@@ -121,11 +119,11 @@ guard_bearer <- function(
 #' @examples
 #' # Create a guard of dubious quality
 #' bearer <- GuardBearer$new(
-#'   authenticator = function(token) {
+#'   validate = function(token) {
 #'     token == "abcd1234"
 #'   },
-#'   user_info = function(user, setter) {
-#'     setter(
+#'   user_info = function(user) {
+#'     new_user_info(
 #'       name_given = "Thomas",
 #'       name_middle = "Lin",
 #'       name_family = "Pedersen"
@@ -138,16 +136,15 @@ GuardBearer <- R6::R6Class(
   inherit = Guard,
   public = list(
     #' @description Constructor for the class
-    #' @param authenticator A function that will be called with the arguments
+    #' @param validate A function that will be called with the arguments
     #' `token`, `realm`, `request`, and `response` and returns `TRUE` if the token
     #' is valid, and `FALSE` otherwise. If the function returns a character vector
     #' it is considered to be authenticated and the return value will be understood
     #' as scopes the user is granted.
     #' @param user_info A function to extract user information from the
-    #' username. It is called with two arguments: `token` and `setter`,
-    #' the first being the token used for the successful authentication, the
-    #' second being a function that must be called in the end with the relevant
-    #' information (see [user_info()]).
+    #' token. It is called with a single argument: `token` which is the token
+    #' used for the successful authentication. The function should return a new
+    #' [user_info][new_user_info] list.
     #' @param realm The realm this authentication corresponds to. Will be returned
     #' to the client on a failed authentication attempt to inform them of the
     #' credentials required, though most often these days it is kept from the user.
@@ -161,7 +158,7 @@ GuardBearer <- R6::R6Class(
     #' well-thought-out reasons to do so.
     #' @param name The name of the authentication
     initialize = function(
-      authenticator,
+      validate,
       user_info = NULL,
       realm = "private",
       allow_body_token = TRUE,
@@ -171,14 +168,14 @@ GuardBearer <- R6::R6Class(
       super$initialize(
         name = name
       )
-      check_function(authenticator)
-      private$AUTHENTICATOR <- with_dots(authenticator)
+      check_function(validate)
+      private$VALIDATE <- with_dots(validate)
       check_string(realm)
       private$REALM <- realm
 
       user_info <- user_info %||%
-        function(token, setter) {
-          setter()
+        function(token) {
+          new_user_info()
         }
       check_function(user_info)
       private$USER_INFO <- with_dots(user_info)
@@ -191,10 +188,9 @@ GuardBearer <- R6::R6Class(
     #' @description A function that validates an incoming request, returning
     #' `TRUE` if it is valid and `FALSE` if not. It fetches the token from the
     #' request according to the `allow_body_token` and `allow_query_token`
-    #' settings and validates it according to the provided authenticator. If the
-    #' token is present multiple times it will fail with `400` is this is not
-    #' allowed. It will store the token in the `auth_token` field of the
-    #' response data.
+    #' settings and validates it according to the provided function. If the
+    #' token is present multiple times it will fail with `400` as this is not
+    #' allowed.
     #' @param request The request to validate as a [Request][reqres::Request]
     #' object
     #' @param response The corresponding response to the request as a
@@ -246,7 +242,7 @@ GuardBearer <- R6::R6Class(
         scopes <- private$SCOPES %||% character()
         if (length(token) == 1) {
           .session[[private$NAME]] <- list()
-          authenticated <- private$AUTHENTICATOR(
+          authenticated <- private$VALIDATE(
             token = token,
             realm = private$REALM,
             request = request,
@@ -260,14 +256,17 @@ GuardBearer <- R6::R6Class(
           authenticated <- FALSE
         }
         if (authenticated) {
-          private$USER_INFO(
-            token = token,
-            setter = bearer_user_info_setter(
-              .session,
-              private$NAME,
-              token,
-              scopes
-            )
+          .session[[private$NAME]] <- combine_info(
+            new_user_info(
+              provider = "local",
+              scopes = scopes,
+              token = list(
+                access_token = token,
+                token_type = "bearer",
+                scope = scopes
+              )
+            ),
+            private$USER_INFO(token)
           )
         }
         authenticated
@@ -319,42 +318,10 @@ GuardBearer <- R6::R6Class(
     }
   ),
   private = list(
-    AUTHENTICATOR = NULL,
+    VALIDATE = NULL,
     REALM = "",
     USER_INFO = NULL,
     ALLOW_BODY = TRUE,
     ALLOW_QUERY = FALSE
   )
 )
-
-bearer_user_info_setter <- function(session, name, token, scopes) {
-  function(
-    provider = "local",
-    id = NULL,
-    name_display = NULL,
-    name_given = NULL,
-    name_middle = NULL,
-    name_family = NULL,
-    emails = NULL,
-    photos = NULL,
-    ...
-  ) {
-    session[[name]] <- user_info(
-      provider = provider,
-      id = id,
-      name_display = name_display,
-      name_given = name_given,
-      name_middle = name_middle,
-      name_family = name_family,
-      emails = emails,
-      photos = photos,
-      scopes = scopes,
-      token = list(
-        access_token = token,
-        token_type = "bearer",
-        scope = paste0(scopes, collapse = " ")
-      ),
-      ...
-    )
-  }
-}

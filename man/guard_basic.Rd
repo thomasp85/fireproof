@@ -4,25 +4,19 @@
 \alias{guard_basic}
 \title{Basic authentication guard}
 \usage{
-guard_basic(
-  authenticator,
-  user_info = NULL,
-  realm = "private",
-  name = "BasicAuth"
-)
+guard_basic(validate, user_info = NULL, realm = "private", name = "BasicAuth")
 }
 \arguments{
-\item{authenticator}{A function that will be called with the arguments
+\item{validate}{A function that will be called with the arguments
 \code{username}, \code{password}, \code{realm}, \code{request}, and \code{response} and returns \code{TRUE}
 if the user is valid, and \code{FALSE} otherwise. If the function returns a
 character vector it is considered to be authenticated and the return value
 will be understood as scopes the user is granted.}
 
 \item{user_info}{A function to extract user information from the
-username. It is called with two arguments: \code{user} and \code{setter},
-the first being the username used for the successful authentication, the
-second being a function that must be called in the end with the relevant
-information (see \code{\link[=user_info]{user_info()}}).}
+username. It is called with a single argument: \code{user} which is the username
+used for the successful authentication. The function should return a new
+\link[=new_user_info]{user_info} list.}
 
 \item{realm}{The realm this authentication corresponds to. Will be returned
 to the client on a failed authentication attempt to inform them of the
@@ -56,11 +50,11 @@ the \code{scopes} field to any scopes returned by the \code{authenticator} funct
 \examples{
 # Create a guard of dubious quality
 basic <- guard_basic(
-  authenticator = function(user, password) {
+  validate = function(user, password) {
     user == "thomas" && password == "pedersen"
   },
-  user_info = function(user, setter) {
-    setter(
+  user_info = function(user) {
+    new_user_info(
       name_given = "Thomas",
       name_middle = "Lin",
       name_family = "Pedersen"

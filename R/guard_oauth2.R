@@ -55,7 +55,9 @@
 #' as provided by the `user_info` function in the. By default it returns `TRUE`
 #' on everything meaning that anyone who can log in with the provider will
 #' be accepted, but you can provide a different function to e.g. restrict
-#' access to certain user names etc.
+#' access to certain user names etc. If the function returns a
+#' character vector it is considered to be authenticated and the return value
+#' will be understood as scopes the user is granted.
 #' @param redirect_path The path that should capture redirects after
 #' successful authorization. By default this is derived from `redirect_url`
 #' by removing the domain part of the url, but if for some reason this
@@ -71,11 +73,10 @@
 #' [replay_request] to internally replay the original request and send back
 #' the response.
 #' @param user_info A function to extract user information from the
-#' username. It is called with two arguments: `token_info` and `setter`,
-#' the first being the token information returned from the provider as a list
-#' (notably with a `token` field for the actual token), the second being a
-#' function that must be called in the end with the relevant information (see
-#' [user_info()]).
+#' access token. It is called with a single argument: `token_info` which is the
+#' access token information returned by the OAuth 2 server after a successful
+#' authentication. The function should return a new [user_info][new_user_info]
+#' list.
 #' @param service_params A named list of additional query params to add to
 #' the url when constructing the authorization url in the
 #' `"authorization_code"` grant type
@@ -177,10 +178,12 @@ GuardOAuth2 <- R6::R6Class(
     #' grant you during authorization
     #' @param validate Function to validate the user once logged in. It will be
     #' called with a single argument `info`, which gets the information of the user
-    #' as provided by the `user_info` function in the. By default it returns `TRUE`
+    #' as provided by the `user_info` function. By default it returns `TRUE`
     #' on everything meaning that anyone who can log in with the provider will
     #' be accepted, but you can provide a different function to e.g. restrict
-    #' access to certain user names etc.
+    #' access to certain user names etc. If the function returns a
+    #' character vector it is considered to be authenticated and the return value
+    #' will be understood as scopes the user is granted.
     #' @param redirect_path The path that should capture redirects after
     #' successful authorization. By default this is derived from `redirect_url`
     #' by removing the domain part of the url, but if for some reason this
@@ -196,11 +199,10 @@ GuardOAuth2 <- R6::R6Class(
     #' [replay_request] to internally replay the original request and send back
     #' the response.
     #' @param user_info A function to extract user information from the
-    #' username. It is called with two arguments: `token_info` and `setter`,
-    #' the first being the token information returned from the provider as a list
-    #' (notably with a `token` field for the actual token), the second being a
-    #' function that must be called in the end with the relevant information (see
-    #' [user_info()]).
+    #' access token. It is called with a single argument: `token_info` which is the
+    #' access token information returned by the OAuth 2 server after a successful
+    #' authentication. The function should return a new [user_info][new_user_info]
+    #' list.
     #' @param service_params A named list of additional query params to add to
     #' the url when constructing the authorization url in the
     #' `"authorization_code"` grant type
@@ -254,8 +256,8 @@ GuardOAuth2 <- R6::R6Class(
       private$ON_AUTH <- with_dots(on_auth)
 
       user_info <- user_info %||%
-        function(token_info, setter) {
-          setter()
+        function(token_info) {
+          new_user_info()
         }
       check_function(user_info)
       private$USER_INFO <- with_dots(user_info)
@@ -265,9 +267,7 @@ GuardOAuth2 <- R6::R6Class(
       private$SERVICE_PARAMS <- service_params
     },
     #' @description A function that validates an incoming request, returning
-    #' `TRUE` if it is valid and `FALSE` if not. It extracts the secret from
-    #' either the cookie or header based on the provided `key` and test it
-    #' against the provided `secret`.
+    #' `TRUE` if it is valid and `FALSE` if not.
     #' @param request The request to validate as a [Request][reqres::Request]
     #' object
     #' @param response The corresponding response to the request as a
@@ -280,8 +280,7 @@ GuardOAuth2 <- R6::R6Class(
     #' @param .session The session storage for the current session
     #'
     check_request = function(request, response, keys, ..., .session) {
-      info <- .session[[private$NAME]]
-      !is.null(info) && private$VALIDATE(info = info)
+      length(.session[[private$NAME]]) != 0
     },
     #' @description Upon rejection this scheme sets the response status to `400`
     #' if it has not already been set by others. In contrast to the other
@@ -478,9 +477,20 @@ GuardOAuth2 <- R6::R6Class(
           client_secret = private$CLIENT_SECRET
         )
         private$request_token(token_par, session)
-        if (!private$VALIDATE(info = session[[private$NAME]])) {
+        authorized <- private$VALIDATE(info = session[[private$NAME]])
+        scopes <- private$SCOPES %||% character()
+        if (is.character(authorized)) {
+          scopes <- authorized
+          authorized <- TRUE
+        }
+        if (!authorized) {
+          session[[private$NAME]] <- list()
           self$reject_response(response, .session = session)
         } else {
+          session[[private$NAME]]$scopes <- unique(
+            scopes,
+            session[[private$NAME]]$scopes
+          )
           response$status <- 200L
         }
       }
@@ -514,9 +524,20 @@ GuardOAuth2 <- R6::R6Class(
         token_par$redirect_uri <- private$REDIRECT_URL
       }
       private$request_token(token_par, session, session_state)
-      if (!private$VALIDATE(info = session[[private$NAME]])) {
+      authorized <- private$VALIDATE(info = session[[private$NAME]])
+      scopes <- private$SCOPES %||% character()
+      if (is.character(authorized)) {
+        scopes <- authorized
+        authorized <- TRUE
+      }
+      if (!authorized) {
+        session[[private$NAME]] <- list()
         self$reject_response(response, .session = session)
       } else {
+        session[[private$NAME]]$scopes <- unique(
+          scopes,
+          session[[private$NAME]]$scopes
+        )
         private$ON_AUTH(
           request = request,
           response = response,
@@ -557,14 +578,13 @@ GuardOAuth2 <- R6::R6Class(
       if (!is.null(content$scope)) {
         content$scope <- strsplit(content$scope, " ", fixed = TRUE)[[1]]
       }
-      private$USER_INFO(
-        token_info = content,
-        setter = oauth_user_info_setter(
-          session,
-          private$NAME,
-          content,
-          content$scope %||% private$SCOPES %||% character()
-        )
+      session[[private$NAME]] <- combine_info(
+        new_user_info(
+          provider = private$TOKEN_URL,
+          scopes = content$scope %||% private$SCOPES %||% character(),
+          token = content
+        ),
+        private$USER_INFO(content)
       )
     }
   )
@@ -591,34 +611,6 @@ url_safe_raw <- function(x) {
   x <- gsub("=*$", "", x, perl = TRUE)
   x <- gsub("+", "-", x, fixed = TRUE)
   gsub("/", "_", x, fixed = TRUE)
-}
-
-oauth_user_info_setter <- function(session, name, token, scopes) {
-  function(
-    provider = NULL,
-    id = NULL,
-    name_display = NULL,
-    name_given = NULL,
-    name_middle = NULL,
-    name_family = NULL,
-    emails = NULL,
-    photos = NULL,
-    ...
-  ) {
-    session[[name]] <- user_info(
-      provider = provider,
-      id = id,
-      name_display = name_display,
-      name_given = name_given,
-      name_middle = name_middle,
-      name_family = name_family,
-      emails = emails,
-      photos = photos,
-      scopes = scopes,
-      token = token,
-      ...
-    )
-  }
 }
 
 format_queryform <- function(data) {

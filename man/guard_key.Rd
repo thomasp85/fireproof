@@ -4,12 +4,18 @@
 \alias{guard_key}
 \title{Shared secret guard}
 \usage{
-guard_key(key, secret, user_info = NULL, cookie = TRUE, name = "KeyAuth")
+guard_key(
+  key_name,
+  validate,
+  user_info = NULL,
+  cookie = TRUE,
+  name = "KeyAuth"
+)
 }
 \arguments{
-\item{key}{The name of the header or cookie to store the secret under}
+\item{key_name}{The name of the header or cookie to store the secret under}
 
-\item{secret}{The secret to check for. Either a single string with the secret
+\item{validate}{Either a single string with the secret
 or a function that will be called with the arguments \code{key}, \code{request}, and
 \code{response} and returns \code{TRUE} if its a valid secret (useful if you have
 multiple or rotating secrets). If the function returns a character vector it
@@ -18,10 +24,9 @@ scopes the user is granted. Make sure never to store secrets in plain text
 and avoid checking them into version control.}
 
 \item{user_info}{A function to extract user information from the
-username. It is called with two arguments: \code{key} and \code{setter},
-the first being the key used for the successful authentication, the
-second being a function that must be called in the end with the relevant
-information (see \code{\link[=user_info]{user_info()}}).}
+key. It is called with a single argument: \code{key} which is the key
+used for the successful authentication. The function should return a new
+\link[=new_user_info]{user_info} list.}
 
 \item{cookie}{Boolean. Should the secret be transmitted as a cookie. If
 \code{FALSE} it is expected to be transmitted as a header.}
@@ -49,7 +54,7 @@ response status to something else.
 \code{guard_key()} automatically adds \link[=user_info]{user information} after
 authentication. By default it will set the \code{provider} field to \code{"local"}.
 Further, it will set the \code{scopes} field to any scopes returned by the
-\code{authenticator} function.
+\code{validate} function (provided \code{validate} is passed a function).
 
 Since Key based authentication is seldom used with user specific keys it is
 unlikely that it makes sense to populate the information any further.
@@ -58,8 +63,8 @@ unlikely that it makes sense to populate the information any further.
 \examples{
 # Create a guard of dubious quality
 key <- guard_key(
-  key = "my-key-location",
-  secret = "SHHH!!DONT_TELL_ANYONE"
+  key_name = "my-key-location",
+  validate = "SHHH!!DONT_TELL_ANYONE"
 )
 
 # Add it to a fireproof plugin

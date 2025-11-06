@@ -1,13 +1,13 @@
 test_that("guard_bearer can be constructed and verify", {
   auth <- guard_bearer(
-    authenticator = function(token, realm, request, response) {
+    validate = function(token, realm, request, response) {
       if (token == "abcd1234") {
         return("scope1")
       }
       FALSE
     },
-    user_info = function(token, setter) {
-      setter(
+    user_info = function(token) {
+      new_user_info(
         name_given = "Thomas"
       )
     },
@@ -97,7 +97,7 @@ test_that("guard_bearer can be constructed and verify", {
   expect_true(pass)
   expect_equal(
     session$test2,
-    user_info(
+    new_user_info(
       id = NULL,
       provider = "local",
       name_given = "Thomas",
@@ -116,7 +116,7 @@ test_that("guard_bearer can be constructed and verify", {
 
 test_that("guard_bearer works with custom realm", {
   auth <- guard_bearer(
-    authenticator = function(token) token == "secret",
+    validate = function(token) token == "secret",
     realm = "my-api",
     name = "realm_test"
   )
@@ -142,7 +142,7 @@ test_that("guard_bearer works with custom realm", {
 
 test_that("guard_bearer includes scope in WWW-Authenticate header", {
   auth <- guard_bearer(
-    authenticator = function(token) token == "secret",
+    validate = function(token) token == "secret",
     name = "scope_test"
   )
 
@@ -171,7 +171,7 @@ test_that("guard_bearer includes scope in WWW-Authenticate header", {
 
 test_that("guard_bearer handles body token transmission", {
   auth <- guard_bearer(
-    authenticator = function(token) {
+    validate = function(token) {
       if (token == "body_token") {
         return("scope1")
       }
@@ -203,7 +203,7 @@ test_that("guard_bearer handles body token transmission", {
 
 test_that("guard_bearer rejects body token when disabled", {
   auth <- guard_bearer(
-    authenticator = function(token) token == "body_token",
+    validate = function(token) token == "body_token",
     allow_body_token = FALSE,
     name = "no_body_test"
   )
@@ -229,7 +229,7 @@ test_that("guard_bearer rejects body token when disabled", {
 
 test_that("guard_bearer handles query token transmission when enabled", {
   auth <- guard_bearer(
-    authenticator = function(token) {
+    validate = function(token) {
       if (token == "query_token") {
         return("scope1")
       }
@@ -259,7 +259,7 @@ test_that("guard_bearer handles query token transmission when enabled", {
 
 test_that("guard_bearer rejects query token when disabled", {
   auth <- guard_bearer(
-    authenticator = function(token) token == "query_token",
+    validate = function(token) token == "query_token",
     allow_query_token = FALSE,
     name = "no_query_test"
   )
@@ -283,7 +283,7 @@ test_that("guard_bearer rejects query token when disabled", {
 
 test_that("guard_bearer rejects multiple token transmission methods", {
   auth <- guard_bearer(
-    authenticator = function(token) TRUE,
+    validate = function(token) TRUE,
     allow_body_token = TRUE,
     allow_query_token = TRUE,
     name = "multi_test"
@@ -314,7 +314,7 @@ test_that("guard_bearer rejects multiple token transmission methods", {
 
 test_that("guard_bearer authenticator can return TRUE for simple validation", {
   auth <- guard_bearer(
-    authenticator = function(token) token == "simple_token",
+    validate = function(token) token == "simple_token",
     name = "simple_test"
   )
 
@@ -338,7 +338,7 @@ test_that("guard_bearer authenticator can return TRUE for simple validation", {
 
 test_that("guard_bearer respects existing response status on rejection", {
   auth <- guard_bearer(
-    authenticator = function(token) token == "secret",
+    validate = function(token) token == "secret",
     name = "status_test"
   )
 
@@ -354,13 +354,13 @@ test_that("guard_bearer respects existing response status on rejection", {
 
 test_that("guard_bearer passes if session already has valid user info", {
   auth <- guard_bearer(
-    authenticator = function(token) token == "secret",
+    validate = function(token) token == "secret",
     name = "session_test"
   )
 
   session <- new.env()
   # Pre-populate session with user info from previous authentication
-  session$session_test <- user_info(
+  session$session_test <- new_user_info(
     provider = "local",
     id = "user456",
     name_given = "Bearer User",

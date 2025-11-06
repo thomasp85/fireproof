@@ -7,8 +7,8 @@ test_that("guard_oauth2 can be constructed with authorization_code grant", {
     auth_url = "https://example.com/oauth/authorize",
     grant_type = "authorization_code",
     scopes = c("read", "write"),
-    user_info = function(token_info, setter) {
-      setter(
+    user_info = function(token_info) {
+      new_user_info(
         provider = "example",
         name_given = "Test User"
       )
@@ -82,58 +82,10 @@ test_that("guard_oauth2 check_request validates session info", {
   expect_null(session$test)
 
   # Simulate authenticated session
-  session$test <- user_info(
+  session$test <- new_user_info(
     provider = "example",
     id = "user123",
     scopes = c("read")
-  )
-
-  pass <- auth$check_request(
-    request = no_auth,
-    response = no_auth$respond(),
-    keys = list(),
-    .session = session
-  )
-  expect_true(pass)
-})
-
-test_that("guard_oauth2 check_request uses custom validate function", {
-  auth <- guard_oauth2(
-    token_url = "https://example.com/oauth/token",
-    redirect_url = "https://myapp.com/auth/callback",
-    client_id = "my_client_id",
-    client_secret = "my_client_secret",
-    auth_url = "https://example.com/oauth/authorize",
-    grant_type = "authorization_code",
-    validate = function(info) {
-      "admin" %in% info$scopes
-    },
-    name = "validate_test"
-  )
-
-  session <- new.env()
-  no_auth <- reqres::Request$new(fiery::fake_request("http://example.com"))
-
-  # User without admin scope
-  session$validate_test <- user_info(
-    provider = "example",
-    id = "user123",
-    scopes = c("read", "write")
-  )
-
-  pass <- auth$check_request(
-    request = no_auth,
-    response = no_auth$respond(),
-    keys = list(),
-    .session = session
-  )
-  expect_false(pass)
-
-  # User with admin scope
-  session$validate_test <- user_info(
-    provider = "example",
-    id = "admin123",
-    scopes = c("read", "write", "admin")
   )
 
   pass <- auth$check_request(
@@ -157,7 +109,7 @@ test_that("guard_oauth2 reject_response clears failed session", {
   )
 
   session <- new.env()
-  session$test <- user_info(provider = "example", id = "user123")
+  session$test <- new_user_info(provider = "example", id = "user123")
 
   no_auth <- reqres::Request$new(fiery::fake_request("http://example.com"))
 
@@ -295,7 +247,7 @@ test_that("guard_oauth2 respects existing response status on rejection", {
   )
 
   session <- new.env()
-  session$test <- user_info(provider = "example")
+  session$test <- new_user_info(provider = "example")
 
   no_auth <- reqres::Request$new(fiery::fake_request("http://example.com"))
   response <- no_auth$respond()
@@ -365,7 +317,7 @@ test_that("guard_oauth2 forbid_user clears session", {
   )
 
   session <- new.env()
-  session$test <- user_info(
+  session$test <- new_user_info(
     provider = "example",
     id = "user123",
     scopes = c("read")
@@ -390,7 +342,7 @@ test_that("guard_oauth2 passes if session already has valid user info", {
 
   session <- new.env()
   # Pre-populate session with user info from previous OAuth authentication
-  session$session_test <- user_info(
+  session$session_test <- new_user_info(
     provider = "github",
     id = "oauth_user789",
     name_given = "OAuth",

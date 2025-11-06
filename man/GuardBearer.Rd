@@ -11,11 +11,11 @@ See \code{\link[=guard_bearer]{guard_bearer()}} for more information.
 \examples{
 # Create a guard of dubious quality
 bearer <- GuardBearer$new(
-  authenticator = function(token) {
+  validate = function(token) {
     token == "abcd1234"
   },
-  user_info = function(user, setter) {
-    setter(
+  user_info = function(user) {
+    new_user_info(
       name_given = "Thomas",
       name_middle = "Lin",
       name_family = "Pedersen"
@@ -58,7 +58,7 @@ bearer <- GuardBearer$new(
 Constructor for the class
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{GuardBearer$new(
-  authenticator,
+  validate,
   user_info = NULL,
   realm = "private",
   allow_body_token = TRUE,
@@ -70,17 +70,16 @@ Constructor for the class
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{authenticator}}{A function that will be called with the arguments
+\item{\code{validate}}{A function that will be called with the arguments
 \code{token}, \code{realm}, \code{request}, and \code{response} and returns \code{TRUE} if the token
 is valid, and \code{FALSE} otherwise. If the function returns a character vector
 it is considered to be authenticated and the return value will be understood
 as scopes the user is granted.}
 
 \item{\code{user_info}}{A function to extract user information from the
-username. It is called with two arguments: \code{token} and \code{setter},
-the first being the token used for the successful authentication, the
-second being a function that must be called in the end with the relevant
-information (see \code{\link[=user_info]{user_info()}}).}
+token. It is called with a single argument: \code{token} which is the token
+used for the successful authentication. The function should return a new
+\link[=new_user_info]{user_info} list.}
 
 \item{\code{realm}}{The realm this authentication corresponds to. Will be returned
 to the client on a failed authentication attempt to inform them of the
@@ -108,10 +107,9 @@ well-thought-out reasons to do so.}
 A function that validates an incoming request, returning
 \code{TRUE} if it is valid and \code{FALSE} if not. It fetches the token from the
 request according to the \code{allow_body_token} and \code{allow_query_token}
-settings and validates it according to the provided authenticator. If the
-token is present multiple times it will fail with \code{400} is this is not
-allowed. It will store the token in the \code{auth_token} field of the
-response data.
+settings and validates it according to the provided function. If the
+token is present multiple times it will fail with \code{400} as this is not
+allowed.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{GuardBearer$check_request(request, response, keys, ..., .session)}\if{html}{\out{</div>}}
 }

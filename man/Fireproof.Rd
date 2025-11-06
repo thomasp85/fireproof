@@ -32,11 +32,11 @@ fp <- Fireproof$new()
 
 # Create some authentication schemes and add them
 basic <- guard_basic(
-  authenticator = function(user, password) {
+  validate = function(user, password) {
     user == "thomas" && password == "pedersen"
   },
-  user_info = function(user, setter) {
-    setter(
+  user_info = function(user) {
+    new_user_info(
       name_given = "Thomas",
       name_middle = "Lin",
       name_family = "Pedersen"
@@ -46,8 +46,8 @@ basic <- guard_basic(
 fp$add_guard(basic, "basic_auth")
 
 key <- guard_key(
-  key = "my-key-location",
-  secret = "SHHH!!DONT_TELL_ANYONE"
+  key_name = "my-key-location",
+  validate = "SHHH!!DONT_TELL_ANYONE"
 )
 fp$add_guard(key, "key_auth")
 
@@ -98,6 +98,7 @@ app$attach(fp)
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
+\item \href{#method-Fireproof-print}{\code{Fireproof$print()}}
 \item \href{#method-Fireproof-add_auth}{\code{Fireproof$add_auth()}}
 \item \href{#method-Fireproof-add_guard}{\code{Fireproof$add_guard()}}
 \item \href{#method-Fireproof-add_handler}{\code{Fireproof$add_handler()}}
@@ -113,12 +114,28 @@ app$attach(fp)
 <li><span class="pkg-link" data-pkg="routr" data-topic="Route" data-id="get_handler"><a href='../../routr/html/Route.html#method-Route-get_handler'><code>routr::Route$get_handler()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="routr" data-topic="Route" data-id="initialize"><a href='../../routr/html/Route.html#method-Route-initialize'><code>routr::Route$initialize()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="routr" data-topic="Route" data-id="merge_route"><a href='../../routr/html/Route.html#method-Route-merge_route'><code>routr::Route$merge_route()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="routr" data-topic="Route" data-id="print"><a href='../../routr/html/Route.html#method-Route-print'><code>routr::Route$print()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="routr" data-topic="Route" data-id="remap_handlers"><a href='../../routr/html/Route.html#method-Route-remap_handlers'><code>routr::Route$remap_handlers()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="routr" data-topic="Route" data-id="remove_handler"><a href='../../routr/html/Route.html#method-Route-remove_handler'><code>routr::Route$remove_handler()</code></a></span></li>
 </ul>
 </details>
 }}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Fireproof-print"></a>}}
+\if{latex}{\out{\hypertarget{method-Fireproof-print}{}}}
+\subsection{Method \code{print()}}{
+Print method for the class
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Fireproof$print(...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Ignored}
+}
+\if{html}{\out{</div>}}
+}
+}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Fireproof-add_auth"></a>}}
 \if{latex}{\out{\hypertarget{method-Fireproof-add_auth}{}}}
@@ -137,7 +154,8 @@ parsed flow so it can be used for generating OpenAPI specs with.
 \item{\code{path}}{The URL path to match to}
 
 \item{\code{flow}}{The authentication flow the request must pass to be valid.
-See \emph{Details}}
+See \emph{Details}. If \code{NULL} then authentication is turned off for the
+endpoint.}
 
 \item{\code{scope}}{An optional character vector of scopes that the request must
 have permission for to access the resource}
