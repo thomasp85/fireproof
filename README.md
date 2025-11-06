@@ -89,3 +89,5 @@ providers offered out of the box based on what the community needs.
 - Google✽
 - GitHub
 - Beeceptor (Used for mocking)
+
+✽ *OpenID Connect*
