@@ -76,7 +76,8 @@ scheme. See <code><a href="guard_oidc.html">guard_oidc()</a></code> for more inf
 <span>  <span class="va">redirect_url</span>,</span>
 <span>  <span class="va">client_id</span>,</span>
 <span>  <span class="va">client_secret</span>,</span>
-<span>  scopes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"profile"</span><span class="op">)</span>,</span>
+<span>  grant_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"authorization_code"</span>, <span class="st">"password"</span><span class="op">)</span>,</span>
+<span>  oauth_scopes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"profile"</span><span class="op">)</span>,</span>
 <span>  request_user_info <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  validate <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">info</span><span class="op">)</span> <span class="cn">TRUE</span>,</span>
 <span>  redirect_path <span class="op">=</span> <span class="fu"><a href="../reference/get_path.html">get_path</a></span><span class="op">(</span><span class="va">redirect_url</span><span class="op">)</span>,</span>
@@ -109,9 +110,18 @@ registering your application</p></dd>
 registering your application. Do NOT store this in plain text</p></dd>
 
 
-<dt><code>scopes</code></dt>
-<dd><p>Optional character vector of scopes to request the user to
-grant you during authorization</p></dd>
+<dt><code>grant_type</code></dt>
+<dd><p>The type of authorization scheme to use, either
+<code>"authorization_code"</code> or <code>"password"</code></p></dd>
+
+
+<dt><code>oauth_scopes</code></dt>
+<dd><p>Optional character vector of scopes to request the
+user to grant you during authorization. These will <em>not</em> influence the
+scopes granted by the <code>validate</code> function and fireproof scoping. If named,
+the names are taken as scopes and the elements as descriptions of the scopes,
+e.g. given a scope, <code>read</code>, it can either be provided as <code>c("read")</code> or
+<code>c(read = "Grant read access")</code></p></dd>
 
 
 <dt><code>request_user_info</code></dt>

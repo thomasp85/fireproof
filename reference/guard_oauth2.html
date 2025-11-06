@@ -83,7 +83,7 @@ when logging users in.</p>
 <span>  <span class="va">client_secret</span>,</span>
 <span>  auth_url <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  grant_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"authorization_code"</span>, <span class="st">"password"</span><span class="op">)</span>,</span>
-<span>  scopes <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  oauth_scopes <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  validate <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">info</span><span class="op">)</span> <span class="cn">TRUE</span>,</span>
 <span>  redirect_path <span class="op">=</span> <span class="fu"><a href="get_path.html">get_path</a></span><span class="op">(</span><span class="va">redirect_url</span><span class="op">)</span>,</span>
 <span>  on_auth <span class="op">=</span> <span class="va">replay_request</span>,</span>
@@ -127,11 +127,13 @@ authorization (only needed for <code>grant_type = "authorization_code"</code>)</
 <code>"authorization_code"</code> or <code>"password"</code></p></dd>
 
 
-<dt id="arg-scopes">scopes<a class="anchor" aria-label="anchor" href="#arg-scopes"></a></dt>
-<dd><p>Optional character vector of scopes to request the user to
-grant you during authorization. If named, the names are taken as scopes and
-the elements as descriptions of the scopes, e.g. given a scope, <code>read</code>, it
-can either be provided as <code>c("read")</code> or <code>c(read = "Grant read access")</code></p></dd>
+<dt id="arg-oauth-scopes">oauth_scopes<a class="anchor" aria-label="anchor" href="#arg-oauth-scopes"></a></dt>
+<dd><p>Optional character vector of scopes to request the
+user to grant you during authorization. These will <em>not</em> influence the
+scopes granted by the <code>validate</code> function and fireproof scoping. If named,
+the names are taken as scopes and the elements as descriptions of the scopes,
+e.g. given a scope, <code>read</code>, it can either be provided as <code>c("read")</code> or
+<code>c(read = "Grant read access")</code></p></dd>
 
 
 <dt id="arg-validate">validate<a class="anchor" aria-label="anchor" href="#arg-validate"></a></dt>
@@ -180,22 +182,21 @@ the url when constructing the authorization url in the
 
 
 <dt id="arg-name">name<a class="anchor" aria-label="anchor" href="#arg-name"></a></dt>
-<dd><p>The name of the scheme instance. This will also be the name
-under which token info and user info is saved in the session store</p></dd>
+<dd><p>The name of the guard</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>An <a href="GuardOAuth2.html">GuardOAuth2</a> object</p>
+    <p>A <a href="GuardOAuth2.html">GuardOAuth2</a> object</p>
     </div>
     <div class="section level2">
     <h2 id="user-information">User information<a class="anchor" aria-label="anchor" href="#user-information"></a></h2>
     <p><code>guard_oauth2()</code> automatically adds some <a href="new_user_info.html">user information</a> after
 authentication, but it is advised to consult the service provider for more
 information (this is done automatically for the provider specific
-constructors. See their documentation for details about what information is
+guards. See their documentation for details about what information is
 assigned to which field). The base constructor will set the <code>scopes</code> field to
-any scopes returned by the provider during authorization. It will also set
+any scopes returned by the <code>validate</code> function. It will also set
 the <code>token</code> field to a list with the token data provided by the service
 during authorization. Some standard fields in the list are:</p><ul><li><p><code>access_token</code>: The actual token value</p></li>
 <li><p><code>token_type</code>: The type of token (usually <code>"bearer"</code>)</p></li>
@@ -203,8 +204,13 @@ during authorization. Some standard fields in the list are:</p><ul><li><p><code>
 <li><p><code>refresh_token</code>: A long-lived token that can be used to issue a new
 access token if the current becomes stale</p></li>
 <li><p><code>timestamp</code>: The time the token was received</p></li>
-</ul><p>But OAuth 2.0 providers may choose to supply more. Consult the documentation
+<li><p><code>scopes</code>: The scopes granted by the user for this token</p></li>
+</ul><p>But OAuth 2.0 providers may choose to supply others. Consult the documentation
 for the provider to learn of additional fields it may provide.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
+    <p><a href="https://datatracker.ietf.org/doc/html/rfc6749" class="external-link">The OAuth 2.0 RFC</a></p>
     </div>
 
     <div class="section level2">

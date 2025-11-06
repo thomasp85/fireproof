@@ -107,7 +107,7 @@ used for the successful authentication. The function should return a new
 
 
 <dt><code>name</code></dt>
-<dd><p>The name of the scheme instance</p></dd>
+<dd><p>The name of the guard</p></dd>
 
 
 </dl><p></p></div>
@@ -117,8 +117,8 @@ used for the successful authentication. The function should return a new
 <h3 id="method-check-request-">Method <code>check_request()</code><a class="anchor" aria-label="anchor" href="#method-check-request-"></a></h3>
 <p>A function that validates an incoming request, returning
 <code>TRUE</code> if it is valid and <code>FALSE</code> if not. It extracts the secret from
-either the cookie or header based on the provided <code>key</code> and test it
-based on <code>validate</code>.</p><div class="section">
+either the cookie or header based on the provided <code>key_name</code> and test it
+using the provided <code>validate</code> function.</p><div class="section">
 <h4 id="usage-1">Usage<a class="anchor" aria-label="anchor" href="#usage-1"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">GuardKey</span><span class="op">$</span><span class="fu">check_request</span><span class="op">(</span><span class="va">request</span>, <span class="va">response</span>, <span class="va">keys</span>, <span class="va">...</span>, <span class="va">.session</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
@@ -161,9 +161,9 @@ object</p></dd>
 
 </div><p></p><hr><a id="method-GuardKey-reject_response"></a><div class="section">
 <h3 id="method-reject-response-">Method <code>reject_response()</code><a class="anchor" aria-label="anchor" href="#method-reject-response-"></a></h3>
-<p>Upon rejection this scheme sets the response status to <code>400</code>
-if it has not already been set by others. In contrast to the other
-schemes that are proper HTTP schemes, this one doesn't set a
+<p>Upon rejection this guard sets the response status to <code>400</code>
+if it has not already been set by others. In contrast to some of the other
+guards which implements proper HTTP schemes, this one doesn't set a
 <code>WWW-Authenticate</code> header.</p><div class="section">
 <h4 id="usage-2">Usage<a class="anchor" aria-label="anchor" href="#usage-2"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">GuardKey</span><span class="op">$</span><span class="fu">reject_response</span><span class="op">(</span><span class="va">response</span>, <span class="va">scope</span>, <span class="va">...</span>, <span class="va">.session</span><span class="op">)</span></span></code></pre></div><p></p></div>

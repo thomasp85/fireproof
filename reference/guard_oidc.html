@@ -93,7 +93,8 @@ logging users in.</p>
 <span>  <span class="va">redirect_url</span>,</span>
 <span>  <span class="va">client_id</span>,</span>
 <span>  <span class="va">client_secret</span>,</span>
-<span>  scopes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"profile"</span><span class="op">)</span>,</span>
+<span>  grant_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"authorization_code"</span>, <span class="st">"password"</span><span class="op">)</span>,</span>
+<span>  oauth_scopes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"profile"</span><span class="op">)</span>,</span>
 <span>  request_user_info <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  validate <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">info</span><span class="op">)</span> <span class="cn">TRUE</span>,</span>
 <span>  redirect_path <span class="op">=</span> <span class="fu"><a href="get_path.html">get_path</a></span><span class="op">(</span><span class="va">redirect_url</span><span class="op">)</span>,</span>
@@ -128,11 +129,18 @@ registering your application</p></dd>
 registering your application. Do NOT store this in plain text</p></dd>
 
 
-<dt id="arg-scopes">scopes<a class="anchor" aria-label="anchor" href="#arg-scopes"></a></dt>
-<dd><p>Optional character vector of scopes to request the user to
-grant you during authorization. If named, the names are taken as scopes and
-the elements as descriptions of the scopes, e.g. given a scope, <code>read</code>, it
-can either be provided as <code>c("read")</code> or <code>c(read = "Grant read access")</code></p></dd>
+<dt id="arg-grant-type">grant_type<a class="anchor" aria-label="anchor" href="#arg-grant-type"></a></dt>
+<dd><p>The type of authorization scheme to use, either
+<code>"authorization_code"</code> or <code>"password"</code></p></dd>
+
+
+<dt id="arg-oauth-scopes">oauth_scopes<a class="anchor" aria-label="anchor" href="#arg-oauth-scopes"></a></dt>
+<dd><p>Optional character vector of scopes to request the
+user to grant you during authorization. These will <em>not</em> influence the
+scopes granted by the <code>validate</code> function and fireproof scoping. If named,
+the names are taken as scopes and the elements as descriptions of the scopes,
+e.g. given a scope, <code>read</code>, it can either be provided as <code>c("read")</code> or
+<code>c(read = "Grant read access")</code></p></dd>
 
 
 <dt id="arg-request-user-info">request_user_info<a class="anchor" aria-label="anchor" href="#arg-request-user-info"></a></dt>
@@ -185,8 +193,7 @@ the url when constructing the authorization url in the
 
 
 <dt id="arg-name">name<a class="anchor" aria-label="anchor" href="#arg-name"></a></dt>
-<dd><p>The name of the scheme instance. This will also be the name
-under which token info and user info is saved in the session store</p></dd>
+<dd><p>The name of the guard</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -208,11 +215,11 @@ The mapping of these to <code><a href="new_user_info.html">new_user_info()</a></
 <li><p><code>family_name</code> -&gt; <code>name_family</code></p></li>
 <li><p><code>email</code> -&gt; <code>emails</code></p></li>
 <li><p><code>picture</code> -&gt; <code>photos</code></p></li>
-</ul><p>Further, it will set the <code>scopes</code> field to any scopes returned by the provider
-during authorization, the <code>provider</code> field to <code>service_name</code>, the <code>token</code>
+</ul><p>Further, it will set the <code>scopes</code> field to any scopes returned by the
+<code>validate</code> function, the <code>provider</code> field to <code>service_name</code>, the <code>token</code>
 field to the token information as described in <code><a href="guard_oauth2.html">guard_oauth2()</a></code>, and <code>.raw</code> to
 the full list of user information as provided unaltered by the service. Be
-aware that the information reported by the service depends on the scopes
+aware that the information reported by the service depends on the <code>oauth_scopes</code>
 requested by fireproof and granted by the user. You can therefore never
 assume the existence of any information besides <code>id</code>, <code>provider</code> and <code>token</code>.</p>
     </div>
