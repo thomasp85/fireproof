@@ -42,7 +42,7 @@ is_flow_valid_openapi <- function(flow) {
   attr(flow, "op") %||% "" == "||" && flow_depth(flow) <= 3
 }
 flow_depth <- function(flow) {
-  if (length(flow) == 1) {
+  if (is.null(attr(flow, "op"))) {
     return(1L)
   }
   max(vapply(flow, flow_depth, integer(1))) + 1L

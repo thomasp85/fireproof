@@ -119,7 +119,7 @@ Fireproof <- R6::R6Class(
       # If flow is NULL, turn off auth for the endpoint
       if (is.null(flow)) {
         super$add_handler(method, path, function(...) TRUE)
-        invisible(NULL)
+        return(invisible(NULL))
       }
 
       guards <- unique(unlist(flow))
@@ -169,7 +169,8 @@ Fireproof <- R6::R6Class(
             }
           }
           TRUE
-        }
+        },
+        reject_missing_methods = FALSE
       )
       invisible(flow)
     },
@@ -239,7 +240,9 @@ Fireproof <- R6::R6Class(
     #' flow
     #'
     flow_to_openapi = function(flow, scope) {
-      flow <- or(flow) # Force outmost to be ||
+      if (!identical(attr(flow, "op"), "||")) {
+        flow <- or(flow)
+      } # Force outmost to be ||
       if (!is_flow_valid_openapi(flow)) {
         cli::cli_warn(
           "Auth flow `{format(flow)}` cannot be represented by the OpenAPI syntax"
@@ -292,7 +295,7 @@ Fireproof <- R6::R6Class(
     GUARDS = list(),
     REJECTION = list(),
     FORBID = list(),
-    STORE_NAME = NULL,
+    STORE_NAME = "datastore",
 
     eval_guards = function(
       .guards,
@@ -303,12 +306,13 @@ Fireproof <- R6::R6Class(
       .session = session
     ) {
       guards <- private$GUARDS[.guards]
-      missing <- lengths(guards) == 0
-      if (any(missing)) {
+      missing_guards <- lengths(guards) == 0
+      if (any(missing_guards)) {
         cli::cli_warn(
-          "Ignoring unknown guard{?s} {.guards[missing]}"
+          "Ignoring unknown guard{?s} { .guards[missing_guards]}"
         )
-        guards[missing] <- true_fun
+        guards[missing_guards] <- list(true_fun)
+        names(guards)[missing_guards] <- .guards[missing_guards]
       }
       lapply(guards, function(x) {
         x(
