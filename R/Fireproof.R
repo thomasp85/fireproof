@@ -153,7 +153,7 @@ Fireproof <- R6::R6Class(
             return(response$status < 300)
           }
           if (!is.null(scope)) {
-            provided_scopes <- uniqie(unlist(lapply(guards, function(auth) {
+            provided_scopes <- unique(unlist(lapply(guards, function(auth) {
               session[[auth]]$scopes
             })))
             success <- all(scope %in% provided_scopes)
