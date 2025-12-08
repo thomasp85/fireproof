@@ -130,7 +130,7 @@ Fireproof <- R6::R6Class(
         path,
         handler = function(request, response, keys, server, arg_list, ...) {
           private$STORE_NAME <- private$STORE_NAME %||%
-            server$plugins$firesale$arg_name
+            server$plugins$firesale$arg_name %||% "datastore"
           session <- arg_list[[private$STORE_NAME]]$session
 
           pass <- private$eval_guards(
