@@ -1,0 +1,83 @@
+# fireproof
+
+fireproof is a plugin for [fiery](https://fiery.data-imaginist.com/)
+based servers. It provides a unified framework for adding authentication
+to your server backend.
+
+fireproof supports multiple authentication routes for each endpoint so
+that you can specify that access to a certain endpoint requires either
+passing this and/or this challenges. The logic can be arbitrarily
+complex though for your own sanity it probably shouldn’t.
+
+## Installation
+
+You can install the development version of fireproof from
+[GitHub](https://github.com/) with:
+
+``` r
+# install.packages("pak")
+pak::pak("thomasp85/fireproof")
+```
+
+## Example
+
+This is a basic example which shows you how to solve a common problem:
+
+``` r
+library(fireproof)
+
+# Create the plugin
+proof <- Fireproof$new()
+
+# Create two different guards
+key_auth <- guard_key(
+  key_name = "FireproofKey",
+  validate = "VerySecretString",
+  cookie = FALSE
+)
+basic_auth <- guard_basic(
+  validate = function(user, password, ...) {
+    user == "thomas" && password == "1234"
+  }
+)
+
+# Add them to the plugin
+proof$add_guard(key_auth, "key")
+proof$add_guard(basic_auth, "basic")
+
+# Add authentication to some endpoints with varying combinations of requirements
+proof$add_auth("get", "/user/settings", basic) # must pass basic auth
+proof$add_auth("get", "/api/predict", key || basic) # must pass either
+proof$add_auth("get", "/strong/auth", key && basic) # must pass both
+
+# If you have even more authenticators you can group conditions with () as well
+
+
+# Create a fiery app with a firestore plugin and attach the plugin
+app <- fiery::Fire$new()
+fs <- firesale::FireSale$new(storr::driver_environment())
+app$attach(fs)
+
+app$attach(proof)
+```
+
+## OAuth 2.0 and OpenID Connect
+
+A lot of authorization on the internet has moved towards OAuth 2.0 and
+the authentication layer build on top of it (OpenID Connect). fireproof
+supports both of these and have basic constructors for both flows that
+take the required authorization or discovery endpoints and takes care of
+the rest. It also comes with a selection of predefined constructors for
+well-known providers such as Google and GitHub that makes it easy to use
+them. If you want to use another provider than one already available
+I’ll invite you create a PR for it based on how the current providers
+have been implemented. In this way we can gradually grow the number of
+providers offered out of the box based on what the community needs.
+
+### Current OAuth/OpenID Connect support
+
+- Google✽
+- GitHub
+- Beeceptor (Used for mocking)
+
+✽ *OpenID Connect*

@@ -1,0 +1,136 @@
+# Bearer authentication guard
+
+Bearer authentication is a HTTP scheme based on tokens. It is used in a
+lot of places as it is often used for transmitting the tokens issued as
+part of OAuth 2.0 and OpenID Connect authentication. It is a quite
+simple scheme that is based on the concept of time- and scope-limited
+bearer tokens. Whoever has a valid token gains access to the resources
+the token unlocks. This prevents the leaking of passwords as well as
+makes it easy to rotate tokens etc. While the time-limited aspect of
+tokens means that an attacker may only gain temporary access to a
+resource if they intercept a token during transmission, it is still
+highly recommended to only transmit tokens over HTTPS
+
+## Usage
+
+``` r
+guard_bearer(
+  validate,
+  user_info = NULL,
+  realm = "private",
+  allow_body_token = TRUE,
+  allow_query_token = FALSE,
+  name = "BearerAuth"
+)
+```
+
+## Arguments
+
+- validate:
+
+  A function that will be called with the arguments `token`, `realm`,
+  `request`, and `response` and returns `TRUE` if the token is valid,
+  and `FALSE` otherwise. If the function returns a character vector it
+  is considered to be authenticated and the return value will be
+  understood as scopes the user is granted.
+
+- user_info:
+
+  A function to extract user information from the token. It is called
+  with a single argument: `token` which is the token used for the
+  successful authentication. The function should return a new
+  [user_info](https://thomasp85.github.io/fireproof/reference/new_user_info.md)
+  list.
+
+- realm:
+
+  The realm this authentication corresponds to. Will be returned to the
+  client on a failed authentication attempt to inform them of the
+  credentials required, though most often these days it is kept from the
+  user.
+
+- allow_body_token:
+
+  Should it be allowed to pass the token in the request body as a query
+  form type with the `access_token` name. Defaults to `TRUE` but you can
+  turn it off to force the client to use the `Authorization` header.
+
+- allow_query_token:
+
+  Should it be allowed to pass the token in the query string of the url
+  with the `access_token` name. Default to `FALSE` due to severe
+  security implications but can be turned on if you have very
+  well-thought-out reasons to do so.
+
+- name:
+
+  The name of the guard
+
+## Value
+
+A
+[GuardBearer](https://thomasp85.github.io/fireproof/reference/GuardBearer.md)
+R6 object
+
+## Details
+
+This `validate` function is provided by the user and is used to test the
+provided token. The complexity of the test fully depends on the issuer
+of the token. At it's simplest the token is opaque and the function test
+it against a database. However, it is more common to use a JSON web
+token to encode various information into the token itself that can help
+in determining scoped access etc.
+
+The `validate` function should not test the scope of the token, but
+rather return a vector of scopes (which implicitly means that the token
+is valid). The scope requirement of the exact endpoint will then be
+tested automatically.
+
+## User information
+
+`guard_bearer()` automatically adds [user
+information](https://thomasp85.github.io/fireproof/reference/new_user_info.md)
+after authentication. By default it will set the `provider` field to
+`"local"`. Further, it will set the `scopes` field to any scopes
+returned by the `validate` function and the `token` field to a list with
+the following elements:
+
+- `access_token`: The provided token
+
+- `token_type`: `"bearer"`
+
+- `scope` The scopes concatenated into a space separated string
+
+This structure mimics the structure of the token information returned by
+OAuth 2.0 and OpenID Connect services.
+
+## References
+
+[Bearer authentication
+RFC](https://datatracker.ietf.org/doc/html/rfc6750)
+
+## Examples
+
+``` r
+# Create a guard of dubious quality
+bearer <- guard_bearer(
+  validate = function(token) {
+    token == "abcd1234"
+  },
+  user_info = function(user) {
+    new_user_info(
+      name_given = "Thomas",
+      name_middle = "Lin",
+      name_family = "Pedersen"
+    )
+  },
+  allow_body_token = FALSE
+)
+
+# Add it to a fireproof plugin
+fp <- Fireproof$new()
+fp$add_guard(bearer, "bearer_auth")
+
+# Use it in an endpoint
+fp$add_auth("get", "/*", bearer_auth)
+```
