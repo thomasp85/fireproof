@@ -295,7 +295,7 @@ Fireproof <- R6::R6Class(
     GUARDS = list(),
     REJECTION = list(),
     FORBID = list(),
-    STORE_NAME = "datastore",
+    STORE_NAME = NULL,
 
     eval_guards = function(
       .guards,
