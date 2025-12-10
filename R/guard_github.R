@@ -62,10 +62,10 @@ guard_github <- function(
       ch <- curl::new_handle()
       curl::handle_setheaders(
         ch,
-        authorization = paste("bearer ", token_info$token)
+        authorization = paste0("bearer ", token_info$access_token)
       )
       info <- curl::curl_fetch_memory(
-        url = "https://api.github.com/user",
+        url = "https://api.github.com/user", ch
       )
       info <- jsonlite::parse_json(rawToChar(info$content))
       new_user_info(
@@ -79,6 +79,7 @@ guard_github <- function(
       )
     },
     ...,
+    scopes_delim = ",",
     name = name
   )
 }

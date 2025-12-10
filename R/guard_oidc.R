@@ -277,7 +277,7 @@ GuardOIDC <- R6::R6Class(
       if (force || Sys.time() > private$KEYS_EXPIRES) {
         keys <- curl::curl_fetch_memory(private$SERVICE$jwks_uri)
         headers <- curl::parse_headers(keys$headers)
-        keys <- jsonlite::parse_json(rawToChar(service$content))$keys
+        keys <- jsonlite::parse_json(rawToChar(keys$content))$keys
         keys <- lapply(keys, function(x) {
           x$ssh_key <- try_fetch(jose::read_jwk(x), error = function(...) NULL)
           x
@@ -308,7 +308,7 @@ GuardOIDC <- R6::R6Class(
       }
     },
 
-    request_token = function(token_par, datastore) {
+    request_token = function(token_par, datastore, session_state = NULL) {
       ch <- curl::new_handle()
       token_par <- format_queryform(token_par)
       curl::handle_setopt(
@@ -337,14 +337,14 @@ GuardOIDC <- R6::R6Class(
       }
       content <- jsonlite::parse_json(rawToChar(res$content))
       content$timestamp <- Sys.time()
-      jwt <- private$validate_id_token(content$id_token)
+      jwt <- private$validate_id_token(content$id_token, session_state)
       if (
         private$REQ_USER_INFO && !is.null(private$SERVICE$userinfo_endpoint)
       ) {
         ch <- curl::new_handle()
         curl::handle_setheaders(
           ch,
-          authorization = paste("bearer ", content$token)
+          authorization = paste0("bearer ", content$access_token)
         )
         info <- curl::curl_fetch_memory(private$SERVICE$userinfo_endpoint, ch)
         info <- jsonlite::parse_json(rawToChar(info$content))
@@ -414,7 +414,7 @@ GuardOIDC <- R6::R6Class(
       if (is.null(claims$iat) || claims$iat > now + 60) {
         abort_auth("JWT token issued in the future")
       }
-      if (!identical(claims$nonce, session_state$nonce)) {
+      if (!is.null(session_state) && !identical(claims$nonce, session_state$nonce)) {
         abort_auth("JWT nonce not matching session nonce")
       }
       claims

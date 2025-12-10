@@ -63,6 +63,28 @@
 #' )
 #'
 replay_request <- function(request, response, session_state, server) {
+  # Need to overwrite old cookies with new ones
+  if (length(session_state$headers$cookie) > 0) {
+    old_cookies <- strsplit(session_state$headers$cookie, ";\\s?", perl = TRUE)
+    old_cookies <- strsplit(old_cookies[[1]], "=", fixed = TRUE)
+    old_cookie_names <- vapply(old_cookies, `[[`, character(1), 1)
+    old_cookies <- set_names(
+      lapply(old_cookies, `[[`, 2),
+      old_cookie_names
+    )
+    new_cookies <- modifyList(old_cookies, request$cookies)
+  } else {
+    new_cookies <- request$cookies
+  }
+
+  if (length(new_cookies) > 0) {
+    session_state$headers$cookie <- paste0(
+      names(new_cookies),
+      "=",
+      unlist(new_cookies),
+      collapse = "; "
+    )
+  }
   old_req <- fiery::fake_request(
     url = session_state$url,
     method = session_state$method,

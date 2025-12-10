@@ -66,6 +66,7 @@ Constructor for the class
   on_auth = replay_request,
   user_info = NULL,
   service_params = list(),
+  scopes_delim = " ",
   name = NULL
 )}\if{html}{\out{</div>}}
 }
@@ -132,6 +133,10 @@ list.}
 \item{\code{service_params}}{A named list of additional query params to add to
 the url when constructing the authorization url in the
 \code{"authorization_code"} grant type}
+
+\item{\code{scopes_delim}}{The separator of the scopes as returned by the service.
+The default \code{" "} is the spec recommendation but some services \emph{cough}
+github \emph{cough} are non-compliant}
 
 \item{\code{name}}{The name of the guard.}
 }

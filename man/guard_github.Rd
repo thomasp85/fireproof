@@ -53,6 +53,9 @@ the response.}
     \item{\code{service_params}}{A named list of additional query params to add to
 the url when constructing the authorization url in the
 \code{"authorization_code"} grant type}
+    \item{\code{scopes_delim}}{The separator of the scopes as returned by the service.
+The default \code{" "} is the spec recommendation but some services \emph{cough}
+github \emph{cough} are non-compliant}
   }}
 
 \item{name}{The name of the guard}

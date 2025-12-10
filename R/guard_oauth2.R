@@ -83,6 +83,9 @@
 #' @param service_params A named list of additional query params to add to
 #' the url when constructing the authorization url in the
 #' `"authorization_code"` grant type
+#' @param scopes_delim The separator of the scopes as returned by the service.
+#' The default `" "` is the spec recommendation but some services *cough*
+#' github *cough* are non-compliant
 #' @inheritParams guard_basic
 #'
 #' @return A [GuardOAuth2] object
@@ -123,6 +126,7 @@ guard_oauth2 <- function(
   on_auth = replay_request,
   user_info = NULL,
   service_params = list(),
+  scopes_delim = " ",
   name = "OAuth2Auth"
 ) {
   GuardOAuth2$new(
@@ -138,6 +142,7 @@ guard_oauth2 <- function(
     on_auth = on_auth,
     user_info = user_info,
     service_params = service_params,
+    scopes_delim = scopes_delim,
     name = name
   )
 }
@@ -214,6 +219,9 @@ GuardOAuth2 <- R6::R6Class(
     #' @param service_params A named list of additional query params to add to
     #' the url when constructing the authorization url in the
     #' `"authorization_code"` grant type
+    #' @param scopes_delim The separator of the scopes as returned by the service.
+    #' The default `" "` is the spec recommendation but some services *cough*
+    #' github *cough* are non-compliant
     #' @param name The name of the guard.
     initialize = function(
       token_url,
@@ -228,6 +236,7 @@ GuardOAuth2 <- R6::R6Class(
       on_auth = replay_request,
       user_info = NULL,
       service_params = list(),
+      scopes_delim = " ",
       name = NULL
     ) {
       super$initialize(
@@ -272,6 +281,8 @@ GuardOAuth2 <- R6::R6Class(
         stop_input_type(service_params, "a named list")
       }
       private$SERVICE_PARAMS <- service_params
+      check_string(scopes_delim)
+      private$SCOPE_DELIM <- scopes_delim
     },
     #' @description A function that validates an incoming request, returning
     #' `TRUE` if it is valid and `FALSE` if not.
@@ -412,6 +423,7 @@ GuardOAuth2 <- R6::R6Class(
     GRANT_TYPE = "",
     SCOPES = NULL,
     SCOPE_DESC = NULL,
+    SCOPE_DELIM = " ",
     VALIDATE = NULL,
     ON_AUTH = NULL,
     USER_INFO = NULL,
@@ -522,7 +534,7 @@ GuardOAuth2 <- R6::R6Class(
       session_state <- datastore$global[[access_id]]
 
       datastore$global[[access_id]] <- NULL
-      response$remove_cookie("fireproof_id")
+      response$clear_cookie("fireproof_id")
       state <- request$query$state
       if (
         state != session_state$state ||
@@ -581,7 +593,8 @@ GuardOAuth2 <- R6::R6Class(
       )
       curl::handle_setheaders(
         ch,
-        "content-type" = "application/x-www-form-urlencoded"
+        "content-type" = "application/x-www-form-urlencoded",
+        "accept" = "application/json"
       )
       res <- curl::curl_fetch_memory(private$TOKEN_URL, ch)
       if (res$status_code != 200L) {
@@ -597,10 +610,14 @@ GuardOAuth2 <- R6::R6Class(
           collapse = ": "
         ))
       }
-      content <- jsonlite::parse_json(rawToChar(res$content))
+      content <- parse_curl_content(res)
       content$timestamp <- Sys.time()
       if (!is.null(content$scope)) {
-        content$scope <- strsplit(content$scope, " ", fixed = TRUE)[[1]]
+        content$scope <- strsplit(
+          content$scope,
+          private$SCOPE_DELIM,
+          fixed = TRUE
+        )[[1]]
       }
       datastore$session$fireproof[[private$NAME]] <- combine_info(
         new_user_info(
@@ -631,6 +648,7 @@ create_session_state <- function(request, datastore) {
     "fireproof_id",
     id,
     http_only = TRUE,
+    path = "/",
     secure = TRUE,
     same_site = "None"
   )
@@ -646,6 +664,16 @@ url_safe_raw <- function(x) {
 
 format_queryform <- function(data) {
   charToRaw(paste0(names(data), "=", data, collapse = "&"))
+}
+
+parse_curl_content <- function(res) {
+  if (grepl("json", res$type, fixed = TRUE)) {
+    jsonlite::parse_json(rawToChar(res$content))
+  } else if (grepl("x-www-form-urlencoded", res$type, fixed = TRUE)) {
+    reqres::query_parser(rawToChar(res$content))
+  } else {
+    reqres::abort_status(400L, "Unknown content type returned from service")
+  }
 }
 
 # List of providers to consider
