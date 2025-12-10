@@ -492,7 +492,9 @@ GuardOAuth2 <- R6::R6Class(
         client_secret = private$CLIENT_SECRET
       )
       private$request_token(token_par, datastore)
-      authorized <- private$VALIDATE(info = datastore$session$fireproof[[private$NAME]])
+      authorized <- private$VALIDATE(
+        info = datastore$session$fireproof[[private$NAME]]
+      )
       scopes <- character()
       if (is.character(authorized)) {
         scopes <- authorized
@@ -513,8 +515,14 @@ GuardOAuth2 <- R6::R6Class(
       response$set_header("location", auth_url)
     },
     exchange_code_to_token = function(request, response, datastore, server) {
-      session_state <- datastore$session$fireproof$oauth_state
-      datastore$session$fireproof$oauth_state <- NULL
+      access_id <- request$cookies$fireproof_id
+      if (is.null(access_id)) {
+        reqres::abort_status(400L, "Missing fireproof cookie")
+      }
+      session_state <- datastore$global[[access_id]]
+
+      datastore$global[[access_id]] <- NULL
+      response$remove_cookie("fireproof_id")
       state <- request$query$state
       if (
         state != session_state$state ||
@@ -541,7 +549,9 @@ GuardOAuth2 <- R6::R6Class(
         token_par$redirect_uri <- private$REDIRECT_URL
       }
       private$request_token(token_par, datastore, session_state)
-      authorized <- private$VALIDATE(info = datastore$session$fireproof[[private$NAME]])
+      authorized <- private$VALIDATE(
+        info = datastore$session$fireproof[[private$NAME]]
+      )
       scopes <- private$SCOPES %||% character()
       if (is.character(authorized)) {
         scopes <- authorized
@@ -604,6 +614,7 @@ GuardOAuth2 <- R6::R6Class(
 )
 
 create_session_state <- function(request, datastore) {
+  id <- url_safe_raw(sodium::random(32))
   request_state <- list(
     state = url_safe_raw(sodium::random(32)),
     verifier = url_safe_raw(sodium::random(32)),
@@ -615,7 +626,14 @@ create_session_state <- function(request, datastore) {
     body = request$body_raw,
     from = request$ip
   )
-  datastore$session$fireproof$oauth_state <- request_state
+  datastore$global[[id]] <- request_state
+  request$respond()$set_cookie(
+    "fireproof_id",
+    id,
+    http_only = TRUE,
+    secure = TRUE,
+    same_site = "None"
+  )
   request_state
 }
 
