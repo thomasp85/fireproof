@@ -21,49 +21,49 @@ test_that("Guard name can be get and set", {
 
 test_that("Guard name must be a string", {
   auth <- Guard$new()
-  expect_error(auth$name <- 123, "string")
-  expect_error(auth$name <- c("a", "b"), "string")
-  expect_error(Guard$new(name = TRUE), "string")
+  expect_snapshot(auth$name <- 123, error = TRUE)
+  expect_snapshot(auth$name <- c("a", "b"), error = TRUE)
+  expect_snapshot(Guard$new(name = TRUE), error = TRUE)
 })
 
 test_that("Guard check_request returns TRUE by default", {
   auth <- Guard$new(name = "test")
-  session <- new.env()
+  datastore <- new.env()
   request <- reqres::Request$new(fiery::fake_request("http://example.com"))
 
   pass <- auth$check_request(
     request = request,
     response = request$respond(),
     keys = list(),
-    .session = session
+    .datastore = datastore
   )
   expect_true(pass)
 })
 
 test_that("Guard reject_response clears session and sets 400 status", {
   auth <- Guard$new(name = "test")
-  session <- new.env()
-  session$fireproof$test <- list(user = "data")
+  datastore <- new.env()
+  datastore$session$fireproof$test <- list(user = "data")
 
   request <- reqres::Request$new(fiery::fake_request("http://example.com"))
   response <- request$respond()
 
-  auth$reject_response(response, scope = NULL, .session = session)
+  auth$reject_response(response, scope = NULL, .datastore = datastore)
   expect_equal(response$status, 400L)
-  expect_null(session$fireproof$test)
+  expect_null(datastore$session$fireproof$test)
 })
 
 test_that("Guard forbid_user clears session and sets 403 status", {
   auth <- Guard$new(name = "test")
-  session <- new.env()
-  session$fireproof$test <- list(user = "authenticated")
+  datastore <- new.env()
+  datastore$session$fireproof$test <- list(user = "authenticated")
 
   request <- reqres::Request$new(fiery::fake_request("http://example.com"))
   response <- request$respond()
 
-  auth$forbid_user(response, scope = NULL, .session = session)
+  auth$forbid_user(response, scope = NULL, .datastore = datastore)
   expect_equal(response$status, 403L)
-  expect_null(session$fireproof$test)
+  expect_null(datastore$session$fireproof$test)
 })
 
 test_that("Guard register_handler does nothing by default", {
@@ -114,7 +114,7 @@ test_that("is_guard identifies Guard subclasses", {
 
 test_that("Guard methods accept additional arguments via ...", {
   auth <- Guard$new(name = "test")
-  session <- new.env()
+  datastore <- new.env()
   request <- reqres::Request$new(fiery::fake_request("http://example.com"))
 
   # check_request should accept extra args
@@ -125,7 +125,7 @@ test_that("Guard methods accept additional arguments via ...", {
       keys = list(),
       extra_arg = "value",
       another = 123,
-      .session = session
+      .datastore = datastore
     )
   )
 
@@ -135,7 +135,7 @@ test_that("Guard methods accept additional arguments via ...", {
       request$respond(),
       scope = NULL,
       extra_arg = "value",
-      .session = session
+      .datastore = datastore
     )
   )
 
@@ -145,23 +145,26 @@ test_that("Guard methods accept additional arguments via ...", {
       request$respond(),
       scope = NULL,
       extra_arg = "value",
-      .session = session
+      .datastore = datastore
     )
   )
 })
 
 test_that("Guard clears only its own session data", {
   auth <- Guard$new(name = "test_auth")
-  session <- new.env()
-  session$fireproof$test_auth <- list(user = "data")
-  session$fireproof$other_auth <- list(user = "other_data")
-  session$fireproof$app_data <- "should_remain"
+  datastore <- new.env()
+  datastore$session$fireproof$test_auth <- list(user = "data")
+  datastore$session$fireproof$other_auth <- list(user = "other_data")
+  datastore$session$fireproof$app_data <- "should_remain"
 
   request <- reqres::Request$new(fiery::fake_request("http://example.com"))
 
-  auth$reject_response(request$respond(), scope = NULL, .session = session)
+  auth$reject_response(request$respond(), scope = NULL, .datastore = datastore)
 
-  expect_null(session$fireproof$test_auth)
-  expect_equal(session$fireproof$other_auth, list(user = "other_data"))
-  expect_equal(session$fireproof$app_data, "should_remain")
+  expect_null(datastore$session$fireproof$test_auth)
+  expect_equal(
+    datastore$session$fireproof$other_auth,
+    list(user = "other_data")
+  )
+  expect_equal(datastore$session$fireproof$app_data, "should_remain")
 })

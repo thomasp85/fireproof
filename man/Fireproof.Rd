@@ -69,7 +69,7 @@ fp$add_auth(
   google_auth || (basic_auth && key_auth)
 )
 
-\dontshow{if (requireNamespace("fiery", quietly = TRUE) && requireNamespace("firesale", quietly = TRUE)) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+\dontshow{if (requireNamespace("fiery", quietly = TRUE) && requireNamespace("firesale", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 # Add plugin to fiery app
 app <- fiery::Fire$new()
 

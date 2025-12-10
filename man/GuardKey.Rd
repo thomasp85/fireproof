@@ -89,7 +89,7 @@ A function that validates an incoming request, returning
 either the cookie or header based on the provided \code{key_name} and test it
 using the provided \code{validate} function.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{GuardKey$check_request(request, response, keys, ..., .session)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{GuardKey$check_request(request, response, keys, ..., .datastore)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -105,12 +105,7 @@ object}
 
 \item{\code{...}}{Ignored}
 
-\item{\code{.session}}{The session storage for the current session}
-
-\item{\code{server}}{The fiery server handling the request}
-
-\item{\code{arg_list}}{A list of additional arguments extracted be the
-\code{before_request} handlers (will be used to access the session data store)}
+\item{\code{.datastore}}{The data storage from firesale}
 }
 \if{html}{\out{</div>}}
 }
@@ -124,7 +119,7 @@ if it has not already been set by others. In contrast to some of the other
 guards which implements proper HTTP schemes, this one doesn't set a
 \code{WWW-Authenticate} header.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{GuardKey$reject_response(response, scope, ..., .session)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{GuardKey$reject_response(response, scope, ..., .datastore)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -136,7 +131,7 @@ guards which implements proper HTTP schemes, this one doesn't set a
 
 \item{\code{...}}{Ignored}
 
-\item{\code{.session}}{The session storage for the current session}
+\item{\code{.datastore}}{The data storage from firesale}
 }
 \if{html}{\out{</div>}}
 }

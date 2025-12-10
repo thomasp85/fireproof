@@ -29,9 +29,9 @@ Guard <- R6::R6Class(
     #' [Response][reqres::Response] object
     #' @param keys A named list of path parameters from the path matching
     #' @param ... Ignored
-    #' @param .session The session storage for the current session
+    #' @param .datastore The data storage from firesale
     #'
-    check_request = function(request, response, keys, ..., .session) {
+    check_request = function(request, response, keys, ..., .datastore) {
       TRUE
     },
     #' @description Action to perform on the response in case the request fails
@@ -41,9 +41,9 @@ Guard <- R6::R6Class(
     #' @param response The response object
     #' @param scope The scope of the endpoint
     #' @param ... Ignored
-    #' @param .session The session storage for the current session
-    reject_response = function(response, scope, ..., .session) {
-      .session$fireproof[[private$NAME]] <- NULL
+    #' @param .datastore The data storage from firesale
+    reject_response = function(response, scope, ..., .datastore) {
+      .datastore$session$fireproof[[private$NAME]] <- NULL
       response$status_with_text(400L)
     },
     #' @description Action to perform on the response in case the request does
@@ -54,9 +54,9 @@ Guard <- R6::R6Class(
     #' @param response The response object
     #' @param scope The scope of the endpoint
     #' @param ... Ignored
-    #' @param .session The session storage for the current session
-    forbid_user = function(response, scope, ..., .session) {
-      .session$fireproof[[private$NAME]] <- NULL
+    #' @param .datastore The data storage from firesale
+    forbid_user = function(response, scope, ..., .datastore) {
+      .datastore$session$fireproof[[private$NAME]] <- NULL
       response$status_with_text(403L)
     },
     #' @description Hook for registering endpoint handlers needed for this

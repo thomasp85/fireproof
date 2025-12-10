@@ -19,22 +19,22 @@ test_that("guard_key can be constructed and verify", {
   expect_equal(auth$location, "header")
   expect_equal(auth$open_api, list(type = "apiKey", `in` = "header", name = "x-api-key"))
 
-  session <- new.env()
+  datastore <- new.env()
   no_auth <- reqres::Request$new(fiery::fake_request("http://example.com"))
 
   pass <- auth$check_request(
     request = no_auth,
     response = no_auth$respond(),
     keys = list(),
-    .session = session
+    .datastore = datastore
   )
   expect_false(pass)
-  expect_null(session$fireproof$test2)
+  expect_null(datastore$session$fireproof$test2)
 
-  auth$reject_response(no_auth$respond(), .session = session)
+  auth$reject_response(no_auth$respond(), .datastore = datastore)
   expect_equal(no_auth$response$status, 400L)
 
-  session <- new.env()
+  datastore <- new.env()
   wrong_auth <- reqres::Request$new(fiery::fake_request(
     "http://example.com",
     headers = list(
@@ -46,16 +46,16 @@ test_that("guard_key can be constructed and verify", {
     request = wrong_auth,
     response = wrong_auth$respond(),
     keys = list(),
-    .session = session
+    .datastore = datastore
   )
   expect_false(pass)
-  expect_equal(session$fireproof$test2, list())
+  expect_equal(datastore$session$fireproof$test2, list())
 
-  auth$reject_response(wrong_auth$respond(), .session = session)
+  auth$reject_response(wrong_auth$respond(), .datastore = datastore)
   expect_equal(wrong_auth$response$status, 403L)
-  expect_null(session$fireproof$test2)
+  expect_null(datastore$session$fireproof$test2)
 
-  session <- new.env()
+  datastore <- new.env()
   good_auth <- reqres::Request$new(fiery::fake_request(
     "http://example.com",
     headers = list(
@@ -67,16 +67,16 @@ test_that("guard_key can be constructed and verify", {
     request = good_auth,
     response = good_auth$respond(),
     keys = list(),
-    .session = session
+    .datastore = datastore
   )
   expect_true(pass)
   expect_equal(
-    session$fireproof$test2,
+    datastore$session$fireproof$test2,
     new_user_info(id = NULL, provider = "local", name_given = "API User", scopes = "scope1")
   )
-  auth$forbid_user(good_auth$respond(), .session = session)
+  auth$forbid_user(good_auth$respond(), .datastore = datastore)
   expect_equal(good_auth$response$status, 403L)
-  expect_null(session$fireproof$test2)
+  expect_null(datastore$session$fireproof$test2)
 })
 
 test_that("guard_key works with cookie-based authentication", {
@@ -90,7 +90,7 @@ test_that("guard_key works with cookie-based authentication", {
   expect_equal(auth$location, "cookie")
   expect_equal(auth$open_api, list(type = "apiKey", `in` = "cookie", name = "api_token"))
 
-  session <- new.env()
+  datastore <- new.env()
   good_auth <- reqres::Request$new(fiery::fake_request(
     "http://example.com",
     headers = list(
@@ -102,11 +102,11 @@ test_that("guard_key works with cookie-based authentication", {
     request = good_auth,
     response = good_auth$respond(),
     keys = list(),
-    .session = session
+    .datastore = datastore
   )
   expect_true(pass)
   expect_equal(
-    session$fireproof$cookie_test,
+    datastore$session$fireproof$cookie_test,
     new_user_info(provider = "local", scopes = character(0))
   )
 })
@@ -119,7 +119,7 @@ test_that("guard_key works with simple string secret", {
     name = "string_test"
   )
 
-  session <- new.env()
+  datastore <- new.env()
   wrong_secret <- reqres::Request$new(fiery::fake_request(
     "http://example.com",
     headers = list(
@@ -131,11 +131,11 @@ test_that("guard_key works with simple string secret", {
     request = wrong_secret,
     response = wrong_secret$respond(),
     keys = list(),
-    .session = session
+    .datastore = datastore
   )
   expect_false(pass)
 
-  session <- new.env()
+  datastore <- new.env()
   correct_secret <- reqres::Request$new(fiery::fake_request(
     "http://example.com",
     headers = list(
@@ -147,7 +147,7 @@ test_that("guard_key works with simple string secret", {
     request = correct_secret,
     response = correct_secret$respond(),
     keys = list(),
-    .session = session
+    .datastore = datastore
   )
   expect_true(pass)
 })
@@ -160,12 +160,12 @@ test_that("guard_key respects existing response status on rejection", {
     name = "status_test"
   )
 
-  session <- new.env()
+  datastore <- new.env()
   no_auth <- reqres::Request$new(fiery::fake_request("http://example.com"))
   response <- no_auth$respond()
   response$status <- 500L
 
-  auth$reject_response(response, .session = session)
+  auth$reject_response(response, .datastore = datastore)
   # Should not overwrite non-404 status
   expect_equal(response$status, 500L)
 })
@@ -178,9 +178,9 @@ test_that("guard_key passes if session already has valid user info", {
     name = "session_test"
   )
 
-  session <- new.env()
+  datastore <- new.env()
   # Pre-populate session with user info from previous authentication
-  session$fireproof$session_test <- new_user_info(
+  datastore$session$fireproof$session_test <- new_user_info(
     provider = "local",
     id = "user123",
     name_given = "Existing User",
@@ -194,10 +194,10 @@ test_that("guard_key passes if session already has valid user info", {
     request = no_auth,
     response = no_auth$respond(),
     keys = list(),
-    .session = session
+    .datastore = datastore
   )
   # Should pass because session already has valid info
   expect_true(pass)
   # Session should remain unchanged
-  expect_equal(session$fireproof$session_test$name, c(given = "Existing User"))
+  expect_equal(datastore$session$fireproof$session_test$name, c(given = "Existing User"))
 })

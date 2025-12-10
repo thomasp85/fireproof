@@ -197,10 +197,10 @@ GuardBearer <- R6::R6Class(
     #' [Response][reqres::Response] object
     #' @param keys A named list of path parameters from the path matching
     #' @param ... Ignored
-    #' @param .session The session storage for the current session
+    #' @param .datastore The data storage from firesale
     #'
-    check_request = function(request, response, keys, ..., .session) {
-      info <- .session$fireproof[[private$NAME]]
+    check_request = function(request, response, keys, ..., .datastore) {
+      info <- .datastore$session$fireproof[[private$NAME]]
       authenticated <- is_user_info(info)
 
       if (!authenticated) {
@@ -242,7 +242,7 @@ GuardBearer <- R6::R6Class(
         }
         scopes <- character()
         if (length(token) == 1) {
-          .session$fireproof[[private$NAME]] <- list()
+          .datastore$session$fireproof[[private$NAME]] <- list()
           authenticated <- private$VALIDATE(
             token = token,
             realm = private$REALM,
@@ -257,7 +257,7 @@ GuardBearer <- R6::R6Class(
           authenticated <- FALSE
         }
         if (authenticated) {
-          .session$fireproof[[private$NAME]] <- combine_info(
+          .datastore$session$fireproof[[private$NAME]] <- combine_info(
             new_user_info(
               provider = "local",
               scopes = scopes,
@@ -281,11 +281,11 @@ GuardBearer <- R6::R6Class(
     #' @param response The response object
     #' @param scope The scope of the endpoint
     #' @param ... Ignored
-    #' @param .session The session storage for the current session
-    reject_response = function(response, scope, ..., .session) {
+    #' @param .datastore The data storage from firesale
+    reject_response = function(response, scope, ..., .datastore) {
       if (response$status %in% c(400L, 404L)) {
-        if (!is.null(.session$fireproof[[private$NAME]])) {
-          .session$fireproof[[private$NAME]] <- NULL
+        if (!is.null(.datastore$session$fireproof[[private$NAME]])) {
+          .datastore$session$fireproof[[private$NAME]] <- NULL
           response$status_with_text(403L)
         } else {
           response$append_header(

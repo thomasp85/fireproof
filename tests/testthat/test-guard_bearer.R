@@ -16,26 +16,26 @@ test_that("guard_bearer can be constructed and verify", {
 
   expect_equal(auth$open_api, list(type = "http", scheme = "bearer"))
 
-  session <- new.env()
+  datastore <- new.env()
   no_auth <- reqres::Request$new(fiery::fake_request("http://example.com"))
 
   pass <- auth$check_request(
     request = no_auth,
     response = no_auth$respond(),
     keys = list(),
-    .session = session
+    .datastore = datastore
   )
   expect_false(pass)
-  expect_null(session$fireproof$test2)
+  expect_null(datastore$session$fireproof$test2)
 
-  auth$reject_response(no_auth$respond(), scope = NULL, .session = session)
+  auth$reject_response(no_auth$respond(), scope = NULL, .datastore = datastore)
   expect_equal(no_auth$response$status, 401L)
   expect_equal(
     no_auth$response$get_header("www-authenticate"),
     "Bearer realm=\"private\""
   )
 
-  session <- new.env()
+  datastore <- new.env()
   wrong_auth <- reqres::Request$new(fiery::fake_request(
     "http://example.com",
     headers = list(
@@ -47,19 +47,23 @@ test_that("guard_bearer can be constructed and verify", {
     request = wrong_auth,
     response = wrong_auth$respond(),
     keys = list(),
-    .session = session
+    .datastore = datastore
   )
   expect_false(pass)
-  expect_null(session$fireproof$test2)
+  expect_null(datastore$session$fireproof$test2)
 
-  auth$reject_response(wrong_auth$respond(), scope = NULL, .session = session)
+  auth$reject_response(
+    wrong_auth$respond(),
+    scope = NULL,
+    .datastore = datastore
+  )
   expect_equal(wrong_auth$response$status, 401L)
   expect_equal(
     wrong_auth$response$get_header("www-authenticate"),
     "Bearer realm=\"private\""
   )
 
-  session <- new.env()
+  datastore <- new.env()
   bad_auth <- reqres::Request$new(fiery::fake_request(
     "http://example.com",
     headers = list(
@@ -71,16 +75,16 @@ test_that("guard_bearer can be constructed and verify", {
     request = bad_auth,
     response = bad_auth$respond(),
     keys = list(),
-    .session = session
+    .datastore = datastore
   )
   expect_false(pass)
-  expect_equal(session$fireproof$test2, list())
+  expect_equal(datastore$session$fireproof$test2, list())
 
-  auth$reject_response(bad_auth$respond(), .session = session)
+  auth$reject_response(bad_auth$respond(), .datastore = datastore)
   expect_equal(bad_auth$response$status, 403L)
-  expect_null(session$fireproof$test2)
+  expect_null(datastore$session$fireproof$test2)
 
-  session <- new.env()
+  datastore <- new.env()
   good_auth <- reqres::Request$new(fiery::fake_request(
     "http://example.com",
     headers = list(
@@ -92,11 +96,11 @@ test_that("guard_bearer can be constructed and verify", {
     request = good_auth,
     response = good_auth$respond(),
     keys = list(),
-    .session = session
+    .datastore = datastore
   )
   expect_true(pass)
   expect_equal(
-    session$fireproof$test2,
+    datastore$session$fireproof$test2,
     new_user_info(
       id = NULL,
       provider = "local",
@@ -109,9 +113,9 @@ test_that("guard_bearer can be constructed and verify", {
       )
     )
   )
-  auth$forbid_user(good_auth$respond(), .session = session)
+  auth$forbid_user(good_auth$respond(), .datastore = datastore)
   expect_equal(good_auth$response$status, 403L)
-  expect_null(session$fireproof$test2)
+  expect_null(datastore$session$fireproof$test2)
 })
 
 test_that("guard_bearer works with custom realm", {
@@ -121,18 +125,18 @@ test_that("guard_bearer works with custom realm", {
     name = "realm_test"
   )
 
-  session <- new.env()
+  datastore <- new.env()
   no_auth <- reqres::Request$new(fiery::fake_request("http://example.com"))
 
   pass <- auth$check_request(
     request = no_auth,
     response = no_auth$respond(),
     keys = list(),
-    .session = session
+    .datastore = datastore
   )
   expect_false(pass)
 
-  auth$reject_response(no_auth$respond(), scope = NULL, .session = session)
+  auth$reject_response(no_auth$respond(), scope = NULL, .datastore = datastore)
   expect_equal(no_auth$response$status, 401L)
   expect_equal(
     no_auth$response$get_header("www-authenticate"),
@@ -146,21 +150,21 @@ test_that("guard_bearer includes scope in WWW-Authenticate header", {
     name = "scope_test"
   )
 
-  session <- new.env()
+  datastore <- new.env()
   no_auth <- reqres::Request$new(fiery::fake_request("http://example.com"))
 
   pass <- auth$check_request(
     request = no_auth,
     response = no_auth$respond(),
     keys = list(),
-    .session = session
+    .datastore = datastore
   )
   expect_false(pass)
 
   auth$reject_response(
     no_auth$respond(),
     scope = c("read", "write"),
-    .session = session
+    .datastore = datastore
   )
   expect_equal(no_auth$response$status, 401L)
   expect_equal(
@@ -181,7 +185,7 @@ test_that("guard_bearer handles body token transmission", {
     name = "body_test"
   )
 
-  session <- new.env()
+  datastore <- new.env()
   body_auth <- reqres::Request$new(fiery::fake_request(
     "http://example.com",
     method = "post",
@@ -195,10 +199,10 @@ test_that("guard_bearer handles body token transmission", {
     request = body_auth,
     response = body_auth$respond(),
     keys = list(),
-    .session = session
+    .datastore = datastore
   )
   expect_true(pass)
-  expect_equal(session$fireproof$body_test$scopes, "scope1")
+  expect_equal(datastore$session$fireproof$body_test$scopes, "scope1")
 })
 
 test_that("guard_bearer rejects body token when disabled", {
@@ -208,7 +212,7 @@ test_that("guard_bearer rejects body token when disabled", {
     name = "no_body_test"
   )
 
-  session <- new.env()
+  datastore <- new.env()
   body_auth <- reqres::Request$new(fiery::fake_request(
     "http://example.com",
     method = "post",
@@ -222,7 +226,7 @@ test_that("guard_bearer rejects body token when disabled", {
     request = body_auth,
     response = body_auth$respond(),
     keys = list(),
-    .session = session
+    .datastore = datastore
   )
   expect_false(pass)
 })
@@ -239,7 +243,7 @@ test_that("guard_bearer handles query token transmission when enabled", {
     name = "query_test"
   )
 
-  session <- new.env()
+  datastore <- new.env()
   query_auth <- reqres::Request$new(fiery::fake_request(
     "http://example.com?access_token=query_token",
     headers = list(
@@ -251,7 +255,7 @@ test_that("guard_bearer handles query token transmission when enabled", {
     request = query_auth,
     response = query_auth$respond(),
     keys = list(),
-    .session = session
+    .datastore = datastore
   )
   expect_true(pass)
   expect_equal(query_auth$response$get_header("cache-control"), "private")
@@ -264,7 +268,7 @@ test_that("guard_bearer rejects query token when disabled", {
     name = "no_query_test"
   )
 
-  session <- new.env()
+  datastore <- new.env()
   query_auth <- reqres::Request$new(fiery::fake_request(
     "http://example.com?access_token=query_token",
     headers = list(
@@ -276,7 +280,7 @@ test_that("guard_bearer rejects query token when disabled", {
     request = query_auth,
     response = query_auth$respond(),
     keys = list(),
-    .session = session
+    .datastore = datastore
   )
   expect_false(pass)
 })
@@ -289,7 +293,7 @@ test_that("guard_bearer rejects multiple token transmission methods", {
     name = "multi_test"
   )
 
-  session <- new.env()
+  datastore <- new.env()
   multi_auth <- reqres::Request$new(fiery::fake_request(
     "http://example.com?access_token=query_token",
     method = "post",
@@ -301,14 +305,14 @@ test_that("guard_bearer rejects multiple token transmission methods", {
     body = "access_token=body_token"
   ))
 
-  expect_error(
+  expect_snapshot(
     auth$check_request(
       request = multi_auth,
       response = multi_auth$respond(),
       keys = list(),
-      .session = session
+      .datastore = datastore
     ),
-    "more than one method"
+    error = TRUE
   )
 })
 
@@ -318,7 +322,7 @@ test_that("guard_bearer authenticator can return TRUE for simple validation", {
     name = "simple_test"
   )
 
-  session <- new.env()
+  datastore <- new.env()
   good_auth <- reqres::Request$new(fiery::fake_request(
     "http://example.com",
     headers = list(
@@ -330,10 +334,10 @@ test_that("guard_bearer authenticator can return TRUE for simple validation", {
     request = good_auth,
     response = good_auth$respond(),
     keys = list(),
-    .session = session
+    .datastore = datastore
   )
   expect_true(pass)
-  expect_equal(session$fireproof$simple_test$scopes, character(0))
+  expect_equal(datastore$session$fireproof$simple_test$scopes, character(0))
 })
 
 test_that("guard_bearer respects existing response status on rejection", {
@@ -342,12 +346,12 @@ test_that("guard_bearer respects existing response status on rejection", {
     name = "status_test"
   )
 
-  session <- new.env()
+  datastore <- new.env()
   no_auth <- reqres::Request$new(fiery::fake_request("http://example.com"))
   response <- no_auth$respond()
   response$status <- 500L
 
-  auth$reject_response(response, .session = session)
+  auth$reject_response(response, .datastore = datastore)
   # Should not overwrite non-404/400 status
   expect_equal(response$status, 500L)
 })
@@ -358,9 +362,9 @@ test_that("guard_bearer passes if session already has valid user info", {
     name = "session_test"
   )
 
-  session <- new.env()
+  datastore <- new.env()
   # Pre-populate session with user info from previous authentication
-  session$fireproof$session_test <- new_user_info(
+  datastore$session$fireproof$session_test <- new_user_info(
     provider = "local",
     id = "user456",
     name_given = "Bearer User",
@@ -379,11 +383,17 @@ test_that("guard_bearer passes if session already has valid user info", {
     request = no_auth,
     response = no_auth$respond(),
     keys = list(),
-    .session = session
+    .datastore = datastore
   )
   # Should pass because session already has valid info
   expect_true(pass)
   # Session should remain unchanged
-  expect_equal(session$fireproof$session_test$name, c(given = "Bearer User"))
-  expect_equal(session$fireproof$session_test$token$access_token, "previous_token")
+  expect_equal(
+    datastore$session$fireproof$session_test$name,
+    c(given = "Bearer User")
+  )
+  expect_equal(
+    datastore$session$fireproof$session_test$token$access_token,
+    "previous_token"
+  )
 })

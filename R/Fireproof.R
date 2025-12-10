@@ -131,7 +131,7 @@ Fireproof <- R6::R6Class(
         handler = function(request, response, keys, server, arg_list, ...) {
           private$STORE_NAME <- private$STORE_NAME %||%
             server$plugins$firesale$arg_name %||% "datastore"
-          session <- arg_list[[private$STORE_NAME]]$session
+          datastore <- arg_list[[private$STORE_NAME]]
 
           pass <- private$eval_guards(
             guards,
@@ -139,13 +139,13 @@ Fireproof <- R6::R6Class(
             response = response,
             keys = keys,
             ...,
-            .session = session
+            .datastore = datastore
           )
           success <- eval_op(flow, pass)
           if (!success) {
             failed <- names(pass)[!vapply(pass, isTRUE, logical(1))]
             lapply(private$REJECTION[failed], function(fun) {
-              fun(response, scope, ..., .session = session)
+              fun(response, scope, ..., .datastore = datastore)
             })
             if (response$status >= 400) {
               abort_status(response$status)
@@ -154,7 +154,7 @@ Fireproof <- R6::R6Class(
           }
           if (!is.null(scope)) {
             provided_scopes <- unique(unlist(lapply(guards, function(auth) {
-              session[[auth]]$scopes
+              datastore$session[[auth]]$scopes
             })))
             success <- all(scope %in% provided_scopes)
             if (!success) {
@@ -303,7 +303,7 @@ Fireproof <- R6::R6Class(
       response,
       keys,
       ...,
-      .session = session
+      .datastore = datastore
     ) {
       guards <- private$GUARDS[.guards]
       missing_guards <- lengths(guards) == 0
@@ -320,7 +320,7 @@ Fireproof <- R6::R6Class(
           response = response,
           keys = keys,
           ...,
-          .session = .session
+          .datastore = .datastore
         )
       })
     }

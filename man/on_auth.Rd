@@ -4,11 +4,14 @@
 \alias{on_auth}
 \alias{replay_request}
 \alias{redirect_back}
+\alias{redirect_to}
 \title{Predefined functions for handling successful OAuth 2.0 authentication}
 \usage{
 replay_request(request, response, session_state, server)
 
 redirect_back(request, response, session_state, server)
+
+redirect_to(url)
 }
 \arguments{
 \item{request}{The current request being handled, as a \link[reqres:Request]{reqres::Request}

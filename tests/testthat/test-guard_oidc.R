@@ -64,7 +64,7 @@ test_that("guard_oidc inherits session-based authentication from OAuth2", {
     name = "session_test"
   )
 
-  session <- new.env()
+  datastore <- new.env()
   request <- reqres::Request$new(fiery::fake_request("http://example.com"))
 
   # No session - should fail
@@ -72,12 +72,12 @@ test_that("guard_oidc inherits session-based authentication from OAuth2", {
     request = request,
     response = request$respond(),
     keys = list(),
-    .session = session
+    .datastore = datastore
   )
   expect_false(pass)
 
   # With valid session - should pass
-  session$fireproof$session_test <- new_user_info(
+  datastore$session$fireproof$session_test <- new_user_info(
     provider = "example",
     id = "sub_123",
     name_display = "John Doe",
@@ -88,7 +88,7 @@ test_that("guard_oidc inherits session-based authentication from OAuth2", {
     request = request,
     response = request$respond(),
     keys = list(),
-    .session = session
+    .datastore = datastore
   )
   expect_true(pass)
 })

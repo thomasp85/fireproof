@@ -205,13 +205,13 @@ GuardOIDC <- R6::R6Class(
         name = name
       )
       check_string(service_url)
-      private$SERVICE_URL = service_url
+      private$SERVICE_URL <- service_url
 
       check_bool(request_user_info)
       private$REQ_USER_INFO <- request_user_info
 
       check_string(service_name)
-      private$SERVICE_NAME = service_name
+      private$SERVICE_NAME <- service_name
     }
   ),
   active = list(
@@ -308,7 +308,7 @@ GuardOIDC <- R6::R6Class(
       }
     },
 
-    request_token = function(token_par, session) {
+    request_token = function(token_par, datastore) {
       ch <- curl::new_handle()
       token_par <- format_queryform(token_par)
       curl::handle_setopt(
@@ -356,7 +356,7 @@ GuardOIDC <- R6::R6Class(
       scope <- if (!is.null(content$scope)) {
         strsplit(content$scope, " ", fixed = TRUE)[[1]]
       }
-      session$fireproof[[private$NAME]] <- new_user_info(
+      datastore$session$fireproof[[private$NAME]] <- new_user_info(
         provider = private$SERVICE_NAME,
         id = jwt$sub,
         name_display = jwt$name,

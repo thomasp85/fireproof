@@ -69,20 +69,20 @@ test_that("guard_oauth2 check_request validates session info", {
     name = "test"
   )
 
-  session <- new.env()
+  datastore <- new.env()
   no_auth <- reqres::Request$new(fiery::fake_request("http://example.com"))
 
   pass <- auth$check_request(
     request = no_auth,
     response = no_auth$respond(),
     keys = list(),
-    .session = session
+    .datastore = datastore
   )
   expect_false(pass)
-  expect_null(session$fireproof$test)
+  expect_null(datastore$session$fireproof$test)
 
   # Simulate authenticated session
-  session$fireproof$test <- new_user_info(
+  datastore$session$fireproof$test <- new_user_info(
     provider = "example",
     id = "user123",
     scopes = c("read")
@@ -92,7 +92,7 @@ test_that("guard_oauth2 check_request validates session info", {
     request = no_auth,
     response = no_auth$respond(),
     keys = list(),
-    .session = session
+    .datastore = datastore
   )
   expect_true(pass)
 })
@@ -108,14 +108,17 @@ test_that("guard_oauth2 reject_response clears failed session", {
     name = "test"
   )
 
-  session <- new.env()
-  session$fireproof$test <- new_user_info(provider = "example", id = "user123")
+  datastore <- new.env()
+  datastore$session$fireproof$test <- new_user_info(
+    provider = "example",
+    id = "user123"
+  )
 
   no_auth <- reqres::Request$new(fiery::fake_request("http://example.com"))
 
-  auth$reject_response(no_auth$respond(), scope = NULL, .session = session)
+  auth$reject_response(no_auth$respond(), scope = NULL, .datastore = datastore)
   expect_equal(no_auth$response$status, 403L)
-  expect_null(session$fireproof$test)
+  expect_null(datastore$session$fireproof$test)
 })
 
 test_that("guard_oauth2 reject_response initiates authorization for authorization_code", {
@@ -130,18 +133,18 @@ test_that("guard_oauth2 reject_response initiates authorization for authorizatio
     name = "test"
   )
 
-  session <- new.env()
+  datastore <- new.env()
   no_auth <- reqres::Request$new(fiery::fake_request(
     "http://example.com/api/data"
   ))
 
-  auth$reject_response(no_auth$respond(), scope = NULL, .session = session)
+  auth$reject_response(no_auth$respond(), scope = NULL, .datastore = datastore)
   expect_equal(no_auth$response$status, 303L)
   location <- no_auth$response$get_header("location")
   expect_true(grepl("^https://example.com/oauth/authorize", location))
   expect_true(grepl("client_id=my_client_id", location))
   expect_true(grepl(
-    paste0("state=", session$fireproof$oauth_state$state),
+    paste0("state=", datastore$session$fireproof$oauth_state$state),
     location,
     fixed = TRUE
   ))
@@ -180,17 +183,17 @@ test_that("guard_oauth2 service_params are included in auth URL", {
     name = "test"
   )
 
-  session <- new.env()
+  datastore <- new.env()
   no_auth <- reqres::Request$new(fiery::fake_request("http://example.com"))
 
-  auth$reject_response(no_auth$respond(), scope = NULL, .session = session)
+  auth$reject_response(no_auth$respond(), scope = NULL, .datastore = datastore)
   location <- no_auth$response$get_header("location")
   expect_true(grepl("prompt=consent", location))
   expect_true(grepl("access_type=offline", location))
 })
 
 test_that("guard_oauth2 requires auth_url for authorization_code grant", {
-  expect_error(
+  expect_snapshot(
     guard_oauth2(
       token_url = "https://example.com/oauth/token",
       redirect_url = "https://myapp.com/auth/callback",
@@ -199,7 +202,7 @@ test_that("guard_oauth2 requires auth_url for authorization_code grant", {
       grant_type = "authorization_code",
       name = "test"
     ),
-    "auth_url"
+    error = TRUE
   )
 })
 
@@ -226,11 +229,15 @@ test_that("guard_oauth2 reject_response for password grant requests basic auth",
     name = "test"
   )
 
-  session <- new.env()
+  datastore <- new.env()
   no_auth <- reqres::Request$new(fiery::fake_request("http://example.com"))
 
   expect_snapshot(
-    auth$reject_response(no_auth$respond(), scope = NULL, .session = session),
+    auth$reject_response(
+      no_auth$respond(),
+      scope = NULL,
+      .datastore = datastore
+    ),
     error = TRUE
   )
 })
@@ -246,16 +253,16 @@ test_that("guard_oauth2 respects existing response status on rejection", {
     name = "test"
   )
 
-  session <- new.env()
-  session$fireproof$test <- new_user_info(provider = "example")
+  datastore <- new.env()
+  datastore$session$fireproof$test <- new_user_info(provider = "example")
 
   no_auth <- reqres::Request$new(fiery::fake_request("http://example.com"))
   response <- no_auth$respond()
   response$status <- 500L
 
-  auth$reject_response(response, scope = NULL, .session = session)
+  auth$reject_response(response, scope = NULL, .datastore = datastore)
   # Should still process rejection even with non-default status
-  expect_null(session$fireproof$test)
+  expect_null(datastore$session$fireproof$test)
 })
 
 test_that("guard_oauth2 register_handler adds redirect endpoint", {
@@ -316,17 +323,17 @@ test_that("guard_oauth2 forbid_user clears session", {
     name = "test"
   )
 
-  session <- new.env()
-  session$fireproof$test <- new_user_info(
+  datastore <- new.env()
+  datastore$session$fireproof$test <- new_user_info(
     provider = "example",
     id = "user123",
     scopes = c("read")
   )
 
   good_auth <- reqres::Request$new(fiery::fake_request("http://example.com"))
-  auth$forbid_user(good_auth$respond(), .session = session)
+  auth$forbid_user(good_auth$respond(), .datastore = datastore)
   expect_equal(good_auth$response$status, 403L)
-  expect_null(session$fireproof$test)
+  expect_null(datastore$session$fireproof$test)
 })
 
 test_that("guard_oauth2 passes if session already has valid user info", {
@@ -340,9 +347,9 @@ test_that("guard_oauth2 passes if session already has valid user info", {
     name = "session_test"
   )
 
-  session <- new.env()
+  datastore <- new.env()
   # Pre-populate session with user info from previous OAuth authentication
-  session$fireproof$session_test <- new_user_info(
+  datastore$session$fireproof$session_test <- new_user_info(
     provider = "github",
     id = "oauth_user789",
     name_given = "OAuth",
@@ -364,14 +371,14 @@ test_that("guard_oauth2 passes if session already has valid user info", {
     request = no_auth,
     response = no_auth$respond(),
     keys = list(),
-    .session = session
+    .datastore = datastore
   )
   # Should pass because session already has valid OAuth info
   expect_true(pass)
   # Session should remain unchanged
-  expect_equal(session$fireproof$session_test$provider, "github")
+  expect_equal(datastore$session$fireproof$session_test$provider, "github")
   expect_equal(
-    session$fireproof$session_test$token$access_token,
+    datastore$session$fireproof$session_test$token$access_token,
     "oauth_access_token_xyz"
   )
 })

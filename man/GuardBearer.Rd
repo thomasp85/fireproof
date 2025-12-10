@@ -111,7 +111,7 @@ settings and validates it according to the provided function. If the
 token is present multiple times it will fail with \code{400} as this is not
 allowed.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{GuardBearer$check_request(request, response, keys, ..., .session)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{GuardBearer$check_request(request, response, keys, ..., .datastore)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -127,7 +127,7 @@ object}
 
 \item{\code{...}}{Ignored}
 
-\item{\code{.session}}{The session storage for the current session}
+\item{\code{.datastore}}{The data storage from firesale}
 }
 \if{html}{\out{</div>}}
 }
@@ -142,7 +142,7 @@ any scope is provided by the endpoint it will be appended as
 \verb{, scope="<scope>"} and if the token is present but invalid, it will
 append \verb{, error="invalid_token"}
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{GuardBearer$reject_response(response, scope, ..., .session)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{GuardBearer$reject_response(response, scope, ..., .datastore)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -154,7 +154,7 @@ append \verb{, error="invalid_token"}
 
 \item{\code{...}}{Ignored}
 
-\item{\code{.session}}{The session storage for the current session}
+\item{\code{.datastore}}{The data storage from firesale}
 }
 \if{html}{\out{</div>}}
 }

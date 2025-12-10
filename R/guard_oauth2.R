@@ -280,14 +280,11 @@ GuardOAuth2 <- R6::R6Class(
     #' @param response The corresponding response to the request as a
     #' [Response][reqres::Response] object
     #' @param keys A named list of path parameters from the path matching
-    #' @param server The fiery server handling the request
-    #' @param arg_list A list of additional arguments extracted be the
-    #' `before_request` handlers (will be used to access the session data store)
     #' @param ... Ignored
-    #' @param .session The session storage for the current session
+    #' @param .datastore The data storage from firesale
     #'
-    check_request = function(request, response, keys, ..., .session) {
-      is_user_info(.session$fireproof[[private$NAME]])
+    check_request = function(request, response, keys, ..., .datastore) {
+      is_user_info(.datastore$session$fireproof[[private$NAME]])
     },
     #' @description Upon rejection this guard initiates the grant flow to obtain
     #' authorization. This can sound a bit backwards, but we don't want to
@@ -295,13 +292,13 @@ GuardOAuth2 <- R6::R6Class(
     #' @param response The response object
     #' @param scope The scope of the endpoint
     #' @param ... Ignored
-    #' @param .session The session storage for the current session
-    reject_response = function(response, scope, ..., .session) {
-      if (!is.null(.session$fireproof[[private$NAME]])) {
-        .session$fireproof[[private$NAME]] <- NULL
+    #' @param .datastore The data storage from firesale
+    reject_response = function(response, scope, ..., .datastore) {
+      if (!is.null(.datastore$session$fireproof[[private$NAME]])) {
+        .datastore$session$fireproof[[private$NAME]] <- NULL
         response$status_with_text(403L)
       } else {
-        private$request_authorization(response$request, response, .session)
+        private$request_authorization(response$request, response, .datastore)
       }
     },
     #' @description Hook for registering endpoint handlers needed for this
@@ -313,8 +310,8 @@ GuardOAuth2 <- R6::R6Class(
         "get",
         private$REDIRECT_PATH,
         function(request, response, keys, server, arg_list, ...) {
-          session <- arg_list[[server$plugins$firesale$arg_name]]$session
-          private$exchange_code_to_token(request, response, session, server)
+          datastore <- arg_list[[server$plugins$firesale$arg_name]]
+          private$exchange_code_to_token(request, response, datastore, server)
         }
       )
       # Redirect *may* arrive as a POST even though most browsers convert 302/303
@@ -323,8 +320,8 @@ GuardOAuth2 <- R6::R6Class(
         "post",
         private$REDIRECT_PATH,
         function(request, response, keys, server, arg_list, ...) {
-          session <- arg_list[[server$plugins$firesale$arg_name]]$session
-          private$exchange_code_to_token(request, response, session, server)
+          datastore <- arg_list[[server$plugins$firesale$arg_name]]
+          private$exchange_code_to_token(request, response, datastore, server)
         }
       )
     },
@@ -435,37 +432,42 @@ GuardOAuth2 <- R6::R6Class(
         if (!is.null(private$SCOPES)) {
           paste0(
             "&scope=",
-            urltools::url_encode(paste0(private$SCOPES, collapse = "%20"))
+            urltools::url_encode(paste0(private$SCOPES, collapse = " "))
           )
         },
-        paste0(
-          paste(
-            names(private$SERVICE_PARAMS),
-            urltools::url_encode(
-              unlist(private$SERVICE_PARAMS) %||% character(0)
-            ),
-            sep = "="
-          ),
-          collapse = "&"
-        )
+        if (!is.null(private$SERVICE_PARAMS)) {
+          paste0(
+            "&",
+            paste0(
+              paste(
+                names(private$SERVICE_PARAMS),
+                urltools::url_encode(
+                  unlist(private$SERVICE_PARAMS) %||% character(0)
+                ),
+                sep = "="
+              ),
+              collapse = "&"
+            )
+          )
+        }
       )
     },
-    request_authorization = function(request, response, session) {
+    request_authorization = function(request, response, datastore) {
       switch(
         private$GRANT_TYPE,
         authorization_code = private$request_code_authorization(
           request,
           response,
-          session
+          datastore
         ),
         password = private$request_password_authorization(
           request,
           response,
-          session
+          datastore
         )
       )
     },
-    request_password_authorization = function(request, response, session) {
+    request_password_authorization = function(request, response, datastore) {
       auth <- request$headers$authorization
       if (!is.null(auth) && grepl("^Basic ", auth)) {
         auth <- sub("^Basic ", "", auth)
@@ -489,30 +491,30 @@ GuardOAuth2 <- R6::R6Class(
         client_id = private$CLIENT_ID,
         client_secret = private$CLIENT_SECRET
       )
-      private$request_token(token_par, session)
-      authorized <- private$VALIDATE(info = session$fireproof[[private$NAME]])
+      private$request_token(token_par, datastore)
+      authorized <- private$VALIDATE(info = datastore$session$fireproof[[private$NAME]])
       scopes <- character()
       if (is.character(authorized)) {
         scopes <- authorized
         authorized <- TRUE
       }
       if (!authorized) {
-        session$fireproof[[private$NAME]] <- list()
-        self$reject_response(response, .session = session)
+        datastore$session$fireproof[[private$NAME]] <- list()
+        self$reject_response(response, .datastore = datastore)
       } else {
-        session$fireproof[[private$NAME]]$scopes <- scopes
+        datastore$session$fireproof[[private$NAME]]$scopes <- scopes
         response$status <- 200L
       }
     },
-    request_code_authorization = function(request, response, session) {
-      state <- create_session_state(request, session)
+    request_code_authorization = function(request, response, datastore) {
+      state <- create_session_state(request, datastore)
       auth_url <- private$construct_auth_url(request, state)
       response$status <- 303L # Force client to use GET
       response$set_header("location", auth_url)
     },
-    exchange_code_to_token = function(request, response, session, server) {
-      session_state <- session$fireproof$oauth_state
-      session$fireproof$oauth_state <- NULL
+    exchange_code_to_token = function(request, response, datastore, server) {
+      session_state <- datastore$session$fireproof$oauth_state
+      datastore$session$fireproof$oauth_state <- NULL
       state <- request$query$state
       if (
         state != session_state$state ||
@@ -538,18 +540,18 @@ GuardOAuth2 <- R6::R6Class(
       if (!is.null(private$REDIRECT_URL)) {
         token_par$redirect_uri <- private$REDIRECT_URL
       }
-      private$request_token(token_par, session, session_state)
-      authorized <- private$VALIDATE(info = session$fireproof[[private$NAME]])
+      private$request_token(token_par, datastore, session_state)
+      authorized <- private$VALIDATE(info = datastore$session$fireproof[[private$NAME]])
       scopes <- private$SCOPES %||% character()
       if (is.character(authorized)) {
         scopes <- authorized
         authorized <- TRUE
       }
       if (!authorized) {
-        session$fireproof[[private$NAME]] <- list()
-        self$reject_response(response, .session = session)
+        datastore$session$fireproof[[private$NAME]] <- list()
+        self$reject_response(response, .datastore = datastore)
       } else {
-        session$fireproof[[private$NAME]]$scopes <- scopes
+        datastore$session$fireproof[[private$NAME]]$scopes <- scopes
         private$ON_AUTH(
           request = request,
           response = response,
@@ -558,7 +560,7 @@ GuardOAuth2 <- R6::R6Class(
         )
       }
     },
-    request_token = function(token_par, session, session_state = NULL) {
+    request_token = function(token_par, datastore, session_state = NULL) {
       ch <- curl::new_handle()
       token_par <- format_queryform(token_par)
       curl::handle_setopt(
@@ -590,7 +592,7 @@ GuardOAuth2 <- R6::R6Class(
       if (!is.null(content$scope)) {
         content$scope <- strsplit(content$scope, " ", fixed = TRUE)[[1]]
       }
-      session$fireproof[[private$NAME]] <- combine_info(
+      datastore$session$fireproof[[private$NAME]] <- combine_info(
         new_user_info(
           provider = private$TOKEN_URL,
           token = content
@@ -601,7 +603,7 @@ GuardOAuth2 <- R6::R6Class(
   )
 )
 
-create_session_state = function(request, session) {
+create_session_state <- function(request, datastore) {
   request_state <- list(
     state = url_safe_raw(sodium::random(32)),
     verifier = url_safe_raw(sodium::random(32)),
@@ -613,7 +615,7 @@ create_session_state = function(request, session) {
     body = request$body_raw,
     from = request$ip
   )
-  session$fireproof$oauth_state <- request_state
+  datastore$session$fireproof$oauth_state <- request_state
   request_state
 }
 

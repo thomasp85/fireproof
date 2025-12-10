@@ -371,14 +371,14 @@ test_that("parse_auth_flow returns NULL for NULL input", {
 })
 
 test_that("parse_auth_flow rejects invalid operators", {
-  expect_error(
+  expect_snapshot(
     parse_auth_flow(auth1 + auth2),
-    "Unknown operator"
+    error = TRUE
   )
 
-  expect_error(
+  expect_snapshot(
     parse_auth_flow(auth1 & auth2),
-    "Unknown operator"
+    error = TRUE
   )
 })
 

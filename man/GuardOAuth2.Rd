@@ -145,7 +145,7 @@ the url when constructing the authorization url in the
 A function that validates an incoming request, returning
 \code{TRUE} if it is valid and \code{FALSE} if not.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{GuardOAuth2$check_request(request, response, keys, ..., .session)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{GuardOAuth2$check_request(request, response, keys, ..., .datastore)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -161,12 +161,7 @@ object}
 
 \item{\code{...}}{Ignored}
 
-\item{\code{.session}}{The session storage for the current session}
-
-\item{\code{server}}{The fiery server handling the request}
-
-\item{\code{arg_list}}{A list of additional arguments extracted be the
-\code{before_request} handlers (will be used to access the session data store)}
+\item{\code{.datastore}}{The data storage from firesale}
 }
 \if{html}{\out{</div>}}
 }
@@ -179,7 +174,7 @@ Upon rejection this guard initiates the grant flow to obtain
 authorization. This can sound a bit backwards, but we don't want to
 initiate authorization if the authorization flow doesn't need it
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{GuardOAuth2$reject_response(response, scope, ..., .session)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{GuardOAuth2$reject_response(response, scope, ..., .datastore)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -191,7 +186,7 @@ initiate authorization if the authorization flow doesn't need it
 
 \item{\code{...}}{Ignored}
 
-\item{\code{.session}}{The session storage for the current session}
+\item{\code{.datastore}}{The data storage from firesale}
 }
 \if{html}{\out{</div>}}
 }

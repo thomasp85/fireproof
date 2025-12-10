@@ -47,3 +47,19 @@
       Warning:
       Auth flow `(((auth1 && auth2) || auth3) && auth1)` cannot be represented by the OpenAPI syntax
 
+# parse_auth_flow rejects invalid operators
+
+    Code
+      parse_auth_flow(auth1 + auth2)
+    Condition
+      Error in `parse_auth_flow()`:
+      ! Unknown operator for auth flow. Only `||` and `&&` allowed
+
+---
+
+    Code
+      parse_auth_flow(auth1 & auth2)
+    Condition
+      Error in `parse_auth_flow()`:
+      ! Unknown operator for auth flow. Only `||` and `&&` allowed
+

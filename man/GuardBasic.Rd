@@ -92,7 +92,7 @@ A function that validates an incoming request, returning
 the \code{Authorization} header, splits it into username and password and then
 calls the \code{validate} function provided at construction.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{GuardBasic$check_request(request, response, keys, ..., .session)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{GuardBasic$check_request(request, response, keys, ..., .datastore)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -108,12 +108,7 @@ object}
 
 \item{\code{...}}{Ignored}
 
-\item{\code{.session}}{The session storage for the current session}
-
-\item{\code{server}}{The fiery server handling the request}
-
-\item{\code{arg_list}}{A list of additional arguments extracted be the
-\code{before_request} handlers (will be used to access the session data store)}
+\item{\code{.datastore}}{The data storage from firesale}
 }
 \if{html}{\out{</div>}}
 }
@@ -126,7 +121,7 @@ Upon rejection this scheme sets the response status to \code{401}
 and sets the \code{WWW-Authenticate} header to
 \verb{Basic realm="<realm>", charset=UTF-8}
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{GuardBasic$reject_response(response, scope, ..., .session)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{GuardBasic$reject_response(response, scope, ..., .datastore)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -138,7 +133,7 @@ and sets the \code{WWW-Authenticate} header to
 
 \item{\code{...}}{Ignored}
 
-\item{\code{.session}}{The session storage for the current session}
+\item{\code{.datastore}}{The data storage from firesale}
 }
 \if{html}{\out{</div>}}
 }

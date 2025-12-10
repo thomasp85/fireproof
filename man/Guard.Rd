@@ -65,7 +65,7 @@ A function that validates an incoming request, returning
 \code{TRUE} if it is valid and \code{FALSE} if not. The base class simply returns
 \code{TRUE} for all requests
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Guard$check_request(request, response, keys, ..., .session)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Guard$check_request(request, response, keys, ..., .datastore)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -81,7 +81,7 @@ object}
 
 \item{\code{...}}{Ignored}
 
-\item{\code{.session}}{The session storage for the current session}
+\item{\code{.datastore}}{The data storage from firesale}
 }
 \if{html}{\out{</div>}}
 }
@@ -95,7 +95,7 @@ to get validated by any instance in the flow. All failing instances will
 have this method called one by one so be mindful if you are overwriting
 information set by another instance
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Guard$reject_response(response, scope, ..., .session)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Guard$reject_response(response, scope, ..., .datastore)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -107,7 +107,7 @@ information set by another instance
 
 \item{\code{...}}{Ignored}
 
-\item{\code{.session}}{The session storage for the current session}
+\item{\code{.datastore}}{The data storage from firesale}
 }
 \if{html}{\out{</div>}}
 }
@@ -122,7 +122,7 @@ instances will have this method called one by one if permissions are
 insufficient so be mindful if you are overwriting information set by
 another instance
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Guard$forbid_user(response, scope, ..., .session)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Guard$forbid_user(response, scope, ..., .datastore)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -134,7 +134,7 @@ another instance
 
 \item{\code{...}}{Ignored}
 
-\item{\code{.session}}{The session storage for the current session}
+\item{\code{.datastore}}{The data storage from firesale}
 }
 \if{html}{\out{</div>}}
 }

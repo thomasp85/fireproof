@@ -62,7 +62,7 @@
 #'   on_auth = redirect_back
 #' )
 #'
-replay_request = function(request, response, session_state, server) {
+replay_request <- function(request, response, session_state, server) {
   old_req <- fiery::fake_request(
     url = session_state$url,
     method = session_state$method,
@@ -85,8 +85,21 @@ replay_request = function(request, response, session_state, server) {
 #' @rdname on_auth
 #' @export
 #'
-redirect_back = function(request, response, session_state, server) {
+redirect_back <- function(request, response, session_state, server) {
   response$status <- 307L
   response$set_header("location", session_state$from)
   FALSE
+}
+
+#' @rdname on_auth
+#' @export
+#'
+
+redirect_to <- function(url) {
+  check_string(url)
+  function(request, response, session_state, server) {
+    response$status <- 307L
+    response$set_header("location", url)
+    FALSE
+  }
 }
