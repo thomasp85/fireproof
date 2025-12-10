@@ -64,6 +64,7 @@
 #'
 replay_request <- function(request, response, session_state, server) {
   # Need to overwrite old cookies with new ones
+  new_cookies <- request$cookies
   if (length(session_state$headers$cookie) > 0) {
     old_cookies <- strsplit(session_state$headers$cookie, ";\\s?", perl = TRUE)
     old_cookies <- strsplit(old_cookies[[1]], "=", fixed = TRUE)
@@ -72,9 +73,10 @@ replay_request <- function(request, response, session_state, server) {
       lapply(old_cookies, `[[`, 2),
       old_cookie_names
     )
-    new_cookies <- modifyList(old_cookies, request$cookies)
-  } else {
-    new_cookies <- request$cookies
+    keep <- setdiff(names(old_cookies), names(new_cookies))
+    if (length(keep) != 0) {
+      new_cookies[keep] <- old_cookies[keep]
+    }
   }
 
   if (length(new_cookies) > 0) {
