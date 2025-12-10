@@ -104,7 +104,7 @@ multiple times it will fail with `400` as this is not allowed.
 
 #### Usage
 
-    GuardBearer$check_request(request, response, keys, ..., .session)
+    GuardBearer$check_request(request, response, keys, ..., .datastore)
 
 #### Arguments
 
@@ -128,9 +128,9 @@ multiple times it will fail with `400` as this is not allowed.
 
   Ignored
 
-- `.session`:
+- `.datastore`:
 
-  The session storage for the current session
+  The data storage from firesale
 
 ------------------------------------------------------------------------
 
@@ -144,7 +144,7 @@ and if the token is present but invalid, it will append
 
 #### Usage
 
-    GuardBearer$reject_response(response, scope, ..., .session)
+    GuardBearer$reject_response(response, scope, ..., .datastore)
 
 #### Arguments
 
@@ -160,9 +160,9 @@ and if the token is present but invalid, it will append
 
   Ignored
 
-- `.session`:
+- `.datastore`:
 
-  The session storage for the current session
+  The data storage from firesale
 
 ------------------------------------------------------------------------
 

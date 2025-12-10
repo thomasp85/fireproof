@@ -186,7 +186,7 @@ the url when constructing the authorization url in the
 <p>A function that validates an incoming request, returning
 <code>TRUE</code> if it is valid and <code>FALSE</code> if not.</p><div class="section">
 <h4 id="usage-1">Usage<a class="anchor" aria-label="anchor" href="#usage-1"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">GuardOAuth2</span><span class="op">$</span><span class="fu">check_request</span><span class="op">(</span><span class="va">request</span>, <span class="va">response</span>, <span class="va">keys</span>, <span class="va">...</span>, <span class="va">.session</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">GuardOAuth2</span><span class="op">$</span><span class="fu">check_request</span><span class="op">(</span><span class="va">request</span>, <span class="va">response</span>, <span class="va">keys</span>, <span class="va">...</span>, <span class="va">.datastore</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
@@ -209,17 +209,8 @@ object</p></dd>
 <dd><p>Ignored</p></dd>
 
 
-<dt><code>.session</code></dt>
-<dd><p>The session storage for the current session</p></dd>
-
-
-<dt><code>server</code></dt>
-<dd><p>The fiery server handling the request</p></dd>
-
-
-<dt><code>arg_list</code></dt>
-<dd><p>A list of additional arguments extracted be the
-<code>before_request</code> handlers (will be used to access the session data store)</p></dd>
+<dt><code>.datastore</code></dt>
+<dd><p>The data storage from firesale</p></dd>
 
 
 </dl><p></p></div>
@@ -231,7 +222,7 @@ object</p></dd>
 authorization. This can sound a bit backwards, but we don't want to
 initiate authorization if the authorization flow doesn't need it</p><div class="section">
 <h4 id="usage-2">Usage<a class="anchor" aria-label="anchor" href="#usage-2"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">GuardOAuth2</span><span class="op">$</span><span class="fu">reject_response</span><span class="op">(</span><span class="va">response</span>, <span class="va">scope</span>, <span class="va">...</span>, <span class="va">.session</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">GuardOAuth2</span><span class="op">$</span><span class="fu">reject_response</span><span class="op">(</span><span class="va">response</span>, <span class="va">scope</span>, <span class="va">...</span>, <span class="va">.datastore</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
@@ -248,8 +239,8 @@ initiate authorization if the authorization flow doesn't need it</p><div class="
 <dd><p>Ignored</p></dd>
 
 
-<dt><code>.session</code></dt>
-<dd><p>The session storage for the current session</p></dd>
+<dt><code>.datastore</code></dt>
+<dd><p>The data storage from firesale</p></dd>
 
 
 </dl><p></p></div>

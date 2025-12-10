@@ -92,7 +92,7 @@ provided `validate` function.
 
 #### Usage
 
-    GuardKey$check_request(request, response, keys, ..., .session)
+    GuardKey$check_request(request, response, keys, ..., .datastore)
 
 #### Arguments
 
@@ -116,18 +116,9 @@ provided `validate` function.
 
   Ignored
 
-- `.session`:
+- `.datastore`:
 
-  The session storage for the current session
-
-- `server`:
-
-  The fiery server handling the request
-
-- `arg_list`:
-
-  A list of additional arguments extracted be the `before_request`
-  handlers (will be used to access the session data store)
+  The data storage from firesale
 
 ------------------------------------------------------------------------
 
@@ -140,7 +131,7 @@ which implements proper HTTP schemes, this one doesn't set a
 
 #### Usage
 
-    GuardKey$reject_response(response, scope, ..., .session)
+    GuardKey$reject_response(response, scope, ..., .datastore)
 
 #### Arguments
 
@@ -156,9 +147,9 @@ which implements proper HTTP schemes, this one doesn't set a
 
   Ignored
 
-- `.session`:
+- `.datastore`:
 
-  The session storage for the current session
+  The data storage from firesale
 
 ------------------------------------------------------------------------
 

@@ -136,7 +136,7 @@ settings and validates it according to the provided function. If the
 token is present multiple times it will fail with <code>400</code> as this is not
 allowed.</p><div class="section">
 <h4 id="usage-1">Usage<a class="anchor" aria-label="anchor" href="#usage-1"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">GuardBearer</span><span class="op">$</span><span class="fu">check_request</span><span class="op">(</span><span class="va">request</span>, <span class="va">response</span>, <span class="va">keys</span>, <span class="va">...</span>, <span class="va">.session</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">GuardBearer</span><span class="op">$</span><span class="fu">check_request</span><span class="op">(</span><span class="va">request</span>, <span class="va">response</span>, <span class="va">keys</span>, <span class="va">...</span>, <span class="va">.datastore</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
@@ -159,8 +159,8 @@ object</p></dd>
 <dd><p>Ignored</p></dd>
 
 
-<dt><code>.session</code></dt>
-<dd><p>The session storage for the current session</p></dd>
+<dt><code>.datastore</code></dt>
+<dd><p>The data storage from firesale</p></dd>
 
 
 </dl><p></p></div>
@@ -174,7 +174,7 @@ any scope is provided by the endpoint it will be appended as
 <code>, scope="&lt;scope&gt;"</code> and if the token is present but invalid, it will
 append <code>, error="invalid_token"</code></p><div class="section">
 <h4 id="usage-2">Usage<a class="anchor" aria-label="anchor" href="#usage-2"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">GuardBearer</span><span class="op">$</span><span class="fu">reject_response</span><span class="op">(</span><span class="va">response</span>, <span class="va">scope</span>, <span class="va">...</span>, <span class="va">.session</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">GuardBearer</span><span class="op">$</span><span class="fu">reject_response</span><span class="op">(</span><span class="va">response</span>, <span class="va">scope</span>, <span class="va">...</span>, <span class="va">.datastore</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
@@ -191,8 +191,8 @@ append <code>, error="invalid_token"</code></p><div class="section">
 <dd><p>Ignored</p></dd>
 
 
-<dt><code>.session</code></dt>
-<dd><p>The session storage for the current session</p></dd>
+<dt><code>.datastore</code></dt>
+<dd><p>The data storage from firesale</p></dd>
 
 
 </dl><p></p></div>

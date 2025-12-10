@@ -20,6 +20,8 @@ function.
 replay_request(request, response, session_state, server)
 
 redirect_back(request, response, session_state, server)
+
+redirect_to(url)
 ```
 
 ## Arguments

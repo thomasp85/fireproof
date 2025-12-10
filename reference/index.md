@@ -37,6 +37,7 @@
   : Well structured user information
 - [`replay_request()`](https://thomasp85.github.io/fireproof/reference/on_auth.md)
   [`redirect_back()`](https://thomasp85.github.io/fireproof/reference/on_auth.md)
+  [`redirect_to()`](https://thomasp85.github.io/fireproof/reference/on_auth.md)
   : Predefined functions for handling successful OAuth 2.0
   authentication
 - [`prune_openapi()`](https://thomasp85.github.io/fireproof/reference/prune_openapi.md)

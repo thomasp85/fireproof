@@ -160,7 +160,7 @@ valid and `FALSE` if not.
 
 #### Usage
 
-    GuardOAuth2$check_request(request, response, keys, ..., .session)
+    GuardOAuth2$check_request(request, response, keys, ..., .datastore)
 
 #### Arguments
 
@@ -184,18 +184,9 @@ valid and `FALSE` if not.
 
   Ignored
 
-- `.session`:
+- `.datastore`:
 
-  The session storage for the current session
-
-- `server`:
-
-  The fiery server handling the request
-
-- `arg_list`:
-
-  A list of additional arguments extracted be the `before_request`
-  handlers (will be used to access the session data store)
+  The data storage from firesale
 
 ------------------------------------------------------------------------
 
@@ -207,7 +198,7 @@ initiate authorization if the authorization flow doesn't need it
 
 #### Usage
 
-    GuardOAuth2$reject_response(response, scope, ..., .session)
+    GuardOAuth2$reject_response(response, scope, ..., .datastore)
 
 #### Arguments
 
@@ -223,9 +214,9 @@ initiate authorization if the authorization flow doesn't need it
 
   Ignored
 
-- `.session`:
+- `.datastore`:
 
-  The session storage for the current session
+  The data storage from firesale
 
 ------------------------------------------------------------------------
 

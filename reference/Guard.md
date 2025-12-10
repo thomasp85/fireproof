@@ -68,7 +68,7 @@ requests
 
 #### Usage
 
-    Guard$check_request(request, response, keys, ..., .session)
+    Guard$check_request(request, response, keys, ..., .datastore)
 
 #### Arguments
 
@@ -92,9 +92,9 @@ requests
 
   Ignored
 
-- `.session`:
+- `.datastore`:
 
-  The session storage for the current session
+  The data storage from firesale
 
 ------------------------------------------------------------------------
 
@@ -107,7 +107,7 @@ information set by another instance
 
 #### Usage
 
-    Guard$reject_response(response, scope, ..., .session)
+    Guard$reject_response(response, scope, ..., .datastore)
 
 #### Arguments
 
@@ -123,9 +123,9 @@ information set by another instance
 
   Ignored
 
-- `.session`:
+- `.datastore`:
 
-  The session storage for the current session
+  The data storage from firesale
 
 ------------------------------------------------------------------------
 
@@ -138,7 +138,7 @@ mindful if you are overwriting information set by another instance
 
 #### Usage
 
-    Guard$forbid_user(response, scope, ..., .session)
+    Guard$forbid_user(response, scope, ..., .datastore)
 
 #### Arguments
 
@@ -154,9 +154,9 @@ mindful if you are overwriting information set by another instance
 
   Ignored
 
-- `.session`:
+- `.datastore`:
 
-  The session storage for the current session
+  The data storage from firesale
 
 ------------------------------------------------------------------------
 
