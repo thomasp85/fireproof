@@ -57,6 +57,7 @@ Constructor for the class
       on_auth = replay_request,
       user_info = NULL,
       service_params = list(),
+      scopes_delim = " ",
       name = NULL
     )
 
@@ -146,6 +147,12 @@ Constructor for the class
   A named list of additional query params to add to the url when
   constructing the authorization url in the `"authorization_code"` grant
   type
+
+- `scopes_delim`:
+
+  The separator of the scopes as returned by the service. The default
+  `" "` is the spec recommendation but some services *cough* github
+  *cough* are non-compliant
 
 - `name`:
 

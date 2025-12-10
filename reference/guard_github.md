@@ -91,6 +91,12 @@ guard_github(redirect_url, client_id, client_secret, ..., name = "github")
       constructing the authorization url in the `"authorization_code"`
       grant type
 
+  `scopes_delim`
+
+  :   The separator of the scopes as returned by the service. The
+      default `" "` is the spec recommendation but some services *cough*
+      github *cough* are non-compliant
+
 - name:
 
   The name of the guard
