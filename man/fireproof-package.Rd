@@ -4,9 +4,9 @@
 \name{fireproof-package}
 \alias{fireproof}
 \alias{fireproof-package}
-\title{fireproof: Authentication and Authorization for 'fiery' servers}
+\title{fireproof: Authentication and Authorization for 'fiery' Servers}
 \description{
-Provides a set of plugins for 'fiery' that supports various forms of authorization and authentication.
+Provides a plugin for 'fiery' that supports various forms of authorization and authentication schemes. Schemes can be required in various combinations or by themselves and can be combined with scopes to provide fine-grained access control to the server.
 }
 \seealso{
 Useful links:
@@ -18,7 +18,12 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Thomas Lin Pedersen \email{thomasp85@gmail.com} (\href{https://orcid.org/0000-0002-5147-4711}{ORCID})
+\strong{Maintainer}: Thomas Lin Pedersen \email{thomas.pedersen@posit.co} (\href{https://orcid.org/0000-0002-5147-4711}{ORCID})
+
+Other contributors:
+\itemize{
+  \item Posit, PBC (\href{https://ror.org/03wc8by49}{ROR}) [copyright holder, funder]
+}
 
 }
 \keyword{internal}

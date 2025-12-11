@@ -21,8 +21,10 @@ complex though for your own sanity it probably shouldn’t.
 
 ## Installation
 
-You can install the development version of fireproof from
-[GitHub](https://github.com/) with:
+fireproof can be installed from CRAN with
+`install.packages("fireproof")`. Alternatively, you can install the
+development version of fireproof from [GitHub](https://github.com/)
+with:
 
 ``` r
 # install.packages("pak")

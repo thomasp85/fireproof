@@ -116,9 +116,9 @@ redirect_back <- function(request, response, session_state, server) {
 }
 
 #' @rdname on_auth
+#' @param url The URL to redirect to after successful authentication
 #' @export
 #'
-
 redirect_to <- function(url) {
   check_string(url)
   function(request, response, session_state, server) {

@@ -30,6 +30,8 @@ the original request), and \code{from} (The url the original request was sent
 from)}
 
 \item{server}{The fiery server handling the request}
+
+\item{url}{The URL to redirect to after successful authentication}
 }
 \value{
 \code{TRUE} if the request should continue processing in the server or
