@@ -5,17 +5,20 @@
 - **Thomas Lin Pedersen**. Author, maintainer.
   [](https://orcid.org/0000-0002-5147-4711)
 
+- **Posit, PBC**. Copyright holder, funder.
+  [![ROR](https://raw.githubusercontent.com/ror-community/ror-logos/main/ror-icon-rgb.svg)](https://ror.org/03wc8by49)
+
 ## Citation
 
 Source:
 [`DESCRIPTION`](https://github.com/thomasp85/fireproof/blob/main/DESCRIPTION)
 
 Pedersen T (2025). *fireproof: Authentication and Authorization for
-'fiery' servers*. R package version 0.0.0.9000,
+'fiery' Servers*. R package version 0.0.0.9000,
 <https://github.com/thomasp85/fireproof>.
 
     @Manual{,
-      title = {fireproof: Authentication and Authorization for 'fiery' servers},
+      title = {fireproof: Authentication and Authorization for 'fiery' Servers},
       author = {Thomas Lin Pedersen},
       year = {2025},
       note = {R package version 0.0.0.9000},

@@ -1,7 +1,9 @@
-# fireproof: Authentication and Authorization for 'fiery' servers
+# fireproof: Authentication and Authorization for 'fiery' Servers
 
-Provides a set of plugins for 'fiery' that supports various forms of
-authorization and authentication.
+Provides a plugin for 'fiery' that supports various forms of
+authorization and authentication schemes. Schemes can be required in
+various combinations or by themselves and can be combined with scopes to
+provide fine-grained access control to the server.
 
 ## See also
 
@@ -15,5 +17,10 @@ Useful links:
 
 ## Author
 
-**Maintainer**: Thomas Lin Pedersen <thomasp85@gmail.com>
+**Maintainer**: Thomas Lin Pedersen <thomas.pedersen@posit.co>
 ([ORCID](https://orcid.org/0000-0002-5147-4711))
+
+Other contributors:
+
+- Posit, PBC ([ROR](https://ror.org/03wc8by49)) \[copyright holder,
+  funder\]

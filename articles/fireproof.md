@@ -4,14 +4,14 @@
 library(fireproof)
 ```
 
-fireproof is a plugin for [fiery-based](http://fiery.data-imaginist.com)
-webservers (that includes [plumber2](http://plumber2.posit.co)), which
-adds an authorization and authentication framework to the server for you
-to take advantage of. The package supports a range of different auth
-schemes and allows you to specify the requirements of each endpoint very
-flexibly. However, before we dive into how it works, we’ll give a brief
-overview of what we mean when we talk about authorization and
-authentication.
+fireproof is a plugin for
+[fiery-based](https://fiery.data-imaginist.com) webservers (that
+includes [plumber2](https://plumber2.posit.co)), which adds an
+authorization and authentication framework to the server for you to take
+advantage of. The package supports a range of different auth schemes and
+allows you to specify the requirements of each endpoint very flexibly.
+However, before we dive into how it works, we’ll give a brief overview
+of what we mean when we talk about authorization and authentication.
 
 ## Auth(orization/entication)
 

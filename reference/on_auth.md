@@ -53,6 +53,10 @@ redirect_to(url)
 
   The fiery server handling the request
 
+- url:
+
+  The URL to redirect to after successful authentication
+
 ## Value
 
 `TRUE` if the request should continue processing in the server or
