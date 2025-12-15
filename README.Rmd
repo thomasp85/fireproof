@@ -82,6 +82,7 @@ A lot of authorization on the internet has moved towards OAuth 2.0 and the authe
 
 * Google✽
 * GitHub
+* Auth0✽
 * Beeceptor (Used for mocking)
 
 ✽ *OpenID Connect*
