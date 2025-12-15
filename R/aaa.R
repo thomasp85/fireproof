@@ -117,3 +117,10 @@ with_dots <- function(fun) {
   }
   fun
 }
+
+modify_list <- function(x, y) {
+  remove <- names(y)[vapply(y, is.null, logical(1))]
+  x[names(y)] <- y
+  x[remove] <- NULL
+  x
+}

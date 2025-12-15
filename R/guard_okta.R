@@ -50,7 +50,7 @@ guard_okta <- function(
   ...,
   name = "okta"
 ) {
-  service_params <- modifyList(list(idp = identity_provider), service_params)
+  service_params <- modify_list(list(idp = identity_provider), service_params)
   service_params <- service_params[lengths(service_params) != 0]
   guard_oidc(
     service_url = domain,
