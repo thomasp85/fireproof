@@ -34,7 +34,7 @@
 #'
 #' # Add it to a fireproof plugin
 #' fp <- Fireproof$new()
-#' fp$add_guard(google, "okta_auth")
+#' fp$add_guard(okta, "okta_auth")
 #'
 #' # Use it in an endpoint
 #' fp$add_auth("get", "/*", okta_auth)
