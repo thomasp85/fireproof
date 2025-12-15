@@ -97,7 +97,7 @@ description in \code{\link[=guard_oidc]{guard_oidc()}}. It sets the \code{provid
 }
 
 \examples{
-okta <- guard_auth0(
+auth0 <- guard_auth0(
   domain = "https://company.auth0.com",
   redirect_url = "https://example.com/auth",
   client_id = "MY_APP_ID",
@@ -106,7 +106,7 @@ okta <- guard_auth0(
 
 # Add it to a fireproof plugin
 fp <- Fireproof$new()
-fp$add_guard(google, "auth0_auth")
+fp$add_guard(auth0, "auth0_auth")
 
 # Use it in an endpoint
 fp$add_auth("get", "/*", auth0_auth)
