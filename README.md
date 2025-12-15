@@ -90,6 +90,7 @@ providers offered out of the box based on what the community needs.
 
 - Google✽
 - GitHub
+- Okta✽
 - Beeceptor (Used for mocking)
 
 ✽ *OpenID Connect*
