@@ -58,7 +58,7 @@ guard_google(
 - ...:
 
   Arguments passed on to
-  [`guard_oidc`](https://thomasp85.github.io/fireproof/reference/guard_oidc.md)
+  [`guard_oidc`](https://fireproof.data-imaginist.com/reference/guard_oidc.md)
 
   `request_user_info`
 
@@ -103,7 +103,7 @@ guard_google(
       original request which initiated the authorization (containing
       `method`, `url`, `headers`, and `body` fields with information
       from the original request). By default it will use
-      [replay_request](https://thomasp85.github.io/fireproof/reference/on_auth.md)
+      [replay_request](https://fireproof.data-imaginist.com/reference/on_auth.md)
       to internally replay the original request and send back the
       response.
 
@@ -114,14 +114,14 @@ guard_google(
 ## Value
 
 A
-[GuardOIDC](https://thomasp85.github.io/fireproof/reference/GuardOIDC.md)
+[GuardOIDC](https://fireproof.data-imaginist.com/reference/GuardOIDC.md)
 object
 
 ## User information
 
 `guard_google()` automatically adds user information according to the
 description in
-[`guard_oidc()`](https://thomasp85.github.io/fireproof/reference/guard_oidc.md).
+[`guard_oidc()`](https://fireproof.data-imaginist.com/reference/guard_oidc.md).
 It sets the `provider` field to `"google"`.
 
 ## References

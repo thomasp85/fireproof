@@ -41,7 +41,7 @@ guard_beeceptor_google(
 - ...:
 
   Arguments passed on to
-  [`guard_oauth2`](https://thomasp85.github.io/fireproof/reference/guard_oauth2.md)
+  [`guard_oauth2`](https://fireproof.data-imaginist.com/reference/guard_oauth2.md)
 
   `token_url`
 
@@ -102,7 +102,7 @@ guard_beeceptor_google(
       original request which initiated the authorization (containing
       `method`, `url`, `headers`, and `body` fields with information
       from the original request). By default it will use
-      [replay_request](https://thomasp85.github.io/fireproof/reference/on_auth.md)
+      [replay_request](https://fireproof.data-imaginist.com/reference/on_auth.md)
       to internally replay the original request and send back the
       response.
 
@@ -112,7 +112,7 @@ guard_beeceptor_google(
       is called with a single argument: `token_info` which is the access
       token information returned by the OAuth 2 server after a
       successful authentication. The function should return a new
-      [user_info](https://thomasp85.github.io/fireproof/reference/new_user_info.md)
+      [user_info](https://fireproof.data-imaginist.com/reference/new_user_info.md)
       list.
 
   `service_params`
@@ -134,7 +134,7 @@ guard_beeceptor_google(
 ## Value
 
 A
-[GuardOAuth2](https://thomasp85.github.io/fireproof/reference/GuardOAuth2.md)
+[GuardOAuth2](https://fireproof.data-imaginist.com/reference/GuardOAuth2.md)
 object
 
 ## Examples

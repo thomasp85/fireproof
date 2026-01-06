@@ -34,7 +34,7 @@ guard_github(redirect_url, client_id, client_secret, ..., name = "github")
 - ...:
 
   Arguments passed on to
-  [`guard_oauth2`](https://thomasp85.github.io/fireproof/reference/guard_oauth2.md)
+  [`guard_oauth2`](https://fireproof.data-imaginist.com/reference/guard_oauth2.md)
 
   `grant_type`
 
@@ -81,7 +81,7 @@ guard_github(redirect_url, client_id, client_secret, ..., name = "github")
       original request which initiated the authorization (containing
       `method`, `url`, `headers`, and `body` fields with information
       from the original request). By default it will use
-      [replay_request](https://thomasp85.github.io/fireproof/reference/on_auth.md)
+      [replay_request](https://fireproof.data-imaginist.com/reference/on_auth.md)
       to internally replay the original request and send back the
       response.
 
@@ -104,14 +104,14 @@ guard_github(redirect_url, client_id, client_secret, ..., name = "github")
 ## Value
 
 A
-[GuardOAuth2](https://thomasp85.github.io/fireproof/reference/GuardOAuth2.md)
+[GuardOAuth2](https://fireproof.data-imaginist.com/reference/GuardOAuth2.md)
 object
 
 ## User information
 
 `guard_github()` automatically adds user information according to the
 description in
-[`guard_oauth2()`](https://thomasp85.github.io/fireproof/reference/guard_oauth2.md).
+[`guard_oauth2()`](https://fireproof.data-imaginist.com/reference/guard_oauth2.md).
 It sets the `provider` field to `"github"`. Further, extracts
 information from the `https://api.github.com/user` endpoint and maps the
 information accordingly:

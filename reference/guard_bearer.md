@@ -39,7 +39,7 @@ guard_bearer(
   A function to extract user information from the token. It is called
   with a single argument: `token` which is the token used for the
   successful authentication. The function should return a new
-  [user_info](https://thomasp85.github.io/fireproof/reference/new_user_info.md)
+  [user_info](https://fireproof.data-imaginist.com/reference/new_user_info.md)
   list.
 
 - realm:
@@ -69,7 +69,7 @@ guard_bearer(
 ## Value
 
 A
-[GuardBearer](https://thomasp85.github.io/fireproof/reference/GuardBearer.md)
+[GuardBearer](https://fireproof.data-imaginist.com/reference/GuardBearer.md)
 R6 object
 
 ## Details
@@ -89,7 +89,7 @@ tested automatically.
 ## User information
 
 `guard_bearer()` automatically adds [user
-information](https://thomasp85.github.io/fireproof/reference/new_user_info.md)
+information](https://fireproof.data-imaginist.com/reference/new_user_info.md)
 after authentication. By default it will set the `provider` field to
 `"local"`. Further, it will set the `scopes` field to any scopes
 returned by the `validate` function and the `token` field to a list with

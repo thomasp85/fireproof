@@ -4,7 +4,7 @@ This guard is based on a mutually shared secret between the server and
 the client. The client provides the secret either as a header or in a
 cookie, and the server verifies the authenticity of the secret. Like
 with [basic
-authentication](https://thomasp85.github.io/fireproof/reference/guard_basic.md),
+authentication](https://fireproof.data-imaginist.com/reference/guard_basic.md),
 this scheme relies on additional technology like HTTPS/SSL to make it
 secure since the secret can otherwise easily be extracted from the
 request by man-in-the-middle attack.
@@ -42,7 +42,7 @@ guard_key(
   A function to extract user information from the key. It is called with
   a single argument: `key` which is the key used for the successful
   authentication. The function should return a new
-  [user_info](https://thomasp85.github.io/fireproof/reference/new_user_info.md)
+  [user_info](https://fireproof.data-imaginist.com/reference/new_user_info.md)
   list.
 
 - cookie:
@@ -56,8 +56,7 @@ guard_key(
 
 ## Value
 
-A
-[GuardKey](https://thomasp85.github.io/fireproof/reference/GuardKey.md)
+A [GuardKey](https://fireproof.data-imaginist.com/reference/GuardKey.md)
 object
 
 ## Details
@@ -70,7 +69,7 @@ the response status to something else.
 ## User information
 
 `guard_key()` automatically adds [user
-information](https://thomasp85.github.io/fireproof/reference/new_user_info.md)
+information](https://fireproof.data-imaginist.com/reference/new_user_info.md)
 after authentication. By default it will set the `provider` field to
 `"local"`. Further, it will set the `scopes` field to any scopes
 returned by the `validate` function (provided `validate` is passed a

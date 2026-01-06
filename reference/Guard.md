@@ -173,7 +173,7 @@ Hook for registering endpoint handlers needed for this auth method
 - `add_handler`:
 
   The `add_handler` method from
-  [Fireproof](https://thomasp85.github.io/fireproof/reference/Fireproof.md)
+  [Fireproof](https://fireproof.data-imaginist.com/reference/Fireproof.md)
   to be called for adding additional handlers
 
 ------------------------------------------------------------------------

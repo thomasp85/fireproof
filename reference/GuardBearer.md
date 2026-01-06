@@ -2,12 +2,12 @@
 
 This class encapsulates the logic of the [Bearer authentication
 scheme](https://datatracker.ietf.org/doc/html/rfc6750). See
-[`guard_bearer()`](https://thomasp85.github.io/fireproof/reference/guard_bearer.md)
+[`guard_bearer()`](https://fireproof.data-imaginist.com/reference/guard_bearer.md)
 for more information.
 
 ## Super class
 
-[`fireproof::Guard`](https://thomasp85.github.io/fireproof/reference/Guard.md)
+[`fireproof::Guard`](https://fireproof.data-imaginist.com/reference/Guard.md)
 -\> `GuardBearer`
 
 ## Active bindings
@@ -30,8 +30,8 @@ for more information.
 
 Inherited methods
 
-- [`fireproof::Guard$forbid_user()`](https://thomasp85.github.io/fireproof/reference/Guard.html#method-forbid_user)
-- [`fireproof::Guard$register_handler()`](https://thomasp85.github.io/fireproof/reference/Guard.html#method-register_handler)
+- [`fireproof::Guard$forbid_user()`](https://fireproof.data-imaginist.com/reference/Guard.html#method-forbid_user)
+- [`fireproof::Guard$register_handler()`](https://fireproof.data-imaginist.com/reference/Guard.html#method-register_handler)
 
 ------------------------------------------------------------------------
 
@@ -65,7 +65,7 @@ Constructor for the class
   A function to extract user information from the token. It is called
   with a single argument: `token` which is the token used for the
   successful authentication. The function should return a new
-  [user_info](https://thomasp85.github.io/fireproof/reference/new_user_info.md)
+  [user_info](https://fireproof.data-imaginist.com/reference/new_user_info.md)
   list.
 
 - `realm`:

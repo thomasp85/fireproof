@@ -2,12 +2,12 @@
 
 This class encapsulates the logic of the [Basic authentication
 scheme](https://datatracker.ietf.org/doc/html/rfc7617). See
-[`guard_basic()`](https://thomasp85.github.io/fireproof/reference/guard_basic.md)
+[`guard_basic()`](https://fireproof.data-imaginist.com/reference/guard_basic.md)
 for more information.
 
 ## Super class
 
-[`fireproof::Guard`](https://thomasp85.github.io/fireproof/reference/Guard.md)
+[`fireproof::Guard`](https://fireproof.data-imaginist.com/reference/Guard.md)
 -\> `GuardBasic`
 
 ## Active bindings
@@ -30,8 +30,8 @@ for more information.
 
 Inherited methods
 
-- [`fireproof::Guard$forbid_user()`](https://thomasp85.github.io/fireproof/reference/Guard.html#method-forbid_user)
-- [`fireproof::Guard$register_handler()`](https://thomasp85.github.io/fireproof/reference/Guard.html#method-register_handler)
+- [`fireproof::Guard$forbid_user()`](https://fireproof.data-imaginist.com/reference/Guard.html#method-forbid_user)
+- [`fireproof::Guard$register_handler()`](https://fireproof.data-imaginist.com/reference/Guard.html#method-register_handler)
 
 ------------------------------------------------------------------------
 
@@ -58,7 +58,7 @@ Constructor for the class
   A function to extract user information from the username. It is called
   with a single argument: `user` which is the username used for the
   successful authentication. The function should return a new
-  [user_info](https://thomasp85.github.io/fireproof/reference/new_user_info.md)
+  [user_info](https://fireproof.data-imaginist.com/reference/new_user_info.md)
   list.
 
 - `realm`:

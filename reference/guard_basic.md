@@ -28,7 +28,7 @@ guard_basic(validate, user_info = NULL, realm = "private", name = "BasicAuth")
   A function to extract user information from the username. It is called
   with a single argument: `user` which is the username used for the
   successful authentication. The function should return a new
-  [user_info](https://thomasp85.github.io/fireproof/reference/new_user_info.md)
+  [user_info](https://fireproof.data-imaginist.com/reference/new_user_info.md)
   list.
 
 - realm:
@@ -45,7 +45,7 @@ guard_basic(validate, user_info = NULL, realm = "private", name = "BasicAuth")
 ## Value
 
 A
-[GuardBasic](https://thomasp85.github.io/fireproof/reference/GuardBasic.md)
+[GuardBasic](https://fireproof.data-imaginist.com/reference/GuardBasic.md)
 R6 object
 
 ## Details
@@ -59,7 +59,7 @@ for a good first step towards responsible design.
 ## User information
 
 `guard_basic()` automatically adds [user
-information](https://thomasp85.github.io/fireproof/reference/new_user_info.md)
+information](https://fireproof.data-imaginist.com/reference/new_user_info.md)
 after authentication. By default it will set the `provider` field to
 `"local"` and the `id` field to the username used for logging in.
 Further, it will set the `scopes` field to any scopes returned by the

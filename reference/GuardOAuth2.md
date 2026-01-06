@@ -2,12 +2,12 @@
 
 This class encapsulates the logic of the oauth 2.0 based authentication
 scheme. See
-[`guard_oauth2()`](https://thomasp85.github.io/fireproof/reference/guard_oauth2.md)
+[`guard_oauth2()`](https://fireproof.data-imaginist.com/reference/guard_oauth2.md)
 for more information
 
 ## Super class
 
-[`fireproof::Guard`](https://thomasp85.github.io/fireproof/reference/Guard.md)
+[`fireproof::Guard`](https://fireproof.data-imaginist.com/reference/Guard.md)
 -\> `GuardOAuth2`
 
 ## Active bindings
@@ -34,7 +34,7 @@ for more information
 
 Inherited methods
 
-- [`fireproof::Guard$forbid_user()`](https://thomasp85.github.io/fireproof/reference/Guard.html#method-forbid_user)
+- [`fireproof::Guard$forbid_user()`](https://fireproof.data-imaginist.com/reference/Guard.html#method-forbid_user)
 
 ------------------------------------------------------------------------
 
@@ -130,7 +130,7 @@ Constructor for the class
   initiated the authorization (containing `method`, `url`, `headers`,
   and `body` fields with information from the original request). By
   default it will use
-  [replay_request](https://thomasp85.github.io/fireproof/reference/on_auth.md)
+  [replay_request](https://fireproof.data-imaginist.com/reference/on_auth.md)
   to internally replay the original request and send back the response.
 
 - `user_info`:
@@ -139,7 +139,7 @@ Constructor for the class
   called with a single argument: `token_info` which is the access token
   information returned by the OAuth 2 server after a successful
   authentication. The function should return a new
-  [user_info](https://thomasp85.github.io/fireproof/reference/new_user_info.md)
+  [user_info](https://fireproof.data-imaginist.com/reference/new_user_info.md)
   list.
 
 - `service_params`:
@@ -241,7 +241,7 @@ method
 - `add_handler`:
 
   The `add_handler` method from
-  [Fireproof](https://thomasp85.github.io/fireproof/reference/Fireproof.md)
+  [Fireproof](https://fireproof.data-imaginist.com/reference/Fireproof.md)
   to be called for adding additional handlers
 
 ------------------------------------------------------------------------

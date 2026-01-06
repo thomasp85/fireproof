@@ -2,12 +2,12 @@
 
 This class encapsulates the logic of the key based authentication
 scheme. See
-[`guard_key()`](https://thomasp85.github.io/fireproof/reference/guard_key.md)
+[`guard_key()`](https://fireproof.data-imaginist.com/reference/guard_key.md)
 for more information
 
 ## Super class
 
-[`fireproof::Guard`](https://thomasp85.github.io/fireproof/reference/Guard.md)
+[`fireproof::Guard`](https://fireproof.data-imaginist.com/reference/Guard.md)
 -\> `GuardKey`
 
 ## Active bindings
@@ -35,8 +35,8 @@ for more information
 
 Inherited methods
 
-- [`fireproof::Guard$forbid_user()`](https://thomasp85.github.io/fireproof/reference/Guard.html#method-forbid_user)
-- [`fireproof::Guard$register_handler()`](https://thomasp85.github.io/fireproof/reference/Guard.html#method-register_handler)
+- [`fireproof::Guard$forbid_user()`](https://fireproof.data-imaginist.com/reference/Guard.html#method-forbid_user)
+- [`fireproof::Guard$register_handler()`](https://fireproof.data-imaginist.com/reference/Guard.html#method-register_handler)
 
 ------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@ Constructor for the class
   A function to extract user information from the key. It is called with
   a single argument: `key` which is the key used for the successful
   authentication. The function should return a new
-  [user_info](https://thomasp85.github.io/fireproof/reference/new_user_info.md)
+  [user_info](https://fireproof.data-imaginist.com/reference/new_user_info.md)
   list.
 
 - `cookie`:

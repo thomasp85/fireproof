@@ -13,14 +13,14 @@
 Source:
 [`DESCRIPTION`](https://github.com/thomasp85/fireproof/blob/main/DESCRIPTION)
 
-Pedersen T (2025). *fireproof: Authentication and Authorization for
+Pedersen T (2026). *fireproof: Authentication and Authorization for
 'fiery' Servers*. R package version 0.1.0.9000,
 <https://github.com/thomasp85/fireproof>.
 
     @Manual{,
       title = {fireproof: Authentication and Authorization for 'fiery' Servers},
       author = {Thomas Lin Pedersen},
-      year = {2025},
+      year = {2026},
       note = {R package version 0.1.0.9000},
       url = {https://github.com/thomasp85/fireproof},
     }

@@ -7,11 +7,11 @@ testing all the endpoints that have auth requirements.
 ## Details
 
 A guard is an object deriving from the
-[Guard](https://thomasp85.github.io/fireproof/reference/Guard.md) class
+[Guard](https://fireproof.data-imaginist.com/reference/Guard.md) class
 which is usually created with one of the `guard_*()` constructors. You
 can provide it with a name as you register it and can thus have multiple
 instances of the same scheme (e.g. two
-[`guard_basic()`](https://thomasp85.github.io/fireproof/reference/guard_basic.md)
+[`guard_basic()`](https://fireproof.data-imaginist.com/reference/guard_basic.md)
 with different user lists)
 
 An auth handler is a handler that consists of a method, path, and flow.
@@ -135,7 +135,7 @@ Add a guard to the plugin
 - `guard`:
 
   Either a
-  [Guard](https://thomasp85.github.io/fireproof/reference/Guard.md)
+  [Guard](https://fireproof.data-imaginist.com/reference/Guard.md)
   object defining the guard (preferred) or a function taking the
   standard route handler arguments (`request`, `response`, `keys`, and
   `...`) and returns `TRUE` if the request is valid and `FALSE` if not.
@@ -182,7 +182,7 @@ Security Requirement compliant list. Not all flows can be represented by
 the OpenAPI spec and the method will return `NULL` with a warning if so.
 Scope is added to all schemes, even if not applicable, so the final
 OpenAPI doc should be run through
-[`prune_openapi()`](https://thomasp85.github.io/fireproof/reference/prune_openapi.md)
+[`prune_openapi()`](https://fireproof.data-imaginist.com/reference/prune_openapi.md)
 before serving it.
 
 #### Usage

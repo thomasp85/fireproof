@@ -1,7 +1,7 @@
 # Guard based on OpenID Connect
 
 OpenID Connect is an authentication standard build on top of [OAuth
-2.0](https://thomasp85.github.io/fireproof/reference/guard_oauth2.md).
+2.0](https://fireproof.data-imaginist.com/reference/guard_oauth2.md).
 OAuth 2.0 at its core is only about authorization and doesn't provide a
 standardized approach to extracting user information that can be used
 for authentication. OpenID Connect fills this gap in a number of ways.
@@ -110,7 +110,7 @@ guard_oidc(
   initiated the authorization (containing `method`, `url`, `headers`,
   and `body` fields with information from the original request). By
   default it will use
-  [replay_request](https://thomasp85.github.io/fireproof/reference/on_auth.md)
+  [replay_request](https://fireproof.data-imaginist.com/reference/on_auth.md)
   to internally replay the original request and send back the response.
 
 - service_name:
@@ -131,13 +131,13 @@ guard_oidc(
 ## Value
 
 An
-[GuardOIDC](https://thomasp85.github.io/fireproof/reference/GuardOIDC.md)
+[GuardOIDC](https://fireproof.data-imaginist.com/reference/GuardOIDC.md)
 object
 
 ## User information
 
 `guard_oidc()` automatically adds [user
-information](https://thomasp85.github.io/fireproof/reference/new_user_info.md)
+information](https://fireproof.data-imaginist.com/reference/new_user_info.md)
 after authentication, based on the standardized user claims provided in
 the `id_token` as well as any additional user information provided at
 the `userinfo_endpoint` of the service if `request_user_info = TRUE`.
@@ -145,7 +145,7 @@ You can see a list of standard user information defined by OpenID
 Connect at the [OpenID
 website](https://openid.net/specs/openid-connect-core-1_0.html#StandardClaims).
 The mapping of these to
-[`new_user_info()`](https://thomasp85.github.io/fireproof/reference/new_user_info.md)
+[`new_user_info()`](https://fireproof.data-imaginist.com/reference/new_user_info.md)
 is as follows:
 
 - `sub` -\> `id`
@@ -165,7 +165,7 @@ is as follows:
 Further, it will set the `scopes` field to any scopes returned by the
 `validate` function, the `provider` field to `service_name`, the `token`
 field to the token information as described in
-[`guard_oauth2()`](https://thomasp85.github.io/fireproof/reference/guard_oauth2.md),
+[`guard_oauth2()`](https://fireproof.data-imaginist.com/reference/guard_oauth2.md),
 and `.raw` to the full list of user information as provided unaltered by
 the service. Be aware that the information reported by the service
 depends on the `oauth_scopes` requested by fireproof and granted by the

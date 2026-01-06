@@ -2,14 +2,14 @@
 
 This class encapsulates the logic of the OpenID Connect based
 authentication scheme. See
-[`guard_oidc()`](https://thomasp85.github.io/fireproof/reference/guard_oidc.md)
+[`guard_oidc()`](https://fireproof.data-imaginist.com/reference/guard_oidc.md)
 for more information
 
 ## Super classes
 
-[`fireproof::Guard`](https://thomasp85.github.io/fireproof/reference/Guard.md)
+[`fireproof::Guard`](https://fireproof.data-imaginist.com/reference/Guard.md)
 -\>
-[`fireproof::GuardOAuth2`](https://thomasp85.github.io/fireproof/reference/GuardOAuth2.md)
+[`fireproof::GuardOAuth2`](https://fireproof.data-imaginist.com/reference/GuardOAuth2.md)
 -\> `GuardOIDC`
 
 ## Active bindings
@@ -28,11 +28,11 @@ for more information
 
 Inherited methods
 
-- [`fireproof::Guard$forbid_user()`](https://thomasp85.github.io/fireproof/reference/Guard.html#method-forbid_user)
-- [`fireproof::GuardOAuth2$check_request()`](https://thomasp85.github.io/fireproof/reference/GuardOAuth2.html#method-check_request)
-- [`fireproof::GuardOAuth2$refresh_token()`](https://thomasp85.github.io/fireproof/reference/GuardOAuth2.html#method-refresh_token)
-- [`fireproof::GuardOAuth2$register_handler()`](https://thomasp85.github.io/fireproof/reference/GuardOAuth2.html#method-register_handler)
-- [`fireproof::GuardOAuth2$reject_response()`](https://thomasp85.github.io/fireproof/reference/GuardOAuth2.html#method-reject_response)
+- [`fireproof::Guard$forbid_user()`](https://fireproof.data-imaginist.com/reference/Guard.html#method-forbid_user)
+- [`fireproof::GuardOAuth2$check_request()`](https://fireproof.data-imaginist.com/reference/GuardOAuth2.html#method-check_request)
+- [`fireproof::GuardOAuth2$refresh_token()`](https://fireproof.data-imaginist.com/reference/GuardOAuth2.html#method-refresh_token)
+- [`fireproof::GuardOAuth2$register_handler()`](https://fireproof.data-imaginist.com/reference/GuardOAuth2.html#method-register_handler)
+- [`fireproof::GuardOAuth2$reject_response()`](https://fireproof.data-imaginist.com/reference/GuardOAuth2.html#method-reject_response)
 
 ------------------------------------------------------------------------
 
@@ -127,7 +127,7 @@ Constructor for the class
   authorization (containing `method`, `url`, `headers`, and `body`
   fields with information from the original request). By default it will
   use
-  [replay_request](https://thomasp85.github.io/fireproof/reference/on_auth.md)
+  [replay_request](https://fireproof.data-imaginist.com/reference/on_auth.md)
   to internally replay the original request and send back the response.
 
 - `service_name`:

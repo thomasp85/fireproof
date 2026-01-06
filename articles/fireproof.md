@@ -107,7 +107,7 @@ that defines a specific approach to auth, such as e.g. Basic auth or
 OAuth 2.0. Guards are all subclasses of the `Guard` class and are
 constructed using `guard_*` prefixed functions. If we wanted to define a
 guard using Basic auth we would reach for the
-[`guard_basic()`](https://thomasp85.github.io/fireproof/reference/guard_basic.md)
+[`guard_basic()`](https://fireproof.data-imaginist.com/reference/guard_basic.md)
 constructor:
 
 ``` r
@@ -176,7 +176,7 @@ fp$add_guard(key, name = "key_auth")
 fp$add_guard(google, name = "google_auth")
 
 fp
-#> A fireproof plugin with 3 guards and 2 handlers
+#> A fireproof plugin with 3 guards and 0 handlers
 ```
 
 The plugin doesn’t do anything right now. First, it needs to be attached
@@ -333,12 +333,12 @@ example, the basic guard we defined above will write to a
 `fireproof$basic_auth` element in the session storage. What gets written
 depends on the guards `user_info` function. This is a user provided
 function that is presented with different user information (for
-[`guard_basic()`](https://thomasp85.github.io/fireproof/reference/guard_basic.md)
+[`guard_basic()`](https://fireproof.data-imaginist.com/reference/guard_basic.md)
 it will be presented with the username, for
-[`guard_bearer()`](https://thomasp85.github.io/fireproof/reference/guard_bearer.md)
+[`guard_bearer()`](https://fireproof.data-imaginist.com/reference/guard_bearer.md)
 it is presented with the token, etc) and returns user information as
 constructed by
-[`new_user_info()`](https://thomasp85.github.io/fireproof/reference/new_user_info.md).
+[`new_user_info()`](https://fireproof.data-imaginist.com/reference/new_user_info.md).
 We can update our basic guard to use this:
 
 ``` r

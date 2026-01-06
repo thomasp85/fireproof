@@ -104,7 +104,7 @@ guard_oauth2(
   initiated the authorization (containing `method`, `url`, `headers`,
   and `body` fields with information from the original request). By
   default it will use
-  [replay_request](https://thomasp85.github.io/fireproof/reference/on_auth.md)
+  [replay_request](https://fireproof.data-imaginist.com/reference/on_auth.md)
   to internally replay the original request and send back the response.
 
 - user_info:
@@ -113,7 +113,7 @@ guard_oauth2(
   called with a single argument: `token_info` which is the access token
   information returned by the OAuth 2 server after a successful
   authentication. The function should return a new
-  [user_info](https://thomasp85.github.io/fireproof/reference/new_user_info.md)
+  [user_info](https://fireproof.data-imaginist.com/reference/new_user_info.md)
   list.
 
 - service_params:
@@ -135,13 +135,13 @@ guard_oauth2(
 ## Value
 
 A
-[GuardOAuth2](https://thomasp85.github.io/fireproof/reference/GuardOAuth2.md)
+[GuardOAuth2](https://fireproof.data-imaginist.com/reference/GuardOAuth2.md)
 object
 
 ## User information
 
 `guard_oauth2()` automatically adds some [user
-information](https://thomasp85.github.io/fireproof/reference/new_user_info.md)
+information](https://fireproof.data-imaginist.com/reference/new_user_info.md)
 after authentication, but it is advised to consult the service provider
 for more information (this is done automatically for the provider
 specific guards. See their documentation for details about what
